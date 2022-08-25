@@ -1,13 +1,18 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:myst/ui/register.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'firebase_options.dart';
 import 'ui/loading.dart';
 
 SharedPreferences? prefs;
+String currentLanguage = "en";
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   prefs = await SharedPreferences.getInstance();
+
   runApp(const MyApp());
 }
 
@@ -17,6 +22,14 @@ class MyApp extends StatelessWidget {
   Future<bool> initializeApp() async {
     //TODO: uncomment line when themes are done: currentTheme = jsonDecode(prefs?.getString("theme") ?? "");
     //prefs = await SharedPreferences.getInstance();
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+
+    currentLanguage = prefs?.getString("language") ?? "en";
+
+    await Future.delayed(const Duration(milliseconds: 4500));
+
     return true;
   }
 
@@ -26,14 +39,28 @@ class MyApp extends StatelessWidget {
       title: 'myst',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primarySwatch: const MaterialColor(
+          0xffffffff,
+          <int, Color>{
+            50: Color(0xffffffff), //10%
+            100: Color(0xffffffff), //20%
+            200: Color(0xffffffff), //30%
+            300: Color(0xffffffff), //40%
+            400: Color(0xffffffff), //50%
+            500: Color(0xffffffff), //60%
+            600: Color(0xffffffff), //70%
+            700: Color(0xffffffff), //80%
+            800: Color(0xffffffff), //90%
+            900: Color(0xffffffff), //100%
+          },
+        ),
       ),
       home: FutureBuilder(
         future: initializeApp(),
         builder: (context, snapshot) {
           switch (snapshot.connectionState) {
             case ConnectionState.done:
-              return const LoadingView();
+              return const RegisterView();
             default:
               return const LoadingView();
           }

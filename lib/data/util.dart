@@ -1,5 +1,7 @@
 import 'dart:math';
 
+import 'package:flutter/material.dart';
+
 List<double> interpolateBetween(
     int r1, int g1, int b1, int r2, int g2, int b2, double progress) {
   double r, g, b;
@@ -8,4 +10,15 @@ List<double> interpolateBetween(
   g = g1 + (g2 - g1) * progress;
   b = b1 + (b2 - b1) * progress;
   return [r, g, b];
+}
+
+class MyBehavior extends ScrollBehavior {
+  @override
+  Widget buildOverscrollIndicator(
+    BuildContext context,
+    Widget child,
+    ScrollableDetails details,
+  ) {
+    return child;
+  }
 }
