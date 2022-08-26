@@ -13,6 +13,11 @@ Map dark = {
     "inputbackground": [23, 27, 31],
     "cursor": [175, 177, 180],
     "button": [103, 110, 117],
+    "curves": [255, 255, 255],
+    "errortext": [150, 0, 0],
+    "passwordstrength": [18, 22, 26],
+    "passwordgradientstart": [50, 50, 50],
+    "passwordgradientend": [255, 255, 255],
   },
   "fonts": {
     "mainfont": 0,
@@ -28,6 +33,11 @@ Map light = {
     "inputbackground": [205, 207, 210],
     "cursor": [33, 37, 41],
     "button": [133, 140, 147],
+    "curves": [0, 0, 0],
+    "errortext": [220, 0, 0],
+    "passwordstrength": [210, 210, 210],
+    "passwordgradientstart": [170, 170, 170],
+    "passwordgradientend": [50, 50, 50],
   },
   "fonts": {
     "mainfont": 0,

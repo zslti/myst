@@ -2,31 +2,39 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_password_strength/flutter_password_strength.dart';
 import 'package:myst/data/theme.dart';
 import 'package:myst/data/translation.dart';
 import 'package:myst/main.dart';
+import 'package:rainbow_color/rainbow_color.dart';
 
 import '../data/util.dart';
 import 'loading.dart';
+
+//TODO: link to signin when signin done
 
 TextEditingController nameController = TextEditingController();
 TextEditingController emailController = TextEditingController();
 TextEditingController passwordController = TextEditingController();
 TextEditingController password2Controller = TextEditingController();
 bool t = false;
+bool passwordObscured = true, password2Obscured = true;
+String errorText = "";
+bool errorVisible = false;
+
 List<double> pos = [
   Random().nextDouble() * 1.5 - 0.5,
-  Random().nextDouble(),
-  Random().nextDouble(),
-  Random().nextDouble(),
-  Random().nextDouble(),
+  Random().nextDouble() * 1.5 - 0.5,
+  Random().nextDouble() * 1.5 - 0.5,
+  Random().nextDouble() * 1.5 - 0.5,
+  Random().nextDouble() * 1.5 - 0.5,
 ];
 List<double> nextPos = [
   Random().nextDouble() * 1.5 - 0.5,
-  Random().nextDouble(),
-  Random().nextDouble(),
-  Random().nextDouble(),
-  Random().nextDouble(),
+  Random().nextDouble() * 1.5 - 0.5,
+  Random().nextDouble() * 1.5 - 0.5,
+  Random().nextDouble() * 1.5 - 0.5,
+  Random().nextDouble() * 1.5 - 0.5,
 ];
 double curveProgress = 0;
 
@@ -62,6 +70,16 @@ class RegisterView extends StatefulWidget {
 }
 
 class _RegisterViewState extends State<RegisterView> {
+  void displayError(String error) {
+    setState(() {
+      errorText = translation[currentLanguage][error];
+      errorVisible = true;
+      Timer(const Duration(milliseconds: 5000), () {
+        errorVisible = false;
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     if (!t) {
@@ -70,24 +88,19 @@ class _RegisterViewState extends State<RegisterView> {
           t = true;
         });
         Timer.periodic(const Duration(milliseconds: 20), (timer) {
-          //setState(() {
           if (curveProgress >= 1) {
             curveProgress = 0;
             pos = nextPos;
             nextPos = [
               Random().nextDouble() * 1.5 - 0.5,
-              Random().nextDouble(),
-              Random().nextDouble(),
-              Random().nextDouble(),
-              Random().nextDouble(),
+              Random().nextDouble() * 1.5 - 0.5,
+              Random().nextDouble() * 1.5 - 0.5,
+              Random().nextDouble() * 1.5 - 0.5,
+              Random().nextDouble() * 1.5 - 0.5,
             ];
           } else {
-            // print(interpolateBetween((pos[0] * 1000).round(), 0, 0,
-            //         (nextPos[0] * 1000).round(), 0, 0, curveProgress)[0] /
-            //     1000);
-            curveProgress += 0.01;
+            curveProgress += 0.004;
           }
-          //});
         });
       });
     }
@@ -101,31 +114,43 @@ class _RegisterViewState extends State<RegisterView> {
           behavior: MyBehavior(),
           child: Stack(
             children: [
-              ClipPath(
-                clipper: CustomClipPath(
-                  interpolateBetween(
-                          (pos[0] * 1000).round(),
-                          0,
-                          0,
-                          (nextPos[0] * 1000).round(),
-                          0,
-                          0,
-                          Curves.ease.transform(min(curveProgress, 1)))[0] /
-                      1000,
+              for (int i = 0; i < 5; i++)
+                Align(
+                  alignment: Alignment.bottomCenter,
+                  child: RotatedBox(
+                    quarterTurns: 2,
+                    child: ClipPath(
+                      clipper: CustomClipPath(
+                        interpolateBetween(
+                                (pos[i] * 1000).round(),
+                                0,
+                                0,
+                                (nextPos[i] * 1000).round(),
+                                0,
+                                0,
+                                Curves.ease
+                                    .transform(min(curveProgress, 1)))[0] /
+                            1000,
+                      ),
+                      child: Builder(
+                        builder: (context) {
+                          Timer(const Duration(milliseconds: 10), () {
+                            setState(() {});
+                          });
+                          return Opacity(
+                            opacity: 0.1,
+                            child: Container(
+                              width: 1000,
+                              height:
+                                  MediaQuery.of(context).size.height / (4 + i),
+                              color: getColor("curves"),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
                 ),
-                child: Builder(
-                  builder: (context) {
-                    Timer(const Duration(milliseconds: 10), () {
-                      setState(() {});
-                    });
-                    return Container(
-                      width: 1000,
-                      height: 250,
-                      color: Colors.red,
-                    );
-                  },
-                ),
-              ),
               ListView(
                 children: [
                   SizedBox(
@@ -212,22 +237,63 @@ class _RegisterViewState extends State<RegisterView> {
                     padding: const EdgeInsets.only(left: 12, right: 12, top: 8),
                     child: ClipRRect(
                       borderRadius: const BorderRadius.all(Radius.circular(5)),
-                      child: TextField(
-                        controller: passwordController,
-                        obscureText: true,
-                        cursorColor: getColor("cursor"),
-                        style: getFont("mainfont")(
-                          color: getColor("secondarytext"),
-                        ),
-                        decoration: InputDecoration(
-                          fillColor: getColor("inputbackground"),
-                          filled: true,
-                          hintText: translation[currentLanguage]["password"],
-                          hintStyle: getFont("mainfont")(
-                            color: getColor("secondarytext"),
+                      child: Stack(
+                        children: [
+                          TextField(
+                            controller: passwordController,
+                            obscureText: passwordObscured,
+                            cursorColor: getColor("cursor"),
+                            style: getFont("mainfont")(
+                              color: getColor("secondarytext"),
+                            ),
+                            decoration: InputDecoration(
+                              fillColor: getColor("inputbackground"),
+                              filled: true,
+                              hintText: translation[currentLanguage]
+                                  ["password"],
+                              hintStyle: getFont("mainfont")(
+                                color: getColor("secondarytext"),
+                              ),
+                              border: InputBorder.none,
+                            ),
                           ),
-                          border: InputBorder.none,
-                        ),
+                          Column(
+                            children: [
+                              const SizedBox(
+                                height: 45,
+                              ),
+                              FlutterPasswordStrength(
+                                password: passwordController.text,
+                                backgroundColor: getColor("passwordstrength"),
+                                strengthColors: RainbowColorTween([
+                                  getColor("passwordgradientstart"),
+                                  getColor("passwordgradientend")
+                                ]),
+                              ),
+                            ],
+                          ),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: SizedBox(
+                              width: 50,
+                              child: TextButton(
+                                onPressed: () {
+                                  setState(() {
+                                    passwordObscured = !passwordObscured;
+                                  });
+                                },
+                                style: const ButtonStyle(
+                                  splashFactory: NoSplash.splashFactory,
+                                ),
+                                child: Icon(
+                                  Icons.visibility,
+                                  color: getColor("secondarytext"),
+                                  size: 22,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -235,23 +301,48 @@ class _RegisterViewState extends State<RegisterView> {
                     padding: const EdgeInsets.only(left: 12, right: 12, top: 8),
                     child: ClipRRect(
                       borderRadius: const BorderRadius.all(Radius.circular(5)),
-                      child: TextField(
-                        controller: password2Controller,
-                        obscureText: true,
-                        cursorColor: getColor("cursor"),
-                        style: getFont("mainfont")(
-                          color: getColor("secondarytext"),
-                        ),
-                        decoration: InputDecoration(
-                          fillColor: getColor("inputbackground"),
-                          filled: true,
-                          hintText: translation[currentLanguage]
-                              ["confirmpassword"],
-                          hintStyle: getFont("mainfont")(
-                            color: getColor("secondarytext"),
+                      child: Stack(
+                        children: [
+                          TextField(
+                            controller: password2Controller,
+                            obscureText: password2Obscured,
+                            cursorColor: getColor("cursor"),
+                            style: getFont("mainfont")(
+                              color: getColor("secondarytext"),
+                            ),
+                            decoration: InputDecoration(
+                              fillColor: getColor("inputbackground"),
+                              filled: true,
+                              hintText: translation[currentLanguage]
+                                  ["confirmpassword"],
+                              hintStyle: getFont("mainfont")(
+                                color: getColor("secondarytext"),
+                              ),
+                              border: InputBorder.none,
+                            ),
                           ),
-                          border: InputBorder.none,
-                        ),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: SizedBox(
+                              width: 50,
+                              child: TextButton(
+                                onPressed: () {
+                                  setState(() {
+                                    password2Obscured = !password2Obscured;
+                                  });
+                                },
+                                style: const ButtonStyle(
+                                  splashFactory: NoSplash.splashFactory,
+                                ),
+                                child: Icon(
+                                  Icons.visibility,
+                                  color: getColor("secondarytext"),
+                                  size: 22,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -260,7 +351,30 @@ class _RegisterViewState extends State<RegisterView> {
                     child: ClipRRect(
                       borderRadius: const BorderRadius.all(Radius.circular(5)),
                       child: TextButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          if (nameController.text.isEmpty ||
+                              emailController.text.isEmpty ||
+                              passwordController.text.isEmpty ||
+                              password2Controller.text.isEmpty) {
+                            displayError("emptyerror");
+                            return;
+                          }
+                          if (passwordController.text.length < 8) {
+                            displayError("shortpassworderror");
+                            return;
+                          }
+                          if (passwordController.text !=
+                              password2Controller.text) {
+                            displayError("passwordmismatcherror");
+                            return;
+                          }
+                          if (!RegExp(
+                            r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+",
+                          ).hasMatch(emailController.text)) {
+                            displayError("emailerror");
+                            return;
+                          }
+                        },
                         style: TextButton.styleFrom(
                           splashFactory: NoSplash.splashFactory,
                           backgroundColor: getColor("button"),
@@ -270,6 +384,19 @@ class _RegisterViewState extends State<RegisterView> {
                           style: getFont("mainfont")(
                             color: getColor("background"),
                           ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  AnimatedOpacity(
+                    duration: const Duration(milliseconds: 250),
+                    opacity: errorVisible ? 1 : 0,
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 14, right: 14),
+                      child: Text(
+                        errorText,
+                        style: getFont("mainfont")(
+                          color: getColor("errortext"),
                         ),
                       ),
                     ),

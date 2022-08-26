@@ -38,6 +38,8 @@ dependencies:
   flutterfire_ui: ^0.4.3+7
   firebase_core: ^1.21.1
   google_fonts: ^3.0.1
+  flutter_password_strength: ^0.1.6
+  rainbow_color: ^2.0.1
 
 dev_dependencies:
   flutter_test:
