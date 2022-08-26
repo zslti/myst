@@ -11,6 +11,15 @@ Map translation = {
     "shortpassworderror": "Your password has to be at least 8 characters long.",
     "passwordmismatcherror": "The passwords don't match.",
     "emailerror": "This is an invalid email address.",
+    "email-already-in-use": "This email is already in use.",
+    "network-request-failed":
+        "Network request failed. Check your internet connection.",
+    "alreadyregistered": "Already have an account? ",
+    "signin": "Sign in.",
+    "login": "Sign in",
+    "noaccount": "Don't have an account yet? ",
+    "createnew": "Sign up.",
+    "forgotpassword": "Forgot your password?",
   },
   "hu": {
     "register": "Regisztráció",
@@ -24,5 +33,14 @@ Map translation = {
     "shortpassworderror": "A jelszó leaglább 8 karakterből kell álljon.",
     "passwordmismatcherror": "A jelszavak nem egyeznek.",
     "emailerror": "Ez egy helytelen emailcím.",
+    "email-already-in-use": "Ez az emailcím már használatban van.",
+    "network-request-failed":
+        "Hálózati hiba történt. Ellenőrizd az internetkapcsolatod.",
+    "alreadyregistered": "Már regisztráltál? ",
+    "signin": "Jelentkezz be.",
+    "login": "Bejelentkezés",
+    "noaccount": "Még nincs fiókod? ",
+    "createnew": "Regisztrálj.",
+    "forgotpassword": "Elfelejtetted a jelszavad?",
   }
 };

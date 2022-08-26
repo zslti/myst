@@ -1,17 +1,19 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_password_strength/flutter_password_strength.dart';
 import 'package:myst/data/theme.dart';
 import 'package:myst/data/translation.dart';
 import 'package:myst/main.dart';
+import 'package:myst/ui/login.dart';
 import 'package:rainbow_color/rainbow_color.dart';
 
 import '../data/util.dart';
 import 'loading.dart';
-
-//TODO: link to signin when signin done
 
 TextEditingController nameController = TextEditingController();
 TextEditingController emailController = TextEditingController();
@@ -37,30 +39,6 @@ List<double> nextPos = [
   Random().nextDouble() * 1.5 - 0.5,
 ];
 double curveProgress = 0;
-
-class CustomClipPath extends CustomClipper<Path> {
-  double p;
-
-  @override
-  Path getClip(Size size) {
-    double w = size.width;
-    double h = size.height;
-
-    final path = Path();
-    path.lineTo(0, h - 150);
-    path.quadraticBezierTo(w * p, h, w, h - 150);
-    path.lineTo(w, 0);
-    path.close();
-    return path;
-  }
-
-  @override
-  bool shouldReclip(CustomClipper<Path> oldClipper) {
-    return true;
-  }
-
-  CustomClipPath(this.p);
-}
 
 class RegisterView extends StatefulWidget {
   const RegisterView({Key? key}) : super(key: key);
@@ -217,6 +195,7 @@ class _RegisterViewState extends State<RegisterView> {
                       borderRadius: const BorderRadius.all(Radius.circular(5)),
                       child: TextField(
                         controller: emailController,
+                        keyboardType: TextInputType.emailAddress,
                         cursorColor: getColor("cursor"),
                         style: getFont("mainfont")(
                           color: getColor("secondarytext"),
@@ -351,7 +330,7 @@ class _RegisterViewState extends State<RegisterView> {
                     child: ClipRRect(
                       borderRadius: const BorderRadius.all(Radius.circular(5)),
                       child: TextButton(
-                        onPressed: () {
+                        onPressed: () async {
                           if (nameController.text.isEmpty ||
                               emailController.text.isEmpty ||
                               passwordController.text.isEmpty ||
@@ -374,6 +353,22 @@ class _RegisterViewState extends State<RegisterView> {
                             displayError("emailerror");
                             return;
                           }
+                          try {
+                            await FirebaseAuth.instance
+                                .createUserWithEmailAndPassword(
+                              email: emailController.text,
+                              password: passwordController.text,
+                            );
+                            CollectionReference users =
+                                FirebaseFirestore.instance.collection('users');
+                            users.add({
+                              'username': nameController.text,
+                              'email': emailController.text
+                            });
+                          } on FirebaseAuthException catch (e) {
+                            displayError(e.code);
+                            return;
+                          }
                         },
                         style: TextButton.styleFrom(
                           splashFactory: NoSplash.splashFactory,
@@ -388,18 +383,56 @@ class _RegisterViewState extends State<RegisterView> {
                       ),
                     ),
                   ),
-                  AnimatedOpacity(
-                    duration: const Duration(milliseconds: 250),
-                    opacity: errorVisible ? 1 : 0,
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 14, right: 14),
-                      child: Text(
-                        errorText,
-                        style: getFont("mainfont")(
-                          color: getColor("errortext"),
+                  Stack(
+                    children: [
+                      AnimatedOpacity(
+                        duration: const Duration(milliseconds: 250),
+                        opacity: errorVisible ? 1 : 0,
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 14, right: 14),
+                          child: Text(
+                            errorText,
+                            style: getFont("mainfont")(
+                              color: getColor("errortext"),
+                            ),
+                          ),
                         ),
                       ),
-                    ),
+                      Column(
+                        children: [
+                          const SizedBox(height: 10),
+                          Center(
+                            child: AnimatedOpacity(
+                              duration: const Duration(milliseconds: 150),
+                              opacity: errorVisible ? 0 : 1,
+                              child: RichText(
+                                text: TextSpan(
+                                  text: translation[currentLanguage]
+                                      ["alreadyregistered"],
+                                  style: getFont("mainfont")(
+                                    color: getColor("secondarytext"),
+                                  ),
+                                  children: [
+                                    TextSpan(
+                                      text: translation[currentLanguage]
+                                          ["signin"],
+                                      style: getFont("mainfont")(
+                                        color: getColor("maintext"),
+                                      ),
+                                      recognizer: TapGestureRecognizer()
+                                        ..onTap = () => pushReplacement(
+                                              context,
+                                              const LoginView(),
+                                            ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      )
+                    ],
                   ),
                   const SizedBox(
                     height: 200,

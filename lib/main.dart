@@ -20,6 +20,11 @@ class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
 
   Future<bool> initializeApp() async {
+    //TODO: forgot pass
+    //TODO: choose language before anything
+    //TODO: choose theme before registration
+    //TODO: email verification after login
+    //TODO: remember me feature on login
     //TODO: uncomment line when themes are done: currentTheme = jsonDecode(prefs?.getString("theme") ?? "");
     //prefs = await SharedPreferences.getInstance();
     await Firebase.initializeApp(
