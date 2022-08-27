@@ -20,11 +20,9 @@ class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
 
   Future<bool> initializeApp() async {
-    //TODO: forgot pass
     //TODO: choose language before anything
     //TODO: choose theme before registration
-    //TODO: email verification after login
-    //TODO: remember me feature on login
+    //TODO: if account is remembered auto login
     //TODO: uncomment line when themes are done: currentTheme = jsonDecode(prefs?.getString("theme") ?? "");
     //prefs = await SharedPreferences.getInstance();
     await Firebase.initializeApp(
@@ -65,7 +63,7 @@ class MyApp extends StatelessWidget {
         builder: (context, snapshot) {
           switch (snapshot.connectionState) {
             case ConnectionState.done:
-              return const RegisterView();
+              return const RegisterView(); //TODO: if has a saved account push main screen
             default:
               return const LoadingView();
           }

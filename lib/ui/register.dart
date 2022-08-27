@@ -50,6 +50,7 @@ class RegisterView extends StatefulWidget {
 class _RegisterViewState extends State<RegisterView> {
   void displayError(String error) {
     setState(() {
+      //print(error);
       errorText = translation[currentLanguage][error];
       errorVisible = true;
       Timer(const Duration(milliseconds: 5000), () {
@@ -365,6 +366,9 @@ class _RegisterViewState extends State<RegisterView> {
                               'username': nameController.text,
                               'email': emailController.text
                             });
+
+                            // ignore: use_build_context_synchronously
+                            pushReplacement(context, const LoginView());
                           } on FirebaseAuthException catch (e) {
                             displayError(e.code);
                             return;

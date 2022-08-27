@@ -20,6 +20,17 @@ Map translation = {
     "noaccount": "Don't have an account yet? ",
     "createnew": "Sign up.",
     "forgotpassword": "Forgot your password?",
+    "user-not-found": "This user does not exist.",
+    "wrong-password": "Incorrect password.",
+    "rememberme": "Remember me",
+    "verifyemail": "Verify email",
+    "verifyemailtext": "Check your inbox. We've sent you a confirmation email.",
+    "too-many-requests": "You've sent too many requests. Try again later.",
+    "checkspam": "Can't seem to find the email? Check your spam folder.",
+    "resetpassword": "Reset password",
+    "next": "Next",
+    "resetpasswordtext":
+        "After resetting your password you can go back to the login screen.",
   },
   "hu": {
     "register": "Regisztráció",
@@ -42,5 +53,17 @@ Map translation = {
     "noaccount": "Még nincs fiókod? ",
     "createnew": "Regisztrálj.",
     "forgotpassword": "Elfelejtetted a jelszavad?",
+    "user-not-found": "Ez a felhasználó nem létezik.",
+    "wrong-password": "Helytelen jelszó.",
+    "rememberme": "Jegyezzen meg",
+    "verifyemail": "Email megerősítése",
+    "verifyemailtext":
+        "Nézd meg a beérkező leveleidet. Küldtünk egy megerősítő emailt.",
+    "too-many-requests": "Túl sokszor próbálkoztál. Próbáld meg később.",
+    "checkspam": "Nem találod az üzenetet? Nézd meg a spam mappát.",
+    "resetpassword": "Jelszó visszaállítása",
+    "next": "Tovább",
+    "resetpasswordtext":
+        "A jelszó visszaállítása után visszamehetsz a bejelentkezési képernyőre.",
   }
 };

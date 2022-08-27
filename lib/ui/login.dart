@@ -1,9 +1,14 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:async';
+import 'dart:convert';
 import 'dart:math';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:myst/data/theme.dart';
+import 'package:myst/ui/passwordreset.dart';
 import 'package:myst/ui/register.dart';
 
 import '../data/translation.dart';
@@ -17,6 +22,7 @@ bool t = false;
 bool passwordObscured = true;
 String errorText = "";
 bool errorVisible = false;
+bool rememberMe = false;
 List<double> pos = [
   Random().nextDouble() * 1.5 - 0.5,
   Random().nextDouble() * 1.5 - 0.5,
@@ -43,6 +49,7 @@ class LoginView extends StatefulWidget {
 class _LoginViewState extends State<LoginView> {
   void displayError(String error) {
     setState(() {
+      //print(error);
       errorText = translation[currentLanguage][error];
       errorVisible = true;
       Timer(const Duration(milliseconds: 5000), () {
@@ -168,7 +175,12 @@ class _LoginViewState extends State<LoginView> {
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.only(left: 12, right: 12, top: 8),
+                    padding: const EdgeInsets.only(
+                      left: 12,
+                      right: 12,
+                      top: 8,
+                      bottom: 6,
+                    ),
                     child: ClipRRect(
                       borderRadius: const BorderRadius.all(Radius.circular(5)),
                       child: Stack(
@@ -216,12 +228,97 @@ class _LoginViewState extends State<LoginView> {
                       ),
                     ),
                   ),
+                  Theme(
+                    data: Theme.of(context).copyWith(
+                      unselectedWidgetColor: getColor("secondarytext"),
+                    ),
+                    child: SizedBox(
+                      height: 30,
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 6, right: 6),
+                        child: Row(
+                          children: [
+                            SizedBox(
+                              width: 35,
+                              child: Checkbox(
+                                activeColor: getColor("secondarytext"),
+                                checkColor: getColor("background"),
+                                value: rememberMe,
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(3)),
+                                onChanged: (value) {
+                                  setState(() {
+                                    rememberMe = value ?? false;
+                                  });
+                                },
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  rememberMe = !rememberMe;
+                                });
+                              },
+                              child: Text(
+                                translation[currentLanguage]["rememberme"],
+                                style: getFont("mainfont")(
+                                  color: getColor("secondarytext"),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
                   Padding(
-                    padding: const EdgeInsets.only(left: 12, right: 12, top: 8),
+                    padding: const EdgeInsets.only(left: 12, right: 12, top: 0),
                     child: ClipRRect(
                       borderRadius: const BorderRadius.all(Radius.circular(5)),
                       child: TextButton(
-                        onPressed: () async {},
+                        onPressed: () async {
+                          if (emailController.text.isEmpty ||
+                              passwordController.text.isEmpty) {
+                            displayError("emptyerror");
+                            return;
+                          }
+                          if (!RegExp(
+                            r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+",
+                          ).hasMatch(emailController.text)) {
+                            displayError("emailerror");
+                            return;
+                          }
+                          try {
+                            await FirebaseAuth.instance
+                                .signInWithEmailAndPassword(
+                              email: emailController.text,
+                              password: passwordController.text,
+                            );
+                            if (rememberMe) {
+                              prefs?.setString(
+                                "user",
+                                jsonEncode([
+                                  emailController.text,
+                                  passwordController.text
+                                ]),
+                              );
+                            } else {
+                              prefs?.setString("user", "");
+                            }
+                            final user = FirebaseAuth.instance.currentUser;
+                            if (user?.emailVerified ?? false) {
+                              push(context, const Scaffold());
+                            } else {
+                              await user?.sendEmailVerification();
+                              //push(context, const VerifyEmailView());
+                              displayError("verifyemailtext");
+                            }
+                          } on FirebaseAuthException catch (e) {
+                            //print(e.code);
+                            displayError(e.code);
+                            return;
+                          }
+                        },
                         style: TextButton.styleFrom(
                           splashFactory: NoSplash.splashFactory,
                           backgroundColor: getColor("button"),
@@ -289,10 +386,16 @@ class _LoginViewState extends State<LoginView> {
                             child: AnimatedOpacity(
                               duration: const Duration(milliseconds: 150),
                               opacity: errorVisible ? 0 : 1,
-                              child: Text(
-                                translation[currentLanguage]["forgotpassword"],
-                                style: getFont("mainfont")(
-                                  color: getColor("maintext"),
+                              child: GestureDetector(
+                                onTap: () {
+                                  push(context, const PasswordResetView());
+                                },
+                                child: Text(
+                                  translation[currentLanguage]
+                                      ["forgotpassword"],
+                                  style: getFont("mainfont")(
+                                    color: getColor("maintext"),
+                                  ),
                                 ),
                               ),
                             ),
