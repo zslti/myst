@@ -1,5 +1,7 @@
 Map translation = {
   "en": {
+    "countrycode": "gb",
+    "languagename": "English",
     "register": "Register",
     "username": "Username",
     "usernametext": "This is the name your friends will see.",
@@ -31,8 +33,11 @@ Map translation = {
     "next": "Next",
     "resetpasswordtext":
         "After resetting your password you can go back to the login screen.",
+    "chooselanguage": "Choose language",
   },
   "hu": {
+    "countrycode": "hu",
+    "languagename": "Magyar",
     "register": "Regisztráció",
     "username": "Felhasználónév",
     "usernametext": "Ezt a nevet fogják látni a barátaid.",
@@ -65,5 +70,6 @@ Map translation = {
     "next": "Tovább",
     "resetpasswordtext":
         "A jelszó visszaállítása után visszamehetsz a bejelentkezési képernyőre.",
+    "chooselanguage": "Nyelv kiválasztása",
   }
 };

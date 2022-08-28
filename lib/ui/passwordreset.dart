@@ -187,9 +187,8 @@ class _PasswordResetViewState extends State<PasswordResetView> {
                           await FirebaseAuth.instance.sendPasswordResetEmail(
                             email: emailController.text,
                           );
-                        } on FirebaseAuthException catch (e) {
-                          print(e);
-                        }
+                          // ignore: empty_catches
+                        } on FirebaseAuthException {}
                       },
                       style: TextButton.styleFrom(
                         splashFactory: NoSplash.splashFactory,

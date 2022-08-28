@@ -1,6 +1,10 @@
+import 'dart:convert';
+
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:myst/ui/register.dart';
+import 'package:myst/ui/selectlanguage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'firebase_options.dart';
@@ -8,6 +12,7 @@ import 'ui/loading.dart';
 
 SharedPreferences? prefs;
 String currentLanguage = "en";
+bool hasLanguageSelected = true;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,18 +25,36 @@ class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
 
   Future<bool> initializeApp() async {
-    //TODO: choose language before anything
     //TODO: choose theme before registration
-    //TODO: if account is remembered auto login
+
     //TODO: uncomment line when themes are done: currentTheme = jsonDecode(prefs?.getString("theme") ?? "");
     //prefs = await SharedPreferences.getInstance();
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
 
-    currentLanguage = prefs?.getString("language") ?? "en";
+    final languageData = prefs?.getString("language");
+
+    if (languageData == null) {
+      hasLanguageSelected = false;
+    }
+
+    currentLanguage = languageData ?? "en";
+    final userData = prefs?.getString("user") ?? "";
 
     await Future.delayed(const Duration(milliseconds: 4500));
+
+    if (userData.isNotEmpty) {
+      final data = jsonDecode(userData);
+      try {
+        await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: data[0],
+          password: data[1],
+        );
+      } on FirebaseAuthException {
+        return false;
+      }
+    }
 
     return true;
   }
@@ -63,7 +86,14 @@ class MyApp extends StatelessWidget {
         builder: (context, snapshot) {
           switch (snapshot.connectionState) {
             case ConnectionState.done:
-              return const RegisterView(); //TODO: if has a saved account push main screen
+              final snapshotValue = snapshot.data.toString();
+              if (snapshotValue == 'true') {
+                return const Scaffold(); //TODO: push main screen when done
+              } else if (!hasLanguageSelected) {
+                return const SelectLanguageView();
+              } else {
+                return const RegisterView();
+              }
             default:
               return const LoadingView();
           }
