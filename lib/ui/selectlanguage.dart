@@ -4,7 +4,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:myst/data/theme.dart';
 import 'package:myst/main.dart';
-import 'package:myst/ui/register.dart';
+import 'package:myst/ui/selecttheme.dart';
 
 import '../data/translation.dart';
 import '../data/util.dart';
@@ -168,8 +168,8 @@ class _SelectLanguageViewState extends State<SelectLanguageView> {
                                 currentLanguage = language;
                                 pushReplacement(
                                   context,
-                                  const RegisterView(),
-                                ); //TODO: push theme selection when done
+                                  const SelectThemeView(),
+                                );
                               },
                               style: TextButton.styleFrom(
                                 backgroundColor: getColor(

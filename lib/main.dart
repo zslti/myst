@@ -3,13 +3,14 @@ import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:myst/ui/mainscreen.dart';
 import 'package:myst/ui/register.dart';
 import 'package:myst/ui/selectlanguage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'data/theme.dart';
 import 'firebase_options.dart';
 import 'ui/loading.dart';
+import 'ui/mainscreen.dart';
 
 SharedPreferences? prefs;
 String currentLanguage = "en";
@@ -26,17 +27,21 @@ class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
 
   Future<bool> initializeApp() async {
-    //TODO: choose theme before registration
+    prefs?.setString("theme", ""); //TODO: remove line when everything is done
+    final themeData = prefs?.getString("theme") ?? "";
 
-    //TODO: uncomment line when themes are done: currentTheme = jsonDecode(prefs?.getString("theme") ?? "");
-    //prefs = await SharedPreferences.getInstance();
+    currentTheme = dark;
+    if (themeData.isNotEmpty && jsonDecode(themeData) != null) {
+      currentTheme = jsonDecode(themeData);
+    }
+
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
 
     final languageData = prefs?.getString("language");
 
-    if (languageData == null) {
+    if (languageData == null || languageData == "") {
       hasLanguageSelected = false;
     }
 

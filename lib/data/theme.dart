@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:myst/data/util.dart';
 
 Map dark = {
+  "name": "Dark",
   "colors": {
     "logo": [255, 255, 255],
     "background": [13, 17, 21],
@@ -25,6 +26,7 @@ Map dark = {
 };
 
 Map light = {
+  "name": "Light",
   "colors": {
     "logo": [0, 0, 0],
     "background": [220, 220, 220],
@@ -48,7 +50,15 @@ Map? currentTheme;
 Map? nextTheme;
 double themeSwitchProgress = 0;
 
-Color getColor(String name) {
+Color getColor(String name, {Map? theme}) {
+  if (theme != null) {
+    return Color.fromARGB(
+      255,
+      theme["colors"][name][0].round(),
+      theme["colors"][name][0].round(),
+      theme["colors"][name][0].round(),
+    );
+  }
   currentTheme ??= dark;
   nextTheme ??= light;
   List<double> colors = interpolateBetween(
@@ -94,18 +104,3 @@ TextStyle Function({
 
   return GoogleFonts.poppins;
 }
-
-// Theme switching:
-// 
-// Timer.periodic(const Duration(milliseconds = 10), (timer) {
-//   setState(() {
-//     themeSwitchProgress += 0.04;
-//   });
-//   if (themeSwitchProgress >= 1) {
-//     Map? s = currentTheme;
-//     currentTheme = nextTheme;
-//     nextTheme = s;
-//     themeSwitchProgress = 0;
-//     timer.cancel();
-//   }
-// });

@@ -199,27 +199,9 @@ class _LoadingViewState extends State<LoadingView> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: getColor("background"),
-      body: GestureDetector(
-        onTap: () {
-          Timer.periodic(const Duration(milliseconds: 10), (timer) {
-            setState(() {
-              themeSwitchProgress += 0.04;
-            });
-            if (themeSwitchProgress >= 1) {
-              Map? s = currentTheme;
-              currentTheme = nextTheme;
-              nextTheme = s;
-              themeSwitchProgress = 0;
-              timer.cancel();
-            }
-          });
-        },
-        // ignore: prefer_const_constructors
-        child: Center(
-          // ignore: prefer_const_constructors
-          child: AnimatedLogo(
-            sizeMul: 1.1,
-          ),
+      body: const Center(
+        child: AnimatedLogo(
+          sizeMul: 1.1,
         ),
       ),
     );
