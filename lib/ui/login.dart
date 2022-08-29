@@ -8,6 +8,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:myst/data/theme.dart';
+import 'package:myst/ui/mainscreen.dart';
 import 'package:myst/ui/passwordreset.dart';
 import 'package:myst/ui/register.dart';
 
@@ -307,14 +308,12 @@ class _LoginViewState extends State<LoginView> {
                             }
                             final user = FirebaseAuth.instance.currentUser;
                             if (user?.emailVerified ?? false) {
-                              push(context, const Scaffold());
+                              push(context, const MainView());
                             } else {
                               await user?.sendEmailVerification();
-                              //push(context, const VerifyEmailView());
                               displayError("verifyemailtext");
                             }
                           } on FirebaseAuthException catch (e) {
-                            //print(e.code);
                             displayError(e.code);
                             return;
                           }

@@ -49,7 +49,7 @@ class CustomClipPath extends CustomClipper<Path> {
 }
 
 bool increasing = false;
-Curve curve = Curves.ease;
+Curve curve = Curves.easeOut;
 
 void pushReplacement(BuildContext context, Widget widget) {
   increasing = true;
@@ -101,4 +101,180 @@ void push(BuildContext context, Widget widget) {
       ),
     ),
   );
+}
+
+const double bleedWidth = 20;
+
+enum RevealSide { left, right, main }
+
+RevealSide currentSide = RevealSide.main;
+RevealSide swipeDirection = RevealSide.main;
+
+class OverlappingPanels extends StatefulWidget {
+  final Widget? left;
+  final Widget main;
+  final Widget? right;
+
+  final double restWidth;
+
+  final ValueChanged<RevealSide>? onSideChange;
+
+  const OverlappingPanels({
+    this.left,
+    required this.main,
+    this.right,
+    this.restWidth = 50,
+    this.onSideChange,
+    Key? key,
+  }) : super(key: key);
+
+  static OverlappingPanelsState? of(BuildContext context) {
+    return context.findAncestorStateOfType<OverlappingPanelsState>();
+  }
+
+  @override
+  State<StatefulWidget> createState() {
+    return OverlappingPanelsState();
+  }
+}
+
+class OverlappingPanelsState extends State<OverlappingPanels>
+    with TickerProviderStateMixin {
+  AnimationController? controller;
+  double translate = 0;
+
+  double _calculateGoal(double width, int multiplier) {
+    return (multiplier * width) + (-multiplier * widget.restWidth);
+  }
+
+  void _onApplyTranslation() {
+    final mediaWidth = MediaQuery.of(context).size.width;
+
+    final animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+    animationController.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        if (widget.onSideChange != null) {
+          widget.onSideChange!(
+            translate == 0
+                ? RevealSide.main
+                : (translate > 0 ? RevealSide.left : RevealSide.right),
+          );
+        }
+        animationController.dispose();
+      }
+    });
+
+    final currentSide = translate == 0
+        ? RevealSide.main
+        : (translate > 0 ? RevealSide.left : RevealSide.right);
+    bool currentlyOnMain = currentSide == swipeDirection;
+    final divider = currentlyOnMain ? 16 : 1.2;
+    if (translate.abs() >= mediaWidth / divider) {
+      final multiplier = (translate > 0 ? 1 : -1);
+      final goal = _calculateGoal(mediaWidth, multiplier);
+      final Tween<double> tween = Tween(begin: translate, end: goal);
+
+      final animation = tween.animate(
+        CurvedAnimation(parent: animationController, curve: Curves.easeOut),
+      );
+
+      animation.addListener(() {
+        setState(() {
+          translate = animation.value;
+        });
+      });
+    } else {
+      final animation = Tween<double>(begin: translate, end: 0).animate(
+        CurvedAnimation(parent: animationController, curve: Curves.easeOut),
+      );
+
+      animation.addListener(() {
+        setState(() {
+          translate = animation.value;
+        });
+      });
+    }
+
+    animationController.forward();
+  }
+
+  void reveal(RevealSide direction) {
+    if (translate != 0) {
+      return;
+    }
+
+    final mediaWidth = MediaQuery.of(context).size.width;
+
+    final multiplier = (direction == RevealSide.left ? 1 : -1);
+    final goal = _calculateGoal(mediaWidth, multiplier);
+
+    final animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 200),
+    );
+
+    animationController.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        _onApplyTranslation();
+        animationController.dispose();
+      }
+    });
+
+    final animation = Tween<double>(begin: translate, end: goal).animate(
+      CurvedAnimation(parent: animationController, curve: Curves.easeOut),
+    );
+
+    animation.addListener(() {
+      setState(() {
+        translate = animation.value;
+      });
+    });
+
+    animationController.forward();
+  }
+
+  void onTranslate(double delta) {
+    setState(() {
+      final translate = this.translate + delta;
+      if (translate < 0 && widget.right != null ||
+          translate > 0 && widget.left != null) {
+        this.translate = translate;
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(children: [
+      Offstage(
+        offstage: translate < 0,
+        child: widget.left,
+      ),
+      Offstage(
+        offstage: translate > 0,
+        child: widget.right,
+      ),
+      Transform.translate(
+        offset: Offset(translate, 0),
+        child: widget.main,
+      ),
+      GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onHorizontalDragUpdate: (details) {
+          onTranslate(details.delta.dx);
+          if (details.delta.dx > 0) {
+            swipeDirection = RevealSide.left;
+          } else {
+            swipeDirection = RevealSide.right;
+          }
+        },
+        onHorizontalDragEnd: (details) {
+          _onApplyTranslation();
+        },
+      ),
+    ]);
+  }
 }
