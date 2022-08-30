@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:myst/data/theme.dart';
 import 'package:myst/data/util.dart';
+import 'package:myst/ui/messages.dart';
 
 class MainView extends StatefulWidget {
   const MainView({Key? key}) : super(key: key);
@@ -16,9 +17,7 @@ class _MainViewState extends State<MainView> {
       main: Scaffold(
         backgroundColor: getColor("background"),
       ),
-      left: const Scaffold(
-        backgroundColor: Colors.red,
-      ),
+      left: const MessagesView(),
       right: const Scaffold(
         backgroundColor: Colors.blue,
       ),

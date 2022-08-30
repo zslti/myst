@@ -19,6 +19,7 @@ Map dark = {
     "passwordstrength": [18, 22, 26],
     "passwordgradientstart": [50, 50, 50],
     "passwordgradientend": [255, 255, 255],
+    "highlight": [206, 212, 218],
   },
   "fonts": {
     "mainfont": 0,
@@ -40,6 +41,7 @@ Map light = {
     "passwordstrength": [210, 210, 210],
     "passwordgradientstart": [170, 170, 170],
     "passwordgradientend": [50, 50, 50],
+    "highlight": [73, 80, 87],
   },
   "fonts": {
     "mainfont": 0,

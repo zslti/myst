@@ -43,6 +43,7 @@ dependencies:
   firebase_auth: ^3.7.0
   cloud_firestore: ^3.4.6
   country_icons: ^2.0.2
+  firebase_messaging: ^13.0.0
 
 dev_dependencies:
   flutter_test:

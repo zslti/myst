@@ -76,9 +76,35 @@ class _SelectThemeViewState extends State<SelectThemeView> {
                             return Container();
                           }
                           return Expanded(
-                            child: Padding(
-                              padding: const EdgeInsets.only(left: 8, top: 8),
-                              child: ThemeCard(theme: themes[i]),
+                            child: Stack(
+                              children: [
+                                AnimatedOpacity(
+                                  duration: const Duration(milliseconds: 500),
+                                  opacity: themes[i] == currentTheme ? 1 : 0,
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(
+                                      left: 4,
+                                      top: 4,
+                                    ),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(15),
+                                      child: Container(
+                                        color: getColor("highlight"),
+                                        width: 1000,
+                                        height: 208,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                    left: 8,
+                                    top: 8,
+                                    right: 4,
+                                  ),
+                                  child: ThemeCard(theme: themes[i]),
+                                ),
+                              ],
                             ),
                           );
                         }),
@@ -87,16 +113,55 @@ class _SelectThemeViewState extends State<SelectThemeView> {
                             return Container();
                           }
                           return Expanded(
-                            child: Padding(
-                              padding: const EdgeInsets.only(
-                                left: 8,
-                                right: 8,
-                                top: 8,
-                              ),
-                              child: ThemeCard(theme: themes[i + 1]),
+                            child: Stack(
+                              children: [
+                                AnimatedOpacity(
+                                  duration: const Duration(milliseconds: 500),
+                                  opacity:
+                                      themes[i + 1] == currentTheme ? 1 : 0,
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(
+                                      left: 4,
+                                      top: 4,
+                                      right: 4,
+                                    ),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(15),
+                                      child: Container(
+                                        color: getColor("highlight"),
+                                        width: 1000,
+                                        height: 208,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                    left: 8,
+                                    top: 8,
+                                    right: 8,
+                                  ),
+                                  child: ThemeCard(theme: themes[i + 1]),
+                                ),
+                              ],
                             ),
                           );
                         }),
+                        // Builder(builder: (context) {
+                        //   if (i + 1 >= themes.length) {
+                        //     return Container();
+                        //   }
+                        //   return Expanded(
+                        //     child: Padding(
+                        //       padding: const EdgeInsets.only(
+                        //         left: 4,
+                        //         right: 8,
+                        //         top: 8,
+                        //       ),
+                        //       child: ThemeCard(theme: themes[i + 1]),
+                        //     ),
+                        //   );
+                        // }),
                       ],
                     ),
                   const SizedBox(
