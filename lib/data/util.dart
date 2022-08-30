@@ -3,6 +3,8 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
+import '../ui/mainscreen.dart';
+
 List<double> interpolateBetween(
     int r1, int g1, int b1, int r2, int g2, int b2, double progress) {
   double r, g, b;
@@ -140,6 +142,16 @@ class OverlappingPanels extends StatefulWidget {
 
 class OverlappingPanelsState extends State<OverlappingPanels>
     with TickerProviderStateMixin {
+  @override
+  void initState() {
+    super.initState();
+    Timer(const Duration(milliseconds: 15), () {
+      onTranslate(400);
+      _onApplyTranslation();
+      isSliding = true;
+    });
+  }
+
   AnimationController? controller;
   double translate = 0;
 
@@ -172,6 +184,7 @@ class OverlappingPanelsState extends State<OverlappingPanels>
         : (translate > 0 ? RevealSide.left : RevealSide.right);
     bool currentlyOnMain = currentSide == swipeDirection;
     final divider = currentlyOnMain ? 16 : 1.2;
+    isSliding = currentlyOnMain;
     if (translate.abs() >= mediaWidth / divider) {
       final multiplier = (translate > 0 ? 1 : -1);
       final goal = _calculateGoal(mediaWidth, multiplier);
@@ -264,6 +277,7 @@ class OverlappingPanelsState extends State<OverlappingPanels>
       GestureDetector(
         behavior: HitTestBehavior.translucent,
         onHorizontalDragUpdate: (details) {
+          isSliding = true;
           onTranslate(details.delta.dx);
           if (details.delta.dx > 0) {
             swipeDirection = RevealSide.left;
@@ -272,6 +286,7 @@ class OverlappingPanelsState extends State<OverlappingPanels>
           }
         },
         onHorizontalDragEnd: (details) {
+          isSliding = false;
           _onApplyTranslation();
         },
       ),

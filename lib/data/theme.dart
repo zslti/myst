@@ -20,6 +20,7 @@ Map dark = {
     "passwordgradientstart": [50, 50, 50],
     "passwordgradientend": [255, 255, 255],
     "highlight": [206, 212, 218],
+    "background2": [23, 27, 31],
   },
   "fonts": {
     "mainfont": 0,
@@ -42,6 +43,7 @@ Map light = {
     "passwordgradientstart": [170, 170, 170],
     "passwordgradientend": [50, 50, 50],
     "highlight": [73, 80, 87],
+    "background2": [200, 200, 200],
   },
   "fonts": {
     "mainfont": 0,
@@ -63,6 +65,7 @@ Color getColor(String name, {Map? theme}) {
   }
   currentTheme ??= dark;
   nextTheme ??= light;
+  //currentTheme = light;
   List<double> colors = interpolateBetween(
     currentTheme!["colors"][name][0],
     currentTheme!["colors"][name][1],

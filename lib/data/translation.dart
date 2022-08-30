@@ -35,6 +35,8 @@ Map translation = {
         "After resetting your password you can go back to the login screen.",
     "chooselanguage": "Choose language",
     "choosetheme": "Choose theme",
+    "messages": "Messages",
+    "findconversation": "Find a conversation",
   },
   "hu": {
     "countrycode": "hu",
@@ -73,5 +75,7 @@ Map translation = {
         "A jelszó visszaállítása után visszamehetsz a bejelentkezési képernyőre.",
     "chooselanguage": "Nyelv kiválasztása",
     "choosetheme": "Téma kiválasztása",
+    "messages": "Üzenetek",
+    "findconversation": "Beszélgetés keresése",
   }
 };

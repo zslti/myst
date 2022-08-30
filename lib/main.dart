@@ -3,14 +3,17 @@ import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:myst/ui/register.dart';
 import 'package:myst/ui/selectlanguage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'data/theme.dart';
+import 'data/userdata.dart';
 import 'firebase_options.dart';
 import 'ui/loading.dart';
 import 'ui/mainscreen.dart';
+import 'ui/messages.dart';
 
 SharedPreferences? prefs;
 String currentLanguage = "en";
@@ -19,6 +22,9 @@ bool hasLanguageSelected = true;
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   prefs = await SharedPreferences.getInstance();
+  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+    statusBarColor: Colors.transparent,
+  ));
 
   runApp(const MyApp());
 }
@@ -47,6 +53,14 @@ class MyApp extends StatelessWidget {
 
     currentLanguage = languageData ?? "en";
     final userData = prefs?.getString("user") ?? "";
+
+    conversations = await getConversations();
+    for (int i = 0; i < conversations.length; i++) {
+      conversations[i] = {
+        "email": conversations[i],
+        "displayname": await getDisplayName(conversations[i]),
+      };
+    }
 
     await Future.delayed(const Duration(milliseconds: 4500));
 

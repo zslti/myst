@@ -2,19 +2,24 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 Future<List> getAllMessages() async {
-  CollectionReference messages =
-      FirebaseFirestore.instance.collection('messages');
+  CollectionReference messages = FirebaseFirestore.instance.collection(
+    'messages',
+  );
   QuerySnapshot querySnapshot = await messages.get();
   List allData = querySnapshot.docs.map((doc) => doc.data()).toList();
-  allData.removeWhere((element) => !element['users']
-      .contains("{${FirebaseAuth.instance.currentUser?.email}}"));
+  allData.removeWhere(
+    (element) => !element['users'].contains(
+      "{${FirebaseAuth.instance.currentUser?.email}}",
+    ),
+  );
 
   return allData;
 }
 
 Future<void> sendMessage(String message, String to) async {
-  CollectionReference messages =
-      FirebaseFirestore.instance.collection('messages');
+  CollectionReference messages = FirebaseFirestore.instance.collection(
+    'messages',
+  );
   await messages.add({
     'message': message,
     'users': "{{${FirebaseAuth.instance.currentUser?.email}}, {$to}}",
@@ -27,12 +32,14 @@ Future<List> getConversations() async {
   List allData = await getAllMessages();
   List conversations = [];
   for (var i = 0; i < allData.length; i++) {
-    conversations.add(allData[i]['users']
-        .replaceAll("{${FirebaseAuth.instance.currentUser?.email}}", "")
-        .replaceAll(" ", "")
-        .replaceAll(",", "")
-        .replaceAll("{", "")
-        .replaceAll("}", ""));
+    conversations.add(
+      allData[i]['users']
+          .replaceAll("{${FirebaseAuth.instance.currentUser?.email}}", "")
+          .replaceAll(" ", "")
+          .replaceAll(",", "")
+          .replaceAll("{", "")
+          .replaceAll("}", ""),
+    );
   }
 
   conversations = conversations.toSet().toList();
