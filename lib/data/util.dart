@@ -249,12 +249,15 @@ class OverlappingPanelsState extends State<OverlappingPanels>
     animationController.forward();
   }
 
-  void onTranslate(double delta) {
+  void onTranslate(double delta, {bool shouldApplyTransition = false}) {
     setState(() {
       final translate = this.translate + delta;
       if (translate < 0 && widget.right != null ||
           translate > 0 && widget.left != null) {
         this.translate = translate;
+      }
+      if (shouldApplyTransition) {
+        _onApplyTranslation();
       }
     });
   }

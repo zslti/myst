@@ -6,6 +6,8 @@ import 'package:myst/data/util.dart';
 import 'package:myst/ui/messages.dart';
 
 bool isSliding = true, t = false;
+GlobalKey<OverlappingPanelsState> _myKey = GlobalKey();
+var gkey = _myKey;
 
 class MainView extends StatefulWidget {
   const MainView({Key? key}) : super(key: key);
@@ -26,6 +28,7 @@ class _MainViewState extends State<MainView> {
       });
     }
     return OverlappingPanels(
+      key: _myKey,
       main: Stack(
         children: [
           AnimatedOpacity(

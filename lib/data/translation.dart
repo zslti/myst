@@ -37,6 +37,7 @@ Map translation = {
     "choosetheme": "Choose theme",
     "messages": "Messages",
     "findconversation": "Find a conversation",
+    "noconversations": "Your conversations will appear here.",
   },
   "hu": {
     "countrycode": "hu",
@@ -77,5 +78,6 @@ Map translation = {
     "choosetheme": "Téma kiválasztása",
     "messages": "Üzenetek",
     "findconversation": "Beszélgetés keresése",
+    "noconversations": "A beszélgetéseid itt fognak megjelenni.",
   }
 };

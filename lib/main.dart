@@ -54,14 +54,6 @@ class MyApp extends StatelessWidget {
     currentLanguage = languageData ?? "en";
     final userData = prefs?.getString("user") ?? "";
 
-    conversations = await getConversations();
-    for (int i = 0; i < conversations.length; i++) {
-      conversations[i] = {
-        "email": conversations[i],
-        "displayname": await getDisplayName(conversations[i]),
-      };
-    }
-
     await Future.delayed(const Duration(milliseconds: 4500));
 
     if (userData.isNotEmpty) {
@@ -75,6 +67,17 @@ class MyApp extends StatelessWidget {
         return false;
       }
     }
+
+    try {
+      conversations = await getConversations();
+      for (int i = 0; i < conversations.length; i++) {
+        conversations[i] = {
+          "email": conversations[i],
+          "displayname": await getDisplayName(conversations[i]),
+        };
+      }
+      // ignore: empty_catches
+    } catch (e) {}
 
     return true;
   }

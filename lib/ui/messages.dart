@@ -4,14 +4,34 @@ import 'package:flutter/material.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:myst/data/translation.dart';
 import 'package:myst/data/util.dart';
+import 'package:myst/ui/mainscreen.dart';
 import 'package:myst/main.dart';
 
 import '../data/theme.dart';
 import '../data/userdata.dart';
 
-bool t = false;
+bool t = false, isSearching = false;
 List conversations = [];
 TextEditingController searchController = TextEditingController();
+String searchText = "";
+int lastSearchTime = 0, searchApplyTime = 0;
+bool searchApplied = false;
+
+void applySearchTerm(String str) {
+  isSearching = true;
+  int diff = DateTime.now().millisecondsSinceEpoch - lastSearchTime;
+  if (diff < 200) {
+    Timer(Duration(milliseconds: diff), () {
+      searchText = str;
+      isSearching = false;
+    });
+  }
+  Timer(const Duration(milliseconds: 200), () {
+    searchText = str;
+    isSearching = false;
+  });
+  lastSearchTime = DateTime.now().millisecondsSinceEpoch;
+}
 
 class MessagesView extends StatefulWidget {
   const MessagesView({Key? key}) : super(key: key);
@@ -45,6 +65,7 @@ class _MessagesViewState extends State<MessagesView> {
         t = true;
       });
     }
+
     return Scaffold(
       backgroundColor: getColor("background"),
       body: AnimatedOpacity(
@@ -59,6 +80,12 @@ class _MessagesViewState extends State<MessagesView> {
             ),
             child: KeyboardVisibilityBuilder(
                 builder: (context, isKeyboardVisible) {
+              if (DateTime.now().millisecondsSinceEpoch - searchApplyTime >
+                      250 &&
+                  !searchApplied) {
+                applySearchTerm(searchController.text);
+                searchApplied = true;
+              }
               return ClipRRect(
                 //borderRadius: BorderRadius.circular(15),
                 borderRadius: BorderRadius.only(
@@ -95,26 +122,113 @@ class _MessagesViewState extends State<MessagesView> {
                               behavior: MyBehavior(),
                               child: Builder(builder: (context) {
                                 try {
-                                  return ListView(
-                                    shrinkWrap: true,
-                                    children: [
-                                      for (final conversation in conversations)
-                                        TextButton(
-                                          onPressed: () {},
-                                          child: Text(
-                                            conversation["displayname"],
-                                            style: getFont("mainfont")(
-                                              color: getColor("secondarytext"),
-                                            ),
-                                          ),
+                                  return ConstrainedBox(
+                                    constraints: BoxConstraints(
+                                      maxHeight:
+                                          MediaQuery.of(context).size.height -
+                                              90,
+                                    ),
+                                    child: ListView(
+                                      shrinkWrap: true,
+                                      children: [
+                                        const SizedBox(
+                                          height: 10,
                                         ),
-                                    ],
+                                        //for (int i = 0; i < 10; i++)
+                                        for (final conversation
+                                            in conversations)
+                                          Builder(builder: (context) {
+                                            // if (!conversation["displayname"]
+                                            //     .toString()
+                                            //     .contains(searchText)) {
+                                            //   return Container();
+                                            // }
+
+                                            return AnimatedOpacity(
+                                              duration: const Duration(
+                                                milliseconds: 200,
+                                              ),
+                                              opacity: isSearching ? 0 : 1,
+                                              child: SizedBox(
+                                                height: 50 *
+                                                    (!conversation[
+                                                                "displayname"]
+                                                            .toString()
+                                                            .contains(
+                                                                searchText)
+                                                        ? 0
+                                                        : 1),
+                                                child: TextButton(
+                                                  onPressed: () {
+                                                    swipeDirection =
+                                                        RevealSide.right;
+                                                    gkey.currentState
+                                                        ?.onTranslate(
+                                                      -50 *
+                                                          MediaQuery.of(context)
+                                                              .size
+                                                              .width /
+                                                          400,
+                                                      shouldApplyTransition:
+                                                          true,
+                                                    );
+                                                  },
+                                                  style: const ButtonStyle(
+                                                    splashFactory:
+                                                        NoSplash.splashFactory,
+                                                  ),
+                                                  child: Row(
+                                                    children: [
+                                                      ClipRRect(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(
+                                                          50,
+                                                        ),
+                                                        child: Container(
+                                                          width: 32,
+                                                          height: 32,
+                                                          color: getColor(
+                                                              "button"),
+                                                        ),
+                                                      ),
+                                                      const SizedBox(
+                                                        width: 10,
+                                                      ),
+                                                      Text(
+                                                        conversation[
+                                                            "displayname"],
+                                                        style:
+                                                            getFont("mainfont")(
+                                                          color: getColor(
+                                                            "secondarytext",
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                            );
+                                          }),
+                                      ],
+                                    ),
                                   );
                                 } catch (e) {
-                                  return Text(
-                                    "No conversations",
-                                    style: getFont("mainfont")(
-                                      color: getColor("secondarytext"),
+                                  return SizedBox(
+                                    height: MediaQuery.of(context).size.height -
+                                        100,
+                                    child: Center(
+                                      child: Opacity(
+                                        opacity: 0.5,
+                                        child: Text(
+                                          translation[currentLanguage]
+                                              ["noconversations"],
+                                          style: getFont("mainfont")(
+                                            color: getColor("secondarytext"),
+                                          ),
+                                        ),
+                                      ),
                                     ),
                                   );
                                 }
@@ -128,9 +242,16 @@ class _MessagesViewState extends State<MessagesView> {
                                 height: 35,
                                 alignment: Alignment.center,
                                 child: TextField(
+                                  onChanged: (str) {
+                                    searchApplied = false;
+                                    searchApplyTime =
+                                        DateTime.now().millisecondsSinceEpoch +
+                                            250;
+                                  },
                                   keyboardType: TextInputType.visiblePassword,
-                                  textAlignVertical:
-                                      const TextAlignVertical(y: -1),
+                                  textAlignVertical: const TextAlignVertical(
+                                    y: -1,
+                                  ),
                                   controller: searchController,
                                   cursorColor: getColor("cursor"),
                                   cursorRadius: const Radius.circular(4),
