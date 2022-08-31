@@ -13,7 +13,7 @@ import 'data/userdata.dart';
 import 'firebase_options.dart';
 import 'ui/loading.dart';
 import 'ui/mainscreen.dart';
-import 'ui/messages.dart';
+import 'ui/conversations.dart';
 
 SharedPreferences? prefs;
 String currentLanguage = "en";
@@ -34,6 +34,7 @@ class MyApp extends StatelessWidget {
 
   Future<bool> initializeApp() async {
     prefs?.setString("theme", ""); //TODO: remove line when everything is done
+    //TODO: when sending more messages in a row dont need to show name and picture again
     final themeData = prefs?.getString("theme") ?? "";
 
     currentTheme = dark;
@@ -54,7 +55,7 @@ class MyApp extends StatelessWidget {
     currentLanguage = languageData ?? "en";
     final userData = prefs?.getString("user") ?? "";
 
-    await Future.delayed(const Duration(milliseconds: 4500));
+    await Future.delayed(const Duration(milliseconds: 3000));
 
     if (userData.isNotEmpty) {
       final data = jsonDecode(userData);

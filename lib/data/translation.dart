@@ -38,6 +38,7 @@ Map translation = {
     "messages": "Messages",
     "findconversation": "Find a conversation",
     "noconversations": "Your conversations will appear here.",
+    "nomessages": "Your messages will appear here.",
   },
   "hu": {
     "countrycode": "hu",
@@ -79,5 +80,6 @@ Map translation = {
     "messages": "Üzenetek",
     "findconversation": "Beszélgetés keresése",
     "noconversations": "A beszélgetéseid itt fognak megjelenni.",
+    "nomessages": "Az üzeneteid itt fognak megjelenni.",
   }
 };

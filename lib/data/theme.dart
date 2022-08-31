@@ -21,6 +21,7 @@ Map dark = {
     "passwordgradientend": [255, 255, 255],
     "highlight": [206, 212, 218],
     "background2": [23, 27, 31],
+    "background3": [21, 25, 29],
   },
   "fonts": {
     "mainfont": 0,
@@ -44,6 +45,7 @@ Map light = {
     "passwordgradientend": [50, 50, 50],
     "highlight": [73, 80, 87],
     "background2": [200, 200, 200],
+    "background3": [210, 210, 210],
   },
   "fonts": {
     "mainfont": 0,

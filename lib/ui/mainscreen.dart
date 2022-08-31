@@ -3,11 +3,13 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:myst/data/theme.dart';
 import 'package:myst/data/util.dart';
+import 'package:myst/ui/conversations.dart';
 import 'package:myst/ui/messages.dart';
 
 bool isSliding = true, t = false;
 GlobalKey<OverlappingPanelsState> _myKey = GlobalKey();
 var gkey = _myKey;
+RevealSide actualSide = RevealSide.left;
 
 class MainView extends StatefulWidget {
   const MainView({Key? key}) : super(key: key);
@@ -28,6 +30,9 @@ class _MainViewState extends State<MainView> {
       });
     }
     return OverlappingPanels(
+      onSideChange: (value) {
+        actualSide = value;
+      },
       key: _myKey,
       main: Stack(
         children: [
@@ -40,15 +45,32 @@ class _MainViewState extends State<MainView> {
                 borderRadius: BorderRadius.circular(15),
                 child: Stack(
                   children: [
-                    Scaffold(
-                      backgroundColor: getColor("background2"),
-                    ),
+                    // ignore: prefer_const_constructors
+                    MessagesView(),
                     IgnorePointer(
+                      ignoring: actualSide == RevealSide.main,
                       child: AnimatedOpacity(
                         opacity: isSliding ? 0.05 : 0,
                         duration: const Duration(milliseconds: 200),
-                        child: const Scaffold(
-                          backgroundColor: Color.fromARGB(255, 78, 78, 78),
+                        child: GestureDetector(
+                          onTap: () {
+                            if (actualSide == RevealSide.left) {
+                              swipeDirection = RevealSide.right;
+                              gkey.currentState?.onTranslate(
+                                -50 * MediaQuery.of(context).size.width / 400,
+                                shouldApplyTransition: true,
+                              );
+                            } else {
+                              swipeDirection = RevealSide.left;
+                              gkey.currentState?.onTranslate(
+                                50 * MediaQuery.of(context).size.width / 400,
+                                shouldApplyTransition: true,
+                              );
+                            }
+                          },
+                          child: const Scaffold(
+                            backgroundColor: Color.fromARGB(255, 78, 78, 78),
+                          ),
                         ),
                       ),
                     )
@@ -60,7 +82,7 @@ class _MainViewState extends State<MainView> {
         ],
       ),
       // ignore: prefer_const_constructors
-      left: MessagesView(),
+      left: ConversationsView(),
       right: Scaffold(
         backgroundColor: getColor("background"),
       ),
