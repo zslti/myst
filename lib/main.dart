@@ -35,6 +35,8 @@ class MyApp extends StatelessWidget {
   Future<bool> initializeApp() async {
     prefs?.setString("theme", ""); //TODO: remove line when everything is done
     //TODO: when sending more messages in a row dont need to show name and picture again
+    //TODO: time of messages
+    //TODO: separators between dates of messages
     final themeData = prefs?.getString("theme") ?? "";
 
     currentTheme = dark;
