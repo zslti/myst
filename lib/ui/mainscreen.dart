@@ -10,6 +10,7 @@ bool isSliding = true, t = false;
 GlobalKey<OverlappingPanelsState> _myKey = GlobalKey();
 var gkey = _myKey;
 RevealSide actualSide = RevealSide.left;
+bool shouldRebuild = true;
 
 class MainView extends StatefulWidget {
   const MainView({Key? key}) : super(key: key);
@@ -21,8 +22,14 @@ class MainView extends StatefulWidget {
 class _MainViewState extends State<MainView> {
   @override
   Widget build(BuildContext context) {
-    Timer(const Duration(milliseconds: 15), () {
-      setState(() {});
+    Timer(const Duration(milliseconds: 50), () {
+      if (shouldRebuild) {
+        setState(() {});
+      } else {
+        Timer(const Duration(milliseconds: 100), () {
+          setState(() {});
+        });
+      }
     });
     if (!t) {
       Timer(const Duration(milliseconds: 50), () {

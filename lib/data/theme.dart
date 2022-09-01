@@ -22,6 +22,7 @@ Map dark = {
     "highlight": [206, 212, 218],
     "background2": [23, 27, 31],
     "background3": [21, 25, 29],
+    "button2": [40, 46, 56],
   },
   "fonts": {
     "mainfont": 0,
@@ -46,6 +47,7 @@ Map light = {
     "highlight": [73, 80, 87],
     "background2": [200, 200, 200],
     "background3": [210, 210, 210],
+    "button2": [166, 171, 179],
   },
   "fonts": {
     "mainfont": 0,

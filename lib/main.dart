@@ -47,6 +47,7 @@ class MyApp extends StatelessWidget {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
+    FirebaseAuth.instance.signOut();
 
     final languageData = prefs?.getString("language");
 
@@ -55,6 +56,10 @@ class MyApp extends StatelessWidget {
     }
 
     currentLanguage = languageData ?? "en";
+    if (!hasLanguageSelected) {
+      return false;
+    }
+
     final userData = prefs?.getString("user") ?? "";
 
     await Future.delayed(const Duration(milliseconds: 3000));
@@ -80,9 +85,11 @@ class MyApp extends StatelessWidget {
         };
       }
       // ignore: empty_catches
-    } catch (e) {}
+    } catch (e) {
+      return false;
+    }
 
-    return true;
+    return FirebaseAuth.instance.currentUser?.email?.isNotEmpty ?? false;
   }
 
   @override

@@ -54,6 +54,9 @@ Future<List> getMessages(String user) async {
       messages.add(allData[i]);
     }
   }
+
+  messages.sort((a, b) => b['timestamp'].compareTo(a['timestamp']));
+
   return messages;
 }
 

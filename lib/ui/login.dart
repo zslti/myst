@@ -13,8 +13,10 @@ import 'package:myst/ui/passwordreset.dart';
 import 'package:myst/ui/register.dart';
 
 import '../data/translation.dart';
+import '../data/userdata.dart';
 import '../data/util.dart';
 import '../main.dart';
+import 'conversations.dart';
 import 'loading.dart';
 
 TextEditingController emailController = TextEditingController();
@@ -308,6 +310,19 @@ class _LoginViewState extends State<LoginView> {
                             }
                             final user = FirebaseAuth.instance.currentUser;
                             if (user?.emailVerified ?? false) {
+                              try {
+                                conversations = await getConversations();
+                                for (int i = 0; i < conversations.length; i++) {
+                                  conversations[i] = {
+                                    "email": conversations[i],
+                                    "displayname":
+                                        await getDisplayName(conversations[i]),
+                                  };
+                                }
+                                // ignore: empty_catches
+                              } catch (e) {
+                                return;
+                              }
                               push(context, const MainView());
                             } else {
                               await user?.sendEmailVerification();

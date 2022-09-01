@@ -175,6 +175,7 @@ class _ConversationsViewState extends State<ConversationsView> {
                                                     );
                                                     currentConversation =
                                                         conversation;
+                                                    messageCount = 0;
                                                   },
                                                   style: const ButtonStyle(
                                                     splashFactory:
@@ -199,15 +200,40 @@ class _ConversationsViewState extends State<ConversationsView> {
                                                       const SizedBox(
                                                         width: 10,
                                                       ),
-                                                      Text(
-                                                        conversation[
-                                                            "displayname"],
-                                                        style:
-                                                            getFont("mainfont")(
-                                                          color: getColor(
-                                                            "secondarytext",
+                                                      Stack(
+                                                        children: [
+                                                          Text(
+                                                            conversation[
+                                                                "displayname"],
+                                                            style: getFont(
+                                                                "mainfont")(
+                                                              color: getColor(
+                                                                "secondarytext",
+                                                              ),
+                                                            ),
                                                           ),
-                                                        ),
+                                                          AnimatedOpacity(
+                                                            duration:
+                                                                const Duration(
+                                                              milliseconds: 200,
+                                                            ),
+                                                            opacity:
+                                                                currentConversation ==
+                                                                        conversation
+                                                                    ? 1
+                                                                    : 0,
+                                                            child: Text(
+                                                              conversation[
+                                                                  "displayname"],
+                                                              style: getFont(
+                                                                  "mainfont")(
+                                                                color: getColor(
+                                                                  "maintext",
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          )
+                                                        ],
                                                       ),
                                                     ],
                                                   ),
