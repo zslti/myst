@@ -54,7 +54,7 @@ bool increasing = false;
 Curve curve = Curves.easeOut;
 
 void pushReplacement(BuildContext context, Widget widget) {
-  increasing = true;
+  //increasing = true;
   Timer(const Duration(milliseconds: 2500), () {
     increasing = false;
   });
@@ -80,7 +80,7 @@ void pushReplacement(BuildContext context, Widget widget) {
 }
 
 void push(BuildContext context, Widget widget) {
-  increasing = true;
+  //increasing = true;
   Timer(const Duration(milliseconds: 2500), () {
     increasing = false;
   });

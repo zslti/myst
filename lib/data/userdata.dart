@@ -70,3 +70,13 @@ Future<String> getDisplayName(String email) async {
   allData.removeWhere((element) => element['email'] != email);
   return allData[0]['username'];
 }
+
+Future<List> getUsersNamed(String name) async {
+  QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+      .collection('users')
+      .where('username', isEqualTo: name)
+      .get();
+  List data = querySnapshot.docs.map((doc) => doc.data()).toList();
+
+  return data;
+}

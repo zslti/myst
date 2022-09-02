@@ -35,9 +35,13 @@ class MyApp extends StatelessWidget {
   Future<bool> initializeApp() async {
     prefs?.setString("theme", ""); //TODO: remove line when everything is done
     //TODO: add friends
+    //TODO: friends screen
+    //TODO: encrypt messages
     //TODO: when sending more messages in a row dont need to show name and picture again
     //TODO: time of messages
     //TODO: separators between dates of messages
+    //TODO: change push animation
+    //TODO: add friends with nfc or bt or qr code
     final themeData = prefs?.getString("theme") ?? "";
 
     currentTheme = dark;

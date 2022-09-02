@@ -40,6 +40,9 @@ Map translation = {
     "noconversations": "Your conversations will appear here.",
     "nomessages": "Your messages will appear here.",
     "message": "Message",
+    "friends": "Friends",
+    "addfriend": "Add friends",
+    "findfriend": "Your friend's name",
   },
   "hu": {
     "countrycode": "hu",
@@ -83,5 +86,8 @@ Map translation = {
     "noconversations": "A beszélgetéseid itt fognak megjelenni.",
     "nomessages": "Az üzeneteid itt fognak megjelenni.",
     "message": "Üzenet",
+    "friends": "Barátok",
+    "addfriend": "Barát hozzáadása",
+    "findfriend": "A barátod neve",
   }
 };

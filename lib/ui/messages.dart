@@ -25,7 +25,6 @@ double targetBarHeight = 50, targetFieldHeight = 35;
 double transitionProgress = 0;
 int messageCount = 0;
 bool done = false;
-//int lastConversationOpenTime = 0;
 bool built = false;
 
 void startTransition() {
@@ -133,10 +132,12 @@ class _MessagesViewState extends State<MessagesView> {
         String email = jsonDecode(users)[i];
         names[email] = await getDisplayName(email);
         if (currentMessages.length > messageCount &&
-            !done &&
-            currentMessages.length > 1 &&
+                !done &&
+                currentMessages.length >
+                    1 /* &&
             _itemPositionsListener.itemPositions.value
-                .any((element) => element.index <= 5)) {
+                .any((element) => element.index <= 5)*/
+            ) {
           done = true;
           messageCount = currentMessages.length;
           _scrollController.jumpTo(index: 1);
