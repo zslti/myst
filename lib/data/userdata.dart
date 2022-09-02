@@ -30,6 +30,9 @@ Future<void> sendMessage(String message, String to) async {
 
 Future<List> getConversations() async {
   List allData = await getAllMessages();
+  allData.sort(
+    (a, b) => b['timestamp'].compareTo(a['timestamp']),
+  );
   List conversations = [];
   for (var i = 0; i < allData.length; i++) {
     conversations.add(

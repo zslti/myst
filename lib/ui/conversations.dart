@@ -17,6 +17,7 @@ TextEditingController searchController = TextEditingController();
 String searchText = "";
 int lastSearchTime = 0, searchApplyTime = 0;
 bool searchApplied = false;
+int lastRequestTime = 0;
 
 void applySearchTerm(String str) {
   isSearching = true;
@@ -43,13 +44,18 @@ class ConversationsView extends StatefulWidget {
 
 class _ConversationsViewState extends State<ConversationsView> {
   void getData() async {
-    conversations = await getConversations();
-    for (int i = 0; i < conversations.length; i++) {
-      conversations[i] = {
-        "email": conversations[i],
-        "displayname": await getDisplayName(conversations[i]),
+    if (DateTime.now().millisecondsSinceEpoch - lastRequestTime < 100) {
+      return;
+    }
+    List c = await getConversations();
+    for (int i = 0; i < c.length; i++) {
+      c[i] = {
+        "email": c[i],
+        "displayname": await getDisplayName(c[i]),
       };
     }
+    conversations = c;
+    lastRequestTime = DateTime.now().millisecondsSinceEpoch;
     //setState(() {});
   }
 
@@ -61,6 +67,7 @@ class _ConversationsViewState extends State<ConversationsView> {
 
   @override
   Widget build(BuildContext context) {
+    getData();
     if (!t) {
       Timer(const Duration(milliseconds: 50), () {
         t = true;
@@ -135,16 +142,9 @@ class _ConversationsViewState extends State<ConversationsView> {
                                         const SizedBox(
                                           height: 10,
                                         ),
-                                        //for (int i = 0; i < 10; i++)
                                         for (final conversation
                                             in conversations)
                                           Builder(builder: (context) {
-                                            // if (!conversation["displayname"]
-                                            //     .toString()
-                                            //     .contains(searchText)) {
-                                            //   return Container();
-                                            // }
-
                                             return AnimatedOpacity(
                                               duration: const Duration(
                                                 milliseconds: 200,
@@ -175,6 +175,7 @@ class _ConversationsViewState extends State<ConversationsView> {
                                                     );
                                                     currentConversation =
                                                         conversation;
+                                                    built = false;
                                                     messageCount = 0;
                                                   },
                                                   style: const ButtonStyle(
@@ -217,11 +218,12 @@ class _ConversationsViewState extends State<ConversationsView> {
                                                                 const Duration(
                                                               milliseconds: 200,
                                                             ),
-                                                            opacity:
-                                                                currentConversation ==
-                                                                        conversation
-                                                                    ? 1
-                                                                    : 0,
+                                                            opacity: currentConversation?[
+                                                                        "email"] ==
+                                                                    conversation[
+                                                                        "email"]
+                                                                ? 1
+                                                                : 0,
                                                             child: Text(
                                                               conversation[
                                                                   "displayname"],

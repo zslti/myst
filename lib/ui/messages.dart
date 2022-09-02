@@ -19,11 +19,14 @@ int lastRequestTime = 0;
 Map displayNames = {};
 TextEditingController messageController = TextEditingController();
 ItemScrollController _scrollController = ItemScrollController();
+ItemPositionsListener _itemPositionsListener = ItemPositionsListener.create();
 double currentBarHeight = 50, currentFieldHeight = 35;
 double targetBarHeight = 50, targetFieldHeight = 35;
 double transitionProgress = 0;
 int messageCount = 0;
 bool done = false;
+//int lastConversationOpenTime = 0;
+bool built = false;
 
 void startTransition() {
   if (transitionProgress != 0 ||
@@ -114,6 +117,7 @@ class _MessagesViewState extends State<MessagesView> {
     shouldRebuild = false;
     lastRequestTime = now;
     currentMessages = await getMessages(currentConversation["email"]);
+    built = true;
     done = false;
 
     try {
@@ -130,7 +134,9 @@ class _MessagesViewState extends State<MessagesView> {
         names[email] = await getDisplayName(email);
         if (currentMessages.length > messageCount &&
             !done &&
-            currentMessages.length > 1) {
+            currentMessages.length > 1 &&
+            _itemPositionsListener.itemPositions.value
+                .any((element) => element.index <= 5)) {
           done = true;
           messageCount = currentMessages.length;
           _scrollController.jumpTo(index: 1);
@@ -176,6 +182,13 @@ class _MessagesViewState extends State<MessagesView> {
     });
 
     try {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!built) {
+          Timer(const Duration(milliseconds: 1000), () {
+            built = true;
+          });
+        }
+      });
       return Scaffold(
         backgroundColor: getColor("background2"),
         body: ScrollConfiguration(
@@ -184,22 +197,26 @@ class _MessagesViewState extends State<MessagesView> {
             children: [
               Padding(
                 padding: EdgeInsets.only(top: 25, bottom: currentBarHeight),
-                child: ScrollablePositionedList.builder(
-                    itemScrollController: _scrollController,
-                    itemCount: currentMessages.length,
-                    reverse: true,
-                    scrollDirection: Axis.vertical,
-                    itemBuilder: (context, index) {
-                      //try {
-
-                      return Padding(
-                        padding: const EdgeInsets.only(top: 6.0),
-                        child: Message(message: currentMessages[index]),
-                      );
-                      //} catch (e) {
-                      //  return Container();
-                      //}
-                    }),
+                child: AnimatedOpacity(
+                  opacity: built ? 1 : 0,
+                  duration: Duration(milliseconds: 300 * (built ? 1 : 0)),
+                  child: ScrollablePositionedList.builder(
+                      itemPositionsListener: _itemPositionsListener,
+                      itemScrollController: _scrollController,
+                      itemCount: currentMessages.length,
+                      reverse: true,
+                      scrollDirection: Axis.vertical,
+                      itemBuilder: (context, index) {
+                        try {
+                          return Padding(
+                            padding: const EdgeInsets.only(top: 6.0),
+                            child: Message(message: currentMessages[index]),
+                          );
+                        } catch (e) {
+                          return Container();
+                        }
+                      }),
+                ),
               ),
               Container(
                 width: MediaQuery.of(context).size.width,
@@ -246,12 +263,28 @@ class _MessagesViewState extends State<MessagesView> {
                         color: getColor("secondarytext"),
                       ),
                     ),
-                    Text(
-                      displayNames[currentConversation["email"]] ?? "",
-                      style: getFont("mainfont")(
-                        color: getColor("maintext"),
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
+                    AnimatedOpacity(
+                      opacity: built &&
+                              displayNames[currentConversation["email"]]
+                                  .toString()
+                                  .isNotEmpty
+                          ? 1
+                          : 0,
+                      duration: Duration(
+                          milliseconds: 300 *
+                              (built &&
+                                      displayNames[currentConversation["email"]]
+                                          .toString()
+                                          .isNotEmpty
+                                  ? 1
+                                  : 0)),
+                      child: Text(
+                        displayNames[currentConversation["email"]] ?? " ",
+                        style: getFont("mainfont")(
+                          color: getColor("maintext"),
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ),
                     Expanded(
