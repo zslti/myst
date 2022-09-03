@@ -1,7 +1,10 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:myst/data/theme.dart';
 import 'package:myst/data/userdata.dart';
 import 'package:myst/data/util.dart';
+import 'package:myst/ui/conversations.dart';
+import 'package:myst/ui/messages.dart';
 
 import '../data/translation.dart';
 import '../main.dart';
@@ -10,6 +13,7 @@ import 'mainscreen.dart';
 
 TextEditingController nameController = TextEditingController();
 List users = [];
+List addedUsers = [];
 
 class AddFriendsView extends StatefulWidget {
   const AddFriendsView({Key? key}) : super(key: key);
@@ -24,13 +28,18 @@ class _AddFriendsViewState extends State<AddFriendsView> {
     return ScrollConfiguration(
       behavior: MyBehavior(),
       child: Scaffold(
+        resizeToAvoidBottomInset: false,
         backgroundColor: getColor("background2"),
         body: Stack(
           children: [
             Padding(
               padding: const EdgeInsets.only(
-                  top: 90, left: 16, right: 16, bottom: 50),
-              child: Column(
+                top: 90,
+                left: 16,
+                right: 16,
+                bottom: 50,
+              ),
+              child: Stack(
                 children: [
                   ClipRRect(
                     borderRadius: const BorderRadius.all(
@@ -41,8 +50,13 @@ class _AddFriendsViewState extends State<AddFriendsView> {
                       alignment: Alignment.center,
                       child: TextField(
                         onChanged: (str) async {
-                          //print(await getUsersNamed(str));
                           users = await getUsersNamed(str);
+                          users.removeWhere(
+                            (element) =>
+                                element["email"] ==
+                                (FirebaseAuth.instance.currentUser?.email ??
+                                    ""),
+                          );
                           setState(() {});
                         },
                         keyboardType: TextInputType.visiblePassword,
@@ -82,14 +96,64 @@ class _AddFriendsViewState extends State<AddFriendsView> {
                       ),
                     ),
                   ),
-                  const SizedBox(
-                    height: 16,
-                  ),
-                  ListView(
-                    shrinkWrap: true,
-                    children: [
-                      for (final user in users) Text(user["username"]),
-                    ],
+                  Padding(
+                    padding: const EdgeInsets.only(top: 16.0),
+                    child: ListView(
+                      shrinkWrap: true,
+                      children: [
+                        for (final user in users)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 16.0),
+                            child: Row(
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(
+                                    50,
+                                  ),
+                                  child: Container(
+                                    width: 32,
+                                    height: 32,
+                                    color: getColor(
+                                      "button",
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(
+                                  width: 10,
+                                ),
+                                Text(
+                                  user["username"],
+                                  style: getFont("main")(
+                                    color: getColor("secondarytext"),
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Align(
+                                    alignment: Alignment.centerRight,
+                                    child: GestureDetector(
+                                      onTap: () {
+                                        user["displayname"] = user["username"];
+                                        conversations.add(user);
+                                        addedUsers.add(user);
+                                        currentConversation = user;
+                                        pushReplacement(
+                                          context,
+                                          const MainView(),
+                                        );
+                                      },
+                                      child: Icon(
+                                        Icons.messenger_outline,
+                                        color: getColor("secondarytext"),
+                                        size: 22,
+                                      ),
+                                    ),
+                                  ),
+                                )
+                              ],
+                            ),
+                          ),
+                      ],
+                    ),
                   )
                 ],
               ),

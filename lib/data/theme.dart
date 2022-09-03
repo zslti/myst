@@ -109,7 +109,7 @@ TextStyle Function({
   double? wordSpacing,
 }) getFont(String name) {
   currentTheme ??= dark;
-  int num = currentTheme!["fonts"][name];
+  int num = currentTheme!["fonts"][name] ?? 0;
 
   return GoogleFonts.poppins;
 }

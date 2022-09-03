@@ -109,12 +109,19 @@ class MessagesView extends StatefulWidget {
 
 class _MessagesViewState extends State<MessagesView> {
   Future<void> refreshMessages() async {
+    if (currentConversation == null) {
+      Timer(const Duration(milliseconds: 500), () {
+        refreshMessages();
+      });
+      return;
+    }
     int now = DateTime.now().millisecondsSinceEpoch;
     if (now - lastRequestTime < 100) {
       return;
     }
     shouldRebuild = false;
     lastRequestTime = now;
+
     currentMessages = await getMessages(currentConversation["email"]);
     built = true;
     done = false;
@@ -157,6 +164,12 @@ class _MessagesViewState extends State<MessagesView> {
     } catch (e) {
       shouldRebuild = true;
     }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    refreshMessages();
   }
 
   @override
@@ -266,7 +279,7 @@ class _MessagesViewState extends State<MessagesView> {
                     ),
                     AnimatedOpacity(
                       opacity: built &&
-                              displayNames[currentConversation["email"]]
+                              currentConversation["displayname"]
                                   .toString()
                                   .isNotEmpty
                           ? 1
@@ -274,13 +287,13 @@ class _MessagesViewState extends State<MessagesView> {
                       duration: Duration(
                           milliseconds: 300 *
                               (built &&
-                                      displayNames[currentConversation["email"]]
+                                      currentConversation["displayname"]
                                           .toString()
                                           .isNotEmpty
                                   ? 1
                                   : 0)),
                       child: Text(
-                        displayNames[currentConversation["email"]] ?? " ",
+                        currentConversation["displayname"],
                         style: getFont("mainfont")(
                           color: getColor("maintext"),
                           fontSize: 16,

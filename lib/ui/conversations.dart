@@ -62,7 +62,7 @@ class _ConversationsViewState extends State<ConversationsView> {
   @override
   void initState() {
     super.initState();
-    //getData();
+    getData();
   }
 
   @override
@@ -76,6 +76,7 @@ class _ConversationsViewState extends State<ConversationsView> {
 
     return Scaffold(
       backgroundColor: getColor("background"),
+      resizeToAvoidBottomInset: false,
       body: AnimatedOpacity(
         duration: const Duration(milliseconds: 500),
         opacity: t ? 1 : 0,
@@ -136,114 +137,120 @@ class _ConversationsViewState extends State<ConversationsView> {
                                           MediaQuery.of(context).size.height -
                                               90,
                                     ),
-                                    child: ListView(
-                                      shrinkWrap: true,
-                                      children: [
-                                        const SizedBox(
-                                          height: 10,
-                                        ),
-                                        for (final conversation
-                                            in conversations)
-                                          Builder(builder: (context) {
-                                            return AnimatedOpacity(
-                                              duration: const Duration(
-                                                milliseconds: 200,
-                                              ),
-                                              opacity: isSearching ? 0 : 1,
-                                              child: SizedBox(
-                                                height: 50 *
-                                                    (!conversation[
-                                                                "displayname"]
-                                                            .toString()
-                                                            .contains(
-                                                                searchText)
-                                                        ? 0
-                                                        : 1),
-                                                child: TextButton(
-                                                  onPressed: () {
-                                                    swipeDirection =
-                                                        RevealSide.right;
-                                                    gkey.currentState
-                                                        ?.onTranslate(
-                                                      -50 *
-                                                          MediaQuery.of(context)
-                                                              .size
-                                                              .width /
-                                                          400,
-                                                      shouldApplyTransition:
-                                                          true,
-                                                    );
-                                                    currentConversation =
-                                                        conversation;
-                                                    built = false;
-                                                    messageCount = 0;
-                                                  },
-                                                  style: const ButtonStyle(
-                                                    splashFactory:
-                                                        NoSplash.splashFactory,
-                                                  ),
-                                                  child: Row(
-                                                    children: [
-                                                      ClipRRect(
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(
-                                                          50,
-                                                        ),
-                                                        child: Container(
-                                                          width: 32,
-                                                          height: 32,
-                                                          color: getColor(
-                                                            "button",
+                                    child: Positioned(
+                                      top: 0,
+                                      child: ListView(
+                                        shrinkWrap: true,
+                                        children: [
+                                          const SizedBox(
+                                            height: 10,
+                                          ),
+                                          for (final conversation
+                                              in conversations)
+                                            Builder(builder: (context) {
+                                              return AnimatedOpacity(
+                                                duration: const Duration(
+                                                  milliseconds: 200,
+                                                ),
+                                                opacity: isSearching ? 0 : 1,
+                                                child: SizedBox(
+                                                  height: 50 *
+                                                      (!conversation[
+                                                                  "displayname"]
+                                                              .toString()
+                                                              .contains(
+                                                                  searchText)
+                                                          ? 0
+                                                          : 1),
+                                                  child: TextButton(
+                                                    onPressed: () {
+                                                      swipeDirection =
+                                                          RevealSide.right;
+                                                      gkey.currentState
+                                                          ?.onTranslate(
+                                                        -50 *
+                                                            MediaQuery.of(
+                                                                    context)
+                                                                .size
+                                                                .width /
+                                                            400,
+                                                        shouldApplyTransition:
+                                                            true,
+                                                      );
+                                                      currentConversation =
+                                                          conversation;
+                                                      built = false;
+                                                      messageCount = 0;
+                                                    },
+                                                    style: const ButtonStyle(
+                                                      splashFactory: NoSplash
+                                                          .splashFactory,
+                                                    ),
+                                                    child: Row(
+                                                      children: [
+                                                        ClipRRect(
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(
+                                                            50,
                                                           ),
-                                                        ),
-                                                      ),
-                                                      const SizedBox(
-                                                        width: 10,
-                                                      ),
-                                                      Stack(
-                                                        children: [
-                                                          Text(
-                                                            conversation[
-                                                                "displayname"],
-                                                            style: getFont(
-                                                                "mainfont")(
-                                                              color: getColor(
-                                                                "secondarytext",
-                                                              ),
+                                                          child: Container(
+                                                            width: 32,
+                                                            height: 32,
+                                                            color: getColor(
+                                                              "button",
                                                             ),
                                                           ),
-                                                          AnimatedOpacity(
-                                                            duration:
-                                                                const Duration(
-                                                              milliseconds: 200,
-                                                            ),
-                                                            opacity: currentConversation?[
-                                                                        "email"] ==
-                                                                    conversation[
-                                                                        "email"]
-                                                                ? 1
-                                                                : 0,
-                                                            child: Text(
+                                                        ),
+                                                        const SizedBox(
+                                                          width: 10,
+                                                        ),
+                                                        Stack(
+                                                          children: [
+                                                            Text(
                                                               conversation[
                                                                   "displayname"],
                                                               style: getFont(
                                                                   "mainfont")(
                                                                 color: getColor(
-                                                                  "maintext",
+                                                                  "secondarytext",
                                                                 ),
                                                               ),
                                                             ),
-                                                          )
-                                                        ],
-                                                      ),
-                                                    ],
+                                                            AnimatedOpacity(
+                                                              duration:
+                                                                  const Duration(
+                                                                milliseconds:
+                                                                    200,
+                                                              ),
+                                                              opacity: currentConversation?[
+                                                                          "email"] ==
+                                                                      conversation[
+                                                                          "email"]
+                                                                  ? 1
+                                                                  : 0,
+                                                              child: Text(
+                                                                conversation[
+                                                                    "displayname"],
+                                                                style: getFont(
+                                                                    "mainfont")(
+                                                                  color:
+                                                                      getColor(
+                                                                    "maintext",
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            )
+                                                          ],
+                                                        ),
+                                                      ],
+                                                    ),
                                                   ),
                                                 ),
-                                              ),
-                                            );
-                                          }),
-                                      ],
+                                              );
+                                            }),
+                                        ],
+                                      ),
                                     ),
                                   );
                                 } catch (e) {
