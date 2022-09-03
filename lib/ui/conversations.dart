@@ -137,79 +137,80 @@ class _ConversationsViewState extends State<ConversationsView> {
                                           MediaQuery.of(context).size.height -
                                               90,
                                     ),
-                                    child: Positioned(
-                                      top: 0,
-                                      child: ListView(
-                                        shrinkWrap: true,
-                                        children: [
-                                          const SizedBox(
-                                            height: 10,
-                                          ),
-                                          for (final conversation
-                                              in conversations)
-                                            Builder(builder: (context) {
-                                              return AnimatedOpacity(
-                                                duration: const Duration(
-                                                  milliseconds: 200,
-                                                ),
-                                                opacity: isSearching ? 0 : 1,
-                                                child: SizedBox(
-                                                  height: 50 *
-                                                      (!conversation[
-                                                                  "displayname"]
-                                                              .toString()
-                                                              .contains(
-                                                                  searchText)
-                                                          ? 0
-                                                          : 1),
-                                                  child: TextButton(
-                                                    onPressed: () {
-                                                      swipeDirection =
-                                                          RevealSide.right;
-                                                      gkey.currentState
-                                                          ?.onTranslate(
-                                                        -50 *
-                                                            MediaQuery.of(
-                                                                    context)
-                                                                .size
-                                                                .width /
-                                                            400,
-                                                        shouldApplyTransition:
-                                                            true,
-                                                      );
-                                                      currentConversation =
-                                                          conversation;
-                                                      built = false;
-                                                      messageCount = 0;
-                                                    },
-                                                    style: const ButtonStyle(
-                                                      splashFactory: NoSplash
-                                                          .splashFactory,
-                                                    ),
-                                                    child: Row(
-                                                      children: [
-                                                        ClipRRect(
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(
-                                                            50,
-                                                          ),
-                                                          child: Container(
-                                                            width: 32,
-                                                            height: 32,
-                                                            color: getColor(
-                                                              "button",
-                                                            ),
+                                    child: ListView(
+                                      shrinkWrap: true,
+                                      children: [
+                                        const SizedBox(
+                                          height: 10,
+                                        ),
+                                        for (final conversation
+                                            in conversations)
+                                          Builder(builder: (context) {
+                                            return AnimatedOpacity(
+                                              duration: const Duration(
+                                                milliseconds: 200,
+                                              ),
+                                              opacity: isSearching ? 0 : 1,
+                                              child: SizedBox(
+                                                height: 50 *
+                                                    (!conversation[
+                                                                "displayname"]
+                                                            .toString()
+                                                            .contains(
+                                                                searchText)
+                                                        ? 0
+                                                        : 1),
+                                                child: TextButton(
+                                                  onPressed: () {
+                                                    swipeDirection =
+                                                        RevealSide.right;
+                                                    gkey.currentState
+                                                        ?.onTranslate(
+                                                      -50 *
+                                                          MediaQuery.of(context)
+                                                              .size
+                                                              .width /
+                                                          400,
+                                                      shouldApplyTransition:
+                                                          true,
+                                                    );
+                                                    currentConversation =
+                                                        conversation;
+                                                    built = false;
+                                                    messageCount = 0;
+                                                  },
+                                                  style: const ButtonStyle(
+                                                    splashFactory:
+                                                        NoSplash.splashFactory,
+                                                  ),
+                                                  child: Row(
+                                                    children: [
+                                                      ClipRRect(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(
+                                                          50,
+                                                        ),
+                                                        child: Container(
+                                                          width: 32,
+                                                          height: 32,
+                                                          color: getColor(
+                                                            "button",
                                                           ),
                                                         ),
-                                                        const SizedBox(
-                                                          width: 10,
-                                                        ),
-                                                        Stack(
+                                                      ),
+                                                      const SizedBox(
+                                                        width: 10,
+                                                      ),
+                                                      Expanded(
+                                                        child: Stack(
                                                           children: [
                                                             Text(
                                                               conversation[
                                                                   "displayname"],
+                                                              overflow:
+                                                                  TextOverflow
+                                                                      .ellipsis,
                                                               style: getFont(
                                                                   "mainfont")(
                                                                 color: getColor(
@@ -232,6 +233,9 @@ class _ConversationsViewState extends State<ConversationsView> {
                                                               child: Text(
                                                                 conversation[
                                                                     "displayname"],
+                                                                overflow:
+                                                                    TextOverflow
+                                                                        .ellipsis,
                                                                 style: getFont(
                                                                     "mainfont")(
                                                                   color:
@@ -243,14 +247,14 @@ class _ConversationsViewState extends State<ConversationsView> {
                                                             )
                                                           ],
                                                         ),
-                                                      ],
-                                                    ),
+                                                      ),
+                                                    ],
                                                   ),
                                                 ),
-                                              );
-                                            }),
-                                        ],
-                                      ),
+                                              ),
+                                            );
+                                          }),
+                                      ],
                                     ),
                                   );
                                 } catch (e) {

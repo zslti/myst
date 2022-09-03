@@ -43,6 +43,8 @@ Map translation = {
     "friends": "Friends",
     "addfriend": "Add friends",
     "findfriend": "Your friend's name",
+    "incomingrequests": "Incoming friend requests",
+    "outgoingrequests": "Outgoing friend requests",
   },
   "hu": {
     "countrycode": "hu",
@@ -89,5 +91,7 @@ Map translation = {
     "friends": "Barátok",
     "addfriend": "Barát hozzáadása",
     "findfriend": "A barátod neve",
+    "incomingrequests": "Bejövő barátkérelmek",
+    "outgoingrequests": "Kimenő barátkérelmek",
   }
 };

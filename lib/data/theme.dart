@@ -23,6 +23,9 @@ Map dark = {
     "background2": [23, 27, 31],
     "background3": [21, 25, 29],
     "button2": [40, 46, 56],
+    "notification": [212, 55, 55],
+    "positive": [0, 140, 51],
+    "negative": [140, 23, 0],
   },
   "fonts": {
     "mainfont": 0,
@@ -48,6 +51,9 @@ Map light = {
     "background2": [200, 200, 200],
     "background3": [210, 210, 210],
     "button2": [166, 171, 179],
+    "notification": [212, 55, 55],
+    "positive": [0, 140, 51],
+    "negative": [140, 23, 0],
   },
   "fonts": {
     "mainfont": 0,

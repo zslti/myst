@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:myst/data/theme.dart';
@@ -13,7 +15,7 @@ import 'mainscreen.dart';
 
 TextEditingController nameController = TextEditingController();
 List users = [];
-List addedUsers = [];
+//List addedUsers = [];
 
 class AddFriendsView extends StatefulWidget {
   const AddFriendsView({Key? key}) : super(key: key);
@@ -121,21 +123,46 @@ class _AddFriendsViewState extends State<AddFriendsView> {
                                 const SizedBox(
                                   width: 10,
                                 ),
-                                Text(
-                                  user["username"],
-                                  style: getFont("main")(
-                                    color: getColor("secondarytext"),
+                                Expanded(
+                                  child: Text(
+                                    user["username"],
+                                    overflow: TextOverflow.ellipsis,
+                                    style: getFont("main")(
+                                      color: getColor("secondarytext"),
+                                    ),
                                   ),
                                 ),
-                                Expanded(
-                                  child: Align(
-                                    alignment: Alignment.centerRight,
-                                    child: GestureDetector(
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    GestureDetector(
+                                      onTap: () {
+                                        sendFriendRequest(user["email"]);
+                                      },
+                                      child: Padding(
+                                        padding: const EdgeInsets.only(
+                                          left: 8,
+                                          right: 8,
+                                        ),
+                                        child: Icon(
+                                          Icons.person_add_alt_1_outlined,
+                                          color: getColor("secondarytext"),
+                                          size: 25,
+                                        ),
+                                      ),
+                                    ),
+                                    GestureDetector(
                                       onTap: () {
                                         user["displayname"] = user["username"];
                                         conversations.add(user);
-                                        addedUsers.add(user);
                                         currentConversation = user;
+                                        Timer(
+                                          const Duration(milliseconds: 500),
+                                          () {
+                                            slideToCenter();
+                                          },
+                                        );
+                                        selectedIndex = 0;
                                         pushReplacement(
                                           context,
                                           const MainView(),
@@ -147,7 +174,7 @@ class _AddFriendsViewState extends State<AddFriendsView> {
                                         size: 22,
                                       ),
                                     ),
-                                  ),
+                                  ],
                                 )
                               ],
                             ),

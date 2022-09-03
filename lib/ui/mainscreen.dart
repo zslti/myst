@@ -16,6 +16,14 @@ RevealSide actualSide = RevealSide.left;
 bool shouldRebuild = true;
 int selectedIndex = 0;
 
+void slideToCenter() {
+  swipeDirection = RevealSide.right;
+  gkey.currentState?.onTranslate(
+    -80,
+    shouldApplyTransition: true,
+  );
+}
+
 class MainView extends StatefulWidget {
   const MainView({Key? key}) : super(key: key);
 

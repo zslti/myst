@@ -36,12 +36,21 @@ class MyApp extends StatelessWidget {
     prefs?.setString("theme", ""); //TODO: remove line when everything is done
     //TODO: add friends
     //TODO: friends screen
+    //TODO: finish themes screen
     //TODO: encrypt messages
+    //TODO: transition send message button bottom right
     //TODO: when sending more messages in a row dont need to show name and picture again
     //TODO: time of messages
     //TODO: separators between dates of messages
-    //TODO: change push animation
+    //TODO: show if a message is read
+    //TODO: show how many unread messages you have
     //TODO: add friends with nfc or bt or qr code
+    //TODO: notifications
+    //TODO: status indicator
+    //TODO: on friends screen categorize online and offline friends
+    //TODO: avatars
+
+    //TODO: change push animation
     final themeData = prefs?.getString("theme") ?? "";
 
     currentTheme = dark;

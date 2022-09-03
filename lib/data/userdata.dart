@@ -80,3 +80,30 @@ Future<List> getUsersNamed(String name) async {
 
   return data;
 }
+
+Future<void> sendFriendRequest(String to) async {
+  CollectionReference friendRequests =
+      FirebaseFirestore.instance.collection('friendrequests');
+  await friendRequests.add({
+    'sender': FirebaseAuth.instance.currentUser?.email,
+    'receiver': to,
+  });
+}
+
+Future<List> getFriendRequests() async {
+  QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+      .collection('friendrequests')
+      .where("receiver", isEqualTo: FirebaseAuth.instance.currentUser?.email)
+      .get();
+  //print(querySnapshot.docs.map((doc) => doc.data()).toList());
+  return querySnapshot.docs.map((doc) => doc.data()).toList();
+}
+
+Future<List> getSentFriendRequests() async {
+  QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+      .collection('friendrequests')
+      .where("sender", isEqualTo: FirebaseAuth.instance.currentUser?.email)
+      .get();
+
+  return querySnapshot.docs.map((doc) => doc.data()).toList();
+}

@@ -277,50 +277,51 @@ class _MessagesViewState extends State<MessagesView> {
                         color: getColor("secondarytext"),
                       ),
                     ),
-                    AnimatedOpacity(
-                      opacity: built &&
-                              currentConversation["displayname"]
-                                  .toString()
-                                  .isNotEmpty
-                          ? 1
-                          : 0,
-                      duration: Duration(
-                          milliseconds: 300 *
-                              (built &&
-                                      currentConversation["displayname"]
-                                          .toString()
-                                          .isNotEmpty
-                                  ? 1
-                                  : 0)),
-                      child: Text(
-                        currentConversation["displayname"],
-                        style: getFont("mainfont")(
-                          color: getColor("maintext"),
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
+                    Expanded(
+                      child: AnimatedOpacity(
+                        opacity: built &&
+                                currentConversation["displayname"]
+                                    .toString()
+                                    .isNotEmpty
+                            ? 1
+                            : 0,
+                        duration: Duration(
+                            milliseconds: 300 *
+                                (built &&
+                                        currentConversation["displayname"]
+                                            .toString()
+                                            .isNotEmpty
+                                    ? 1
+                                    : 0)),
+                        child: Text(
+                          currentConversation["displayname"],
+                          overflow: TextOverflow.ellipsis,
+                          style: getFont("mainfont")(
+                            color: getColor("maintext"),
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ),
                     ),
-                    Expanded(
-                      child: Align(
-                        alignment: Alignment.centerRight,
-                        child: GestureDetector(
-                          onTap: () {
-                            if (actualSide != RevealSide.main) {
-                              return;
-                            }
-                            swipeDirection = RevealSide.right;
-                            gkey.currentState?.onTranslate(
-                              -50 * MediaQuery.of(context).size.width / 400,
-                              shouldApplyTransition: true,
-                            );
-                          },
-                          child: Image.asset(
-                            "assets/more.png",
-                            width: 35,
-                            height: 35,
-                            color: getColor("secondarytext"),
-                          ),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: GestureDetector(
+                        onTap: () {
+                          if (actualSide != RevealSide.main) {
+                            return;
+                          }
+                          swipeDirection = RevealSide.right;
+                          gkey.currentState?.onTranslate(
+                            -50 * MediaQuery.of(context).size.width / 400,
+                            shouldApplyTransition: true,
+                          );
+                        },
+                        child: Image.asset(
+                          "assets/more.png",
+                          width: 35,
+                          height: 35,
+                          color: getColor("secondarytext"),
                         ),
                       ),
                     ),
