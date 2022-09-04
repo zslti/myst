@@ -107,3 +107,47 @@ Future<List> getSentFriendRequests() async {
 
   return querySnapshot.docs.map((doc) => doc.data()).toList();
 }
+
+Future<void> acceptFriendRequest(Map request) async {
+  QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+      .collection('friendrequests')
+      .where("sender", isEqualTo: request['sender'])
+      .where("receiver", isEqualTo: request['receiver'])
+      .get();
+  for (var doc in querySnapshot.docs) {
+    doc.reference.delete();
+  }
+
+  QuerySnapshot querySnapshot2 = await FirebaseFirestore.instance
+      .collection('friends')
+      .where("user", isEqualTo: FirebaseAuth.instance.currentUser?.email)
+      .get();
+  List friends = querySnapshot2.docs.map((doc) => doc.data()).toList();
+
+  if (friends.isEmpty) {
+    CollectionReference friends =
+        FirebaseFirestore.instance.collection('friends');
+    await friends.add({
+      'user': FirebaseAuth.instance.currentUser?.email,
+      'friends': [request['sender']],
+    });
+  } else {
+    friends[0]['friends'].add(request['sender']);
+    QuerySnapshot querySnapshot3 = await FirebaseFirestore.instance
+        .collection('friends')
+        .where("user", isEqualTo: FirebaseAuth.instance.currentUser?.email)
+        .get();
+    querySnapshot3.docs[0].reference.update(friends[0]);
+  }
+}
+
+Future<void> rejectFriendRequest(Map request) async {
+  QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+      .collection('friendrequests')
+      .where("sender", isEqualTo: request['sender'])
+      .where("receiver", isEqualTo: request['receiver'])
+      .get();
+  for (var doc in querySnapshot.docs) {
+    doc.reference.delete();
+  }
+}

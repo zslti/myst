@@ -14,6 +14,7 @@ import 'mainscreen.dart';
 
 List outgoingRequests = [];
 List incomingRequests = [];
+Map displayNames = {};
 
 class FriendsView extends StatefulWidget {
   const FriendsView({Key? key}) : super(key: key);
@@ -49,13 +50,20 @@ class _FriendsViewState extends State<FriendsView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                FriendRequestsButton(
+                FriendRequestButton(
                   text: translation[currentLanguage]["incomingrequests"],
                   requests: incomingRequests,
+                  options: const [
+                    FriendRequestOption.accept,
+                    FriendRequestOption.decline
+                  ],
                 ),
-                FriendRequestsButton(
+                FriendRequestButton(
                   text: translation[currentLanguage]["outgoingrequests"],
                   requests: outgoingRequests,
+                  options: const [
+                    FriendRequestOption.cancel,
+                  ],
                 ),
                 Padding(
                   padding: const EdgeInsets.all(8.0),
@@ -195,20 +203,22 @@ class _FriendsViewState extends State<FriendsView> {
   }
 }
 
-class FriendRequestsButton extends StatefulWidget {
-  const FriendRequestsButton({
+class FriendRequestButton extends StatefulWidget {
+  const FriendRequestButton({
     Key? key,
     required this.text,
     required this.requests,
+    required this.options,
   }) : super(key: key);
   final String text;
   final List requests;
+  final List<FriendRequestOption> options;
 
   @override
-  State<FriendRequestsButton> createState() => _FriendRequestsButtonState();
+  State<FriendRequestButton> createState() => _FriendRequestButtonState();
 }
 
-class _FriendRequestsButtonState extends State<FriendRequestsButton> {
+class _FriendRequestButtonState extends State<FriendRequestButton> {
   @override
   Widget build(BuildContext context) {
     return ClipRRect(
@@ -217,7 +227,10 @@ class _FriendRequestsButtonState extends State<FriendRequestsButton> {
         onPressed: () {
           push(
             context,
-            FriendRequestsView(text: widget.text, requests: widget.requests),
+            FriendRequestsView(
+                text: widget.text,
+                requests: widget.requests,
+                options: widget.options),
           );
         },
         style: TextButton.styleFrom(
@@ -270,12 +283,17 @@ class _FriendRequestsButtonState extends State<FriendRequestsButton> {
   }
 }
 
+// ignore: must_be_immutable
 class FriendRequestsView extends StatefulWidget {
-  const FriendRequestsView(
-      {Key? key, required this.text, required this.requests})
+  FriendRequestsView(
+      {Key? key,
+      required this.text,
+      required this.requests,
+      required this.options})
       : super(key: key);
   final String text;
-  final List requests;
+  List requests;
+  final List<FriendRequestOption> options;
 
   @override
   State<FriendRequestsView> createState() => _FriendRequestsViewState();
@@ -284,6 +302,15 @@ class FriendRequestsView extends StatefulWidget {
 class _FriendRequestsViewState extends State<FriendRequestsView> {
   @override
   Widget build(BuildContext context) {
+    Timer(const Duration(milliseconds: 100), () {
+      widget.requests =
+          widget.text == translation[currentLanguage]["incomingrequests"]
+              ? incomingRequests
+              : outgoingRequests;
+      //WidgetsBinding.instance.addPostFrameCallback((_) {
+      setState(() {});
+      //});
+    });
     return Scaffold(
       backgroundColor: getColor("background2"),
       body: ScrollConfiguration(
@@ -291,7 +318,7 @@ class _FriendRequestsViewState extends State<FriendRequestsView> {
         child: Stack(
           children: [
             Padding(
-              padding: const EdgeInsets.only(left: 12, right: 12, top: 80),
+              padding: const EdgeInsets.only(left: 12, right: 12, top: 55),
               child: ListView(
                 children: [
                   for (final request in widget.requests)
@@ -299,6 +326,7 @@ class _FriendRequestsViewState extends State<FriendRequestsView> {
                       padding: const EdgeInsets.only(bottom: 12),
                       child: FriendRequest(
                         request: request,
+                        options: widget.options,
                       ),
                     ),
                 ],
@@ -432,9 +460,13 @@ class _FriendRequestsViewState extends State<FriendRequestsView> {
   }
 }
 
+enum FriendRequestOption { accept, decline, cancel }
+
 class FriendRequest extends StatefulWidget {
-  const FriendRequest({Key? key, required this.request}) : super(key: key);
+  const FriendRequest({Key? key, required this.request, required this.options})
+      : super(key: key);
   final Map request;
+  final List<FriendRequestOption> options;
 
   @override
   State<FriendRequest> createState() => _FriendRequestState();
@@ -445,54 +477,92 @@ class _FriendRequestState extends State<FriendRequest> {
     List users = [widget.request["sender"], widget.request["receiver"]];
     users.removeWhere(
         (element) => element == FirebaseAuth.instance.currentUser?.email);
-    return await getDisplayName(users[0]);
+    String name = await getDisplayName(users[0]);
+    displayNames[users[0]] = name;
+    if (mounted) {
+      setState(() {});
+    }
+    return name;
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: getRequestDisplayName(),
-      builder: (context, snapshot) {
-        switch (snapshot.connectionState) {
-          case ConnectionState.done:
-            return Row(
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(
-                    50,
+    getRequestDisplayName();
+    return Row(
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(
+            50,
+          ),
+          child: Container(
+            width: 32,
+            height: 32,
+            color: getColor(
+              "button",
+            ),
+          ),
+        ),
+        const SizedBox(
+          width: 10,
+        ),
+        Expanded(
+          child: Stack(
+            children: [
+              Text(
+                widget.options.contains(FriendRequestOption.accept)
+                    ? displayNames[widget.request["sender"]] ?? ""
+                    : displayNames[widget.request["receiver"]] ?? "",
+                overflow: TextOverflow.ellipsis,
+                style: getFont("mainfont")(
+                  color: getColor(
+                    "secondarytext",
                   ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        Row(
+          children: [
+            for (final option in widget.options)
+              Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child: GestureDetector(
+                  onTap: () async {
+                    if (option == FriendRequestOption.accept) {
+                      await acceptFriendRequest(widget.request);
+                      incomingRequests.remove(widget.request);
+                      setState(() {});
+                    } else {
+                      await rejectFriendRequest(widget.request);
+                      incomingRequests.remove(widget.request);
+                      setState(() {});
+                    }
+                  },
                   child: Container(
                     width: 32,
                     height: 32,
-                    color: getColor(
-                      "button",
+                    decoration: BoxDecoration(
+                      color: getColor("button"),
+                      borderRadius: BorderRadius.circular(50),
+                    ),
+                    child: Center(
+                      child: Icon(
+                        option == FriendRequestOption.accept
+                            ? Icons.check
+                            : option == FriendRequestOption.decline
+                                ? Icons.close
+                                : Icons.cancel,
+                        color: getColor("background"),
+                        size: 20,
+                      ),
                     ),
                   ),
                 ),
-                const SizedBox(
-                  width: 10,
-                ),
-                Expanded(
-                  child: Stack(
-                    children: [
-                      Text(
-                        snapshot.data.toString(),
-                        overflow: TextOverflow.ellipsis,
-                        style: getFont("mainfont")(
-                          color: getColor(
-                            "secondarytext",
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            );
-          default:
-            return Container();
-        }
-      },
+              ),
+          ],
+        )
+      ],
     );
   }
 }
