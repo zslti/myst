@@ -95,7 +95,6 @@ Future<List> getFriendRequests() async {
       .collection('friendrequests')
       .where("receiver", isEqualTo: FirebaseAuth.instance.currentUser?.email)
       .get();
-  //print(querySnapshot.docs.map((doc) => doc.data()).toList());
   return querySnapshot.docs.map((doc) => doc.data()).toList();
 }
 
@@ -149,5 +148,18 @@ Future<void> rejectFriendRequest(Map request) async {
       .get();
   for (var doc in querySnapshot.docs) {
     doc.reference.delete();
+  }
+}
+
+Future<List> getFriends(String email) async {
+  QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+      .collection('friends')
+      .where("user", isEqualTo: email)
+      .get();
+  List friends = querySnapshot.docs.map((doc) => doc.data()).toList();
+  if (friends.isEmpty) {
+    return [];
+  } else {
+    return friends[0]['friends'];
   }
 }

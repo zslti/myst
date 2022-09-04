@@ -11,10 +11,12 @@ import '../main.dart';
 import 'addfriends.dart';
 import 'loading.dart';
 import 'mainscreen.dart';
+import 'messages.dart';
 
 List outgoingRequests = [];
 List incomingRequests = [];
 Map displayNames = {};
+List friends = [];
 
 class FriendsView extends StatefulWidget {
   const FriendsView({Key? key}) : super(key: key);
@@ -27,6 +29,12 @@ class _FriendsViewState extends State<FriendsView> {
   void getData() async {
     incomingRequests = await getFriendRequests();
     outgoingRequests = await getSentFriendRequests();
+
+    List f = await getFriends(FirebaseAuth.instance.currentUser?.email ?? "");
+    friends = f.toSet().toList();
+    for (final friend in friends) {
+      displayNames[friend] = await getDisplayName(friend);
+    }
   }
 
   @override
@@ -46,7 +54,12 @@ class _FriendsViewState extends State<FriendsView> {
       body: Stack(
         children: [
           Padding(
-            padding: const EdgeInsets.only(left: 12, right: 12, top: 80),
+            padding: const EdgeInsets.only(
+              left: 12,
+              right: 12,
+              top: 80,
+              bottom: 50,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -68,13 +81,100 @@ class _FriendsViewState extends State<FriendsView> {
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Text(
-                    translation[currentLanguage]["friends"],
+                    '${translation[currentLanguage]["friends"]} - ${friends.length}',
                     style: getFont("mainfont")(
                       color: getColor("secondarytext"),
                       fontWeight: FontWeight.w500,
                     ),
                   ),
                 ),
+                ScrollConfiguration(
+                  behavior: MyBehavior(),
+                  child: SizedBox(
+                    height: MediaQuery.of(context).size.height - 263,
+                    child: MediaQuery.removePadding(
+                      context: context,
+                      removeTop: true,
+                      child: ShaderMask(
+                        shaderCallback: (Rect rect) {
+                          return LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.black.withAlpha(220),
+                              Colors.transparent,
+                              Colors.transparent,
+                              Colors.black.withAlpha(220),
+                            ],
+                            stops: const [
+                              0.0,
+                              0.06,
+                              0.875,
+                              1.0
+                            ], // 10% purple, 80% transparent, 10% purple
+                          ).createShader(rect);
+                        },
+                        blendMode: BlendMode.dstOut,
+                        child: ListView(
+                          shrinkWrap: true,
+                          children: [
+                            for (final friend in friends)
+                              TextButton(
+                                onPressed: () {
+                                  currentConversation = {
+                                    "email": friend,
+                                    "displayname": displayNames[friend]
+                                  };
+                                  Timer(
+                                    const Duration(milliseconds: 500),
+                                    () {
+                                      slideToCenter();
+                                    },
+                                  );
+                                  selectedIndex = 0;
+                                  pushReplacement(
+                                    context,
+                                    const MainView(),
+                                  );
+                                },
+                                style: const ButtonStyle(
+                                  splashFactory: NoSplash.splashFactory,
+                                ),
+                                child: Row(
+                                  children: [
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(
+                                        50,
+                                      ),
+                                      child: Container(
+                                        width: 32,
+                                        height: 32,
+                                        color: getColor(
+                                          "button",
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(
+                                      width: 10,
+                                    ),
+                                    Expanded(
+                                      child: Text(
+                                        displayNames[friend] ?? "",
+                                        overflow: TextOverflow.ellipsis,
+                                        style: getFont("mainfont")(
+                                          color: getColor("secondarytext"),
+                                        ),
+                                      ),
+                                    )
+                                  ],
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                )
               ],
             ),
           ),
@@ -526,7 +626,7 @@ class _FriendRequestState extends State<FriendRequest> {
           children: [
             for (final option in widget.options)
               Padding(
-                padding: const EdgeInsets.only(left: 8.0),
+                padding: const EdgeInsets.only(left: 12.0),
                 child: GestureDetector(
                   onTap: () async {
                     if (option == FriendRequestOption.accept) {
@@ -543,17 +643,31 @@ class _FriendRequestState extends State<FriendRequest> {
                     width: 32,
                     height: 32,
                     decoration: BoxDecoration(
-                      color: getColor("button"),
+                      color: getColor("background"),
                       borderRadius: BorderRadius.circular(50),
+                      boxShadow: [
+                        BoxShadow(
+                          color: (option == FriendRequestOption.accept
+                                  ? getColor("positive")
+                                  : getColor("negative"))
+                              .withOpacity(0.7),
+                          spreadRadius: 1,
+                          blurRadius: 5,
+                          offset: const Offset(
+                            0,
+                            0,
+                          ),
+                        ),
+                      ],
                     ),
                     child: Center(
                       child: Icon(
                         option == FriendRequestOption.accept
                             ? Icons.check
-                            : option == FriendRequestOption.decline
-                                ? Icons.close
-                                : Icons.cancel,
-                        color: getColor("background"),
+                            : Icons.close,
+                        color: option == FriendRequestOption.accept
+                            ? getColor("positive")
+                            : getColor("negative"),
                         size: 20,
                       ),
                     ),

@@ -34,8 +34,6 @@ class MyApp extends StatelessWidget {
 
   Future<bool> initializeApp() async {
     prefs?.setString("theme", ""); //TODO: remove line when everything is done
-    //TODO: redesign accept and decline buttons for friend requests
-    //TODO: friends screen
     //TODO: finish themes screen
     //TODO: encrypt messages
     //TODO: transition send message button bottom right

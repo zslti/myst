@@ -15,7 +15,7 @@ import 'mainscreen.dart';
 
 TextEditingController nameController = TextEditingController();
 List users = [];
-//List addedUsers = [];
+List friends = [];
 
 class AddFriendsView extends StatefulWidget {
   const AddFriendsView({Key? key}) : super(key: key);
@@ -25,6 +25,17 @@ class AddFriendsView extends StatefulWidget {
 }
 
 class _AddFriendsViewState extends State<AddFriendsView> {
+  Future<void> getData() async {
+    List f = await getFriends(
+      FirebaseAuth.instance.currentUser?.email ?? "",
+    );
+    List requests = await getSentFriendRequests();
+    for (final request in requests) {
+      f.add(request["receiver"]);
+    }
+    friends = f.toSet().toList();
+  }
+
   @override
   Widget build(BuildContext context) {
     return ScrollConfiguration(
@@ -98,90 +109,114 @@ class _AddFriendsViewState extends State<AddFriendsView> {
                       ),
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 16.0),
-                    child: ListView(
-                      shrinkWrap: true,
-                      children: [
-                        for (final user in users)
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 16.0),
-                            child: Row(
-                              children: [
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(
-                                    50,
-                                  ),
-                                  child: Container(
-                                    width: 32,
-                                    height: 32,
-                                    color: getColor(
-                                      "button",
+                  Builder(builder: (context) {
+                    Timer(const Duration(milliseconds: 500), () {
+                      getData();
+                      setState(() {});
+                    });
+                    //print(friends);
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 16.0),
+                      child: ListView(
+                        shrinkWrap: true,
+                        children: [
+                          for (final user in users)
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 16.0),
+                              child: Row(
+                                children: [
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(
+                                      50,
                                     ),
-                                  ),
-                                ),
-                                const SizedBox(
-                                  width: 10,
-                                ),
-                                Expanded(
-                                  child: Text(
-                                    user["username"],
-                                    overflow: TextOverflow.ellipsis,
-                                    style: getFont("main")(
-                                      color: getColor("secondarytext"),
-                                    ),
-                                  ),
-                                ),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  children: [
-                                    GestureDetector(
-                                      onTap: () {
-                                        sendFriendRequest(user["email"]);
-                                      },
-                                      child: Padding(
-                                        padding: const EdgeInsets.only(
-                                          left: 8,
-                                          right: 8,
-                                        ),
-                                        child: Icon(
-                                          Icons.person_add_alt_1_outlined,
-                                          color: getColor("secondarytext"),
-                                          size: 25,
-                                        ),
+                                    child: Container(
+                                      width: 32,
+                                      height: 32,
+                                      color: getColor(
+                                        "button",
                                       ),
                                     ),
-                                    GestureDetector(
-                                      onTap: () {
-                                        user["displayname"] = user["username"];
-                                        conversations.add(user);
-                                        currentConversation = user;
-                                        Timer(
-                                          const Duration(milliseconds: 500),
-                                          () {
-                                            slideToCenter();
-                                          },
-                                        );
-                                        selectedIndex = 0;
-                                        pushReplacement(
-                                          context,
-                                          const MainView(),
-                                        );
-                                      },
-                                      child: Icon(
-                                        Icons.messenger_outline,
+                                  ),
+                                  const SizedBox(
+                                    width: 10,
+                                  ),
+                                  Expanded(
+                                    child: Text(
+                                      user["username"],
+                                      overflow: TextOverflow.ellipsis,
+                                      style: getFont("main")(
                                         color: getColor("secondarytext"),
-                                        size: 22,
                                       ),
                                     ),
-                                  ],
-                                )
-                              ],
+                                  ),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      GestureDetector(
+                                        onTap: () {
+                                          if (!friends.contains(
+                                            user["email"],
+                                          )) {
+                                            sendFriendRequest(user["email"]);
+                                          }
+                                        },
+                                        child: Padding(
+                                          padding: const EdgeInsets.only(
+                                            left: 8,
+                                            right: 8,
+                                          ),
+                                          child: friends.contains(user["email"])
+                                              ? Image.asset(
+                                                  "assets/friendadded.png",
+                                                  width: 20,
+                                                  height: 20,
+                                                  color: getColor(
+                                                    "secondarytext",
+                                                  ),
+                                                )
+                                              : Icon(
+                                                  Icons
+                                                      .person_add_alt_1_outlined,
+                                                  color: getColor(
+                                                    "secondarytext",
+                                                  ),
+                                                  size: 25,
+                                                ),
+                                        ),
+                                      ),
+                                      GestureDetector(
+                                        onTap: () {
+                                          user["displayname"] =
+                                              user["username"];
+                                          conversations.add(user);
+                                          currentConversation = user;
+                                          Timer(
+                                            const Duration(milliseconds: 500),
+                                            () {
+                                              slideToCenter();
+                                            },
+                                          );
+                                          selectedIndex = 0;
+                                          pushReplacement(
+                                            context,
+                                            const MainView(),
+                                          );
+                                        },
+                                        child: Icon(
+                                          Icons.messenger_outline,
+                                          color: getColor("secondarytext"),
+                                          size: 22,
+                                        ),
+                                      ),
+                                    ],
+                                  )
+                                ],
+                              ),
                             ),
-                          ),
-                      ],
-                    ),
-                  )
+                        ],
+                      ),
+                    );
+                  })
                 ],
               ),
             ),
