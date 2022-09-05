@@ -1,9 +1,12 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:encrypt/encrypt.dart' as encrypt;
 import 'package:flutter/material.dart';
 
+import '../main.dart';
 import '../ui/mainscreen.dart';
+import 'translation.dart';
 
 List<double> interpolateBetween(
     int r1, int g1, int b1, int r2, int g2, int b2, double progress) {
@@ -308,5 +311,83 @@ extension StringExtension on String {
     final countLines = (textPainter.size.width / textWidth).ceil();
     final height = countLines * textPainter.size.height;
     return height;
+  }
+}
+
+final key = encrypt.Key.fromBase64('yE9tgqNxWcYDTSPNM+EGQw==');
+final iv = encrypt.IV.fromBase64('8PzGKSMLuqSm0MVbviaWHA==');
+
+String encryptText(String text) {
+  return encrypt.Encrypter(encrypt.AES(key)).encrypt(text, iv: iv).base64;
+}
+
+String decryptText(String text) {
+  return encrypt.Encrypter(encrypt.AES(key)).decrypt64(text, iv: iv);
+}
+
+String hourMinuteFormat(int hour, int minute) {
+  if (currentLanguage == "en") {
+    String suffix = "AM";
+    if (hour >= 12) {
+      suffix = "PM";
+      hour -= 12;
+    }
+    String minuteString = minute.toString();
+    if (minuteString.length == 1) {
+      minuteString = "0$minuteString";
+    }
+
+    return "$hour:$minuteString $suffix";
+  } else {
+    String minuteString = minute.toString();
+    if (minuteString.length == 1) {
+      minuteString = "0$minuteString";
+    }
+    String hourString = hour.toString();
+    if (hourString.length == 1) {
+      hourString = "0$hourString";
+    }
+    return "$hourString:$minuteString";
+  }
+}
+
+String timestampToDate(int timestamp) {
+  DateTime date = DateTime.fromMillisecondsSinceEpoch(timestamp);
+  DateTime now = DateTime.now();
+  if (date.day == now.day && date.month == now.month && date.year == now.year) {
+    return "${translation[currentLanguage]['todayat']} ${hourMinuteFormat(date.hour, date.minute)}${translation[currentLanguage]['todayat2']}";
+  }
+  if (date.day == now.day - 1 &&
+      date.month == now.month &&
+      date.year == now.year) {
+    return "${translation[currentLanguage]['yesterdayat']} ${hourMinuteFormat(date.hour, date.minute)}${translation[currentLanguage]['yesterdayat2']}";
+  }
+  String daySuffix = "";
+  if (currentLanguage == "en") {
+    if (date.day == 1 || date.day == 21 || date.day == 31) {
+      daySuffix = "st";
+    } else if (date.day == 2 || date.day == 22) {
+      daySuffix = "nd";
+    } else if (date.day == 3 || date.day == 23) {
+      daySuffix = "rd";
+    } else {
+      daySuffix = "th";
+    }
+  } else {
+    daySuffix = ".";
+  }
+  String theDate =
+      "${translation[currentLanguage]['monthprefix${date.month}']}${date.day}$daySuffix ${translation[currentLanguage]['monthsuffix${date.month}']}";
+  if (date.year == now.year) {
+    if (currentLanguage == "en") {
+      return "${hourMinuteFormat(date.hour, date.minute)}, $theDate";
+    } else {
+      return "$theDate${hourMinuteFormat(date.hour, date.minute)}";
+    }
+  }
+  if (currentLanguage == "en") {
+    return "${hourMinuteFormat(date.hour, date.minute)}, $theDate, ${date.year}";
+  } else {
+    return "${date.year} $theDate${hourMinuteFormat(date.hour, date.minute)}";
   }
 }

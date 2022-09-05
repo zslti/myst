@@ -78,11 +78,37 @@ class _MessageState extends State<Message> {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              displayNames[widget.message['sender']] ?? "",
-              style: getFont("mainfont")(
-                color: getColor("secondarytext"),
-              ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                //Expanded(
+                Container(
+                  constraints: BoxConstraints(
+                    maxWidth: MediaQuery.of(context).size.width / 2.5,
+                  ),
+                  child: Text(
+                    displayNames[widget.message['sender']] ?? "",
+                    overflow: TextOverflow.ellipsis,
+                    style: getFont("mainfont")(
+                      color: getColor("secondarytext"),
+                    ),
+                  ),
+                ),
+                //),
+                const SizedBox(
+                  width: 5,
+                ),
+                Opacity(
+                  opacity: 0.5,
+                  child: Text(
+                    timestampToDate(widget.message['timestamp']),
+                    style: getFont("mainfont")(
+                      color: getColor("secondarytext"),
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+              ],
             ),
             SizedBox(
               width: MediaQuery.of(context).size.width - 60,
@@ -210,7 +236,7 @@ class _MessagesViewState extends State<MessagesView> {
           child: Stack(
             children: [
               Padding(
-                padding: EdgeInsets.only(top: 25, bottom: currentBarHeight),
+                padding: EdgeInsets.only(top: 50, bottom: currentBarHeight),
                 child: AnimatedOpacity(
                   opacity: built ? 1 : 0,
                   duration: Duration(milliseconds: 300 * (built ? 1 : 0)),
@@ -422,8 +448,10 @@ class _MessagesViewState extends State<MessagesView> {
                               if (messageController.text.isEmpty) {
                                 return;
                               }
-                              sendMessage(messageController.text,
-                                  currentConversation["email"]);
+                              sendMessage(
+                                messageController.text,
+                                currentConversation["email"],
+                              );
                               messageController.clear();
                               targetFieldHeight = 35;
                               targetBarHeight = 50;
@@ -451,7 +479,7 @@ class _MessagesViewState extends State<MessagesView> {
                                 ),
                               ),
                             ),
-                          )
+                          ),
                         ],
                       ),
                     ),

@@ -32,7 +32,7 @@ class _SelectThemeViewState extends State<SelectThemeView> {
     Timer(const Duration(milliseconds: 15), () {
       setState(() {});
     });
-    List themes = [dark, light, dark, dark, light, dark];
+    List themes = [dark, light];
     return Scaffold(
       backgroundColor: getColor("background"),
       body: AnimatedOpacity(
@@ -58,8 +58,7 @@ class _SelectThemeViewState extends State<SelectThemeView> {
                   Center(
                     child: Builder(builder: (context) {
                       return Text(
-                        translation[currentLanguage]["choosetheme"] +
-                            " meg nincs kesz",
+                        translation[currentLanguage]["choosetheme"],
                         style: getFont("mainfont")(
                           color: getColor("maintext"),
                           fontSize: 22,
@@ -249,14 +248,195 @@ class _ThemeCardState extends State<ThemeCard> {
         child: Container(
           height: 200,
           color: getColor("inputbackground", theme: widget.theme),
-          child: Align(
-            alignment: Alignment.bottomCenter,
-            child: Text(
-              widget.theme["name"],
-              style: getFont("mainfont")(
-                color: getColor("maintext", theme: widget.theme),
+          child: Stack(
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(bottom: 20),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(13),
+                  child: Container(
+                    color: getColor("background", theme: widget.theme),
+                    width: MediaQuery.of(context).size.width,
+                    height: MediaQuery.of(context).size.height,
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(children: [
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(top: 2.0),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(50),
+                                child: Container(
+                                  width: 30,
+                                  height: 30,
+                                  color: getColor(
+                                    "button",
+                                    theme: widget.theme,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(
+                              width: 5,
+                            ),
+                            Column(
+                              children: [
+                                Text(
+                                  "Lorem Ipsum",
+                                  style: getFont("mainfont")(
+                                    color: getColor(
+                                      "secondarytext",
+                                      theme: widget.theme,
+                                    ),
+                                    fontSize: 12,
+                                  ),
+                                ),
+                                Text(
+                                  "Lorem Ipsum",
+                                  style: getFont("mainfont")(
+                                    color: getColor(
+                                      "maintext",
+                                      theme: widget.theme,
+                                    ),
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            )
+                          ],
+                        ),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(top: 2.0),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(50),
+                                child: Container(
+                                  width: 30,
+                                  height: 30,
+                                  color: getColor(
+                                    "button",
+                                    theme: widget.theme,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(
+                              width: 5,
+                            ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Lorem Ipsum",
+                                  style: getFont("mainfont")(
+                                    color: getColor(
+                                      "secondarytext",
+                                      theme: widget.theme,
+                                    ),
+                                    fontSize: 12,
+                                  ),
+                                ),
+                                SizedBox(
+                                  width: MediaQuery.of(context).size.width / 2 -
+                                      75,
+                                  height: 90,
+                                  child: Text(
+                                    "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+                                    overflow: TextOverflow.fade,
+                                    style: getFont("mainfont")(
+                                      color: getColor(
+                                        "maintext",
+                                        theme: widget.theme,
+                                      ),
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        const SizedBox(
+                          height: 5,
+                        ),
+                        Row(
+                          children: [
+                            Expanded(
+                              flex: 10,
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(13),
+                                child: Container(
+                                  width: double.infinity,
+                                  color: getColor(
+                                    "background3",
+                                    theme: widget.theme,
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(left: 8.0),
+                                    child: Text(
+                                      translation[currentLanguage]["message"],
+                                      style: getFont("mainfont")(
+                                        color: getColor(
+                                          "secondarytext",
+                                          theme: widget.theme,
+                                        ),
+                                        fontSize: 10,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(
+                              width: 5,
+                            ),
+                            Expanded(
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(30),
+                                child: Container(
+                                  color: getColor(
+                                    "button2",
+                                    theme: widget.theme,
+                                  ),
+                                  padding: const EdgeInsets.only(
+                                    left: 2.0,
+                                    //right: 6.0,
+                                    top: 2.0,
+                                    bottom: 2.0,
+                                  ),
+                                  child: Center(
+                                    child: Icon(
+                                      Icons.send_rounded,
+                                      color: getColor("maintext",
+                                          theme: widget.theme),
+                                      size: 10,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ]),
+                    ),
+                  ),
+                ),
               ),
-            ),
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: Text(
+                  widget.theme["name"],
+                  overflow: TextOverflow.ellipsis,
+                  style: getFont("mainfont")(
+                    color: getColor("maintext", theme: widget.theme),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),

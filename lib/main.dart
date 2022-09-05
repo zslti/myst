@@ -34,11 +34,7 @@ class MyApp extends StatelessWidget {
 
   Future<bool> initializeApp() async {
     prefs?.setString("theme", ""); //TODO: remove line when everything is done
-    //TODO: finish themes screen
-    //TODO: encrypt messages
-    //TODO: transition send message button bottom right
-    //TODO: when sending more messages in a row dont need to show name and picture again
-    //TODO: time of messages
+    //TODO: if there are no sent or incoming requests show a message
     //TODO: separators between dates of messages
     //TODO: show if a message is read
     //TODO: show how many unread messages you have

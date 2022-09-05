@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+import 'util.dart';
+
 Future<List> getAllMessages() async {
   CollectionReference messages = FirebaseFirestore.instance.collection(
     'messages',
@@ -21,7 +23,7 @@ Future<void> sendMessage(String message, String to) async {
     'messages',
   );
   await messages.add({
-    'message': message,
+    'message': encryptText(message),
     'users': "{{${FirebaseAuth.instance.currentUser?.email}}, {$to}}",
     'sender': FirebaseAuth.instance.currentUser?.email,
     'timestamp': DateTime.now().millisecondsSinceEpoch,
@@ -58,6 +60,9 @@ Future<List> getMessages(String user) async {
     }
   }
 
+  for (int i = 0; i < messages.length; i++) {
+    messages[i]['message'] = decryptText(messages[i]['message']);
+  }
   messages.sort((a, b) => b['timestamp'].compareTo(a['timestamp']));
 
   return messages;

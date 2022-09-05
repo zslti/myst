@@ -38,7 +38,7 @@ Map light = {
     "logo": [0, 0, 0],
     "background": [220, 220, 220],
     "maintext": [13, 17, 21],
-    "secondarytext": [33, 37, 41],
+    "secondarytext": [63, 67, 71],
     "inputbackground": [205, 207, 210],
     "cursor": [33, 37, 41],
     "button": [133, 140, 147],
