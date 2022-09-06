@@ -351,17 +351,9 @@ String hourMinuteFormat(int hour, int minute) {
   }
 }
 
-String timestampToDate(int timestamp) {
+String timestampToDate(int timestamp, {bool showOnlyDate = false}) {
   DateTime date = DateTime.fromMillisecondsSinceEpoch(timestamp);
   DateTime now = DateTime.now();
-  if (date.day == now.day && date.month == now.month && date.year == now.year) {
-    return "${translation[currentLanguage]['todayat']} ${hourMinuteFormat(date.hour, date.minute)}${translation[currentLanguage]['todayat2']}";
-  }
-  if (date.day == now.day - 1 &&
-      date.month == now.month &&
-      date.year == now.year) {
-    return "${translation[currentLanguage]['yesterdayat']} ${hourMinuteFormat(date.hour, date.minute)}${translation[currentLanguage]['yesterdayat2']}";
-  }
   String daySuffix = "";
   if (currentLanguage == "en") {
     if (date.day == 1 || date.day == 21 || date.day == 31) {
@@ -378,6 +370,22 @@ String timestampToDate(int timestamp) {
   }
   String theDate =
       "${translation[currentLanguage]['monthprefix${date.month}']}${date.day}$daySuffix ${translation[currentLanguage]['monthsuffix${date.month}']}";
+  if (showOnlyDate) {
+    if (currentLanguage == "en") {
+      return "$theDate, ${date.year}";
+    } else {
+      return "${date.year} $theDate";
+    }
+  }
+  if (date.day == now.day && date.month == now.month && date.year == now.year) {
+    return "${translation[currentLanguage]['todayat']} ${hourMinuteFormat(date.hour, date.minute)}${translation[currentLanguage]['todayat2']}";
+  }
+  if (date.day == now.day - 1 &&
+      date.month == now.month &&
+      date.year == now.year) {
+    return "${translation[currentLanguage]['yesterdayat']} ${hourMinuteFormat(date.hour, date.minute)}${translation[currentLanguage]['yesterdayat2']}";
+  }
+
   if (date.year == now.year) {
     if (currentLanguage == "en") {
       return "${hourMinuteFormat(date.hour, date.minute)}, $theDate";

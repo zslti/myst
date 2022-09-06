@@ -73,6 +73,8 @@ Map translation = {
     "monthsuffix10": "of October",
     "monthsuffix11": "of November",
     "monthsuffix12": "of December",
+    "noincomingrequests": "You have no incoming friend requests.",
+    "nooutgoingrequests": "You have no outgoing friend requests.",
   },
   "hu": {
     "countrycode": "hu",
@@ -149,5 +151,7 @@ Map translation = {
     "monthprefix10": "Október ",
     "monthprefix11": "November ",
     "monthprefix12": "December ",
+    "noincomingrequests": "Nincsenek bejövő barátkérelmeid.",
+    "nooutgoingrequests": "Nincsenek kimenő barátkérelmeid.",
   }
 };

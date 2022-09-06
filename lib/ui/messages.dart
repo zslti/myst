@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:math';
 import 'dart:ui';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:myst/data/theme.dart';
 import 'package:myst/data/translation.dart';
@@ -26,6 +27,7 @@ double transitionProgress = 0;
 int messageCount = 0;
 bool done = false;
 bool built = false;
+bool readMessageShown = false;
 
 void startTransition() {
   if (transitionProgress != 0 ||
@@ -47,8 +49,9 @@ void startTransition() {
 }
 
 class Message extends StatefulWidget {
-  const Message({Key? key, required this.message}) : super(key: key);
+  const Message({Key? key, required this.message, this.read}) : super(key: key);
   final Map message;
+  final bool? read;
 
   @override
   State<Message> createState() => _MessageState();
@@ -81,7 +84,6 @@ class _MessageState extends State<Message> {
             Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                //Expanded(
                 Container(
                   constraints: BoxConstraints(
                     maxWidth: MediaQuery.of(context).size.width / 2.5,
@@ -94,17 +96,22 @@ class _MessageState extends State<Message> {
                     ),
                   ),
                 ),
-                //),
                 const SizedBox(
                   width: 5,
                 ),
-                Opacity(
-                  opacity: 0.5,
-                  child: Text(
-                    timestampToDate(widget.message['timestamp']),
-                    style: getFont("mainfont")(
-                      color: getColor("secondarytext"),
-                      fontSize: 12,
+                Container(
+                  constraints: BoxConstraints(
+                    maxWidth: MediaQuery.of(context).size.width / 2.5,
+                  ),
+                  child: Opacity(
+                    opacity: 0.5,
+                    child: Text(
+                      timestampToDate(widget.message['timestamp']),
+                      overflow: TextOverflow.ellipsis,
+                      style: getFont("mainfont")(
+                        color: getColor("secondarytext"),
+                        fontSize: 12,
+                      ),
                     ),
                   ),
                 ),
@@ -112,11 +119,30 @@ class _MessageState extends State<Message> {
             ),
             SizedBox(
               width: MediaQuery.of(context).size.width - 60,
-              child: Text(
-                widget.message['message'] ?? "",
-                style: getFont("mainfont")(
-                  color: getColor("maintext"),
-                ),
+              child: RichText(
+                text: TextSpan(children: [
+                  TextSpan(
+                    text: widget.message['message'] ?? "",
+                    style: getFont("mainfont")(
+                      color: getColor("maintext"),
+                    ),
+                  ),
+                  WidgetSpan(
+                    child: Builder(builder: (context) {
+                      if (!(widget.read ?? false)) return Container();
+                      return Padding(
+                        padding: const EdgeInsets.only(left: 4),
+                        child: Image.asset(
+                          "assets/read.png",
+                          color: getColor("secondarytext"),
+                          width: 12,
+                          height: 12,
+                          opacity: const AlwaysStoppedAnimation(0.5),
+                        ),
+                      );
+                    }),
+                  ),
+                ]),
               ),
             ),
           ],
@@ -134,6 +160,12 @@ class MessagesView extends StatefulWidget {
 }
 
 class _MessagesViewState extends State<MessagesView> {
+  void readMessage(String user, String message, int timestamp) async {
+    if (user != FirebaseAuth.instance.currentUser?.email) {
+      setMessageRead(user, message, timestamp);
+    }
+  }
+
   Future<void> refreshMessages() async {
     if (currentConversation == null) {
       Timer(const Duration(milliseconds: 500), () {
@@ -229,6 +261,7 @@ class _MessagesViewState extends State<MessagesView> {
           });
         }
       });
+      readMessageShown = false;
       return Scaffold(
         backgroundColor: getColor("background2"),
         body: ScrollConfiguration(
@@ -248,9 +281,96 @@ class _MessagesViewState extends State<MessagesView> {
                       scrollDirection: Axis.vertical,
                       itemBuilder: (context, index) {
                         try {
+                          DateTime lastMessageTime =
+                              DateTime.fromMillisecondsSinceEpoch(
+                            currentMessages[max(index - 1, 0)]["timestamp"],
+                          );
+                          DateTime thisMessageTime =
+                              DateTime.fromMillisecondsSinceEpoch(
+                            currentMessages[index]["timestamp"],
+                          );
+                          if (index == 0 &&
+                              !(currentMessages[index]["read"] ?? false)) {
+                            readMessage(
+                              currentMessages[index]["sender"],
+                              currentMessages[index]["message"],
+                              currentMessages[index]["timestamp"],
+                            );
+                          }
+                          bool read = false;
+                          if (!readMessageShown &&
+                              ((currentMessages[index]["read"] ?? false) ||
+                                  currentMessages[index]["sender"] !=
+                                      FirebaseAuth
+                                          .instance.currentUser?.email)) {
+                            readMessageShown = true;
+                            read = true;
+                          }
+                          if (lastMessageTime.day != thisMessageTime.day ||
+                              lastMessageTime.month != thisMessageTime.month ||
+                              lastMessageTime.year != thisMessageTime.year) {
+                            return Column(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 6.0),
+                                  child: Message(
+                                    message: currentMessages[index],
+                                    read: read,
+                                  ),
+                                ),
+                                Opacity(
+                                  opacity: 0.5,
+                                  child: Row(
+                                    children: [
+                                      const SizedBox(
+                                        width: 16,
+                                      ),
+                                      Expanded(
+                                        child: Container(
+                                          width: double.infinity,
+                                          height: 1,
+                                          color: getColor("secondarytext"),
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                          left: 8,
+                                          right: 8,
+                                        ),
+                                        child: Text(
+                                          timestampToDate(
+                                            currentMessages[max(index - 1, 0)]
+                                                ["timestamp"],
+                                            showOnlyDate: true,
+                                          ),
+                                          style: getFont("mainfont")(
+                                            color: getColor("secondarytext"),
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ),
+                                      Expanded(
+                                        child: Container(
+                                          width: double.infinity,
+                                          height: 1,
+                                          color: getColor("secondarytext"),
+                                        ),
+                                      ),
+                                      const SizedBox(
+                                        width: 16,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            );
+                          }
                           return Padding(
                             padding: const EdgeInsets.only(top: 6.0),
-                            child: Message(message: currentMessages[index]),
+                            child: Message(
+                              message: currentMessages[index],
+                              read: read,
+                            ),
                           );
                         } catch (e) {
                           return Container();

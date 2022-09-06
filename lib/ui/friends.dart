@@ -417,21 +417,39 @@ class _FriendRequestsViewState extends State<FriendRequestsView> {
         behavior: MyBehavior(),
         child: Stack(
           children: [
-            Padding(
-              padding: const EdgeInsets.only(left: 12, right: 12, top: 55),
-              child: ListView(
-                children: [
-                  for (final request in widget.requests)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: FriendRequest(
-                        request: request,
-                        options: widget.options,
+            Builder(builder: (context) {
+              if (widget.requests.isEmpty) {
+                return Center(
+                  child: Opacity(
+                    opacity: 0.5,
+                    child: Text(
+                      widget.text ==
+                              translation[currentLanguage]["incomingrequests"]
+                          ? translation[currentLanguage]["noincomingrequests"]
+                          : translation[currentLanguage]["nooutgoingrequests"],
+                      style: getFont("mainfont")(
+                        color: getColor("secondarytext"),
                       ),
                     ),
-                ],
-              ),
-            ),
+                  ),
+                );
+              }
+              return Padding(
+                padding: const EdgeInsets.only(left: 12, right: 12, top: 55),
+                child: ListView(
+                  children: [
+                    for (final request in widget.requests)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: FriendRequest(
+                          request: request,
+                          options: widget.options,
+                        ),
+                      ),
+                  ],
+                ),
+              );
+            }),
             Container(
               width: MediaQuery.of(context).size.width,
               height: 73,
