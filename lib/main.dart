@@ -34,13 +34,13 @@ class MyApp extends StatelessWidget {
 
   Future<bool> initializeApp() async {
     prefs?.setString("theme", ""); //TODO: remove line when everything is done
-    //TODO: when sending a text remove /n-s from the end
-    //TODO: show how many unread messages you have, how many friend requests you have in the bottom bar
     //TODO: add friends with nfc or bt or qr code
     //TODO: notifications
     //TODO: status indicator
     //TODO: on friends screen categorize online and offline friends
     //TODO: avatars
+    //TODO: check what happens when u dont have internet
+    //TODO: sound when u get and send a message
 
     //TODO: change push animation
     final themeData = prefs?.getString("theme") ?? "";

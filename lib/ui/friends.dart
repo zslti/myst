@@ -17,6 +17,7 @@ List outgoingRequests = [];
 List incomingRequests = [];
 Map displayNames = {};
 List friends = [];
+int unreadMessages = 0;
 
 class FriendsView extends StatefulWidget {
   const FriendsView({Key? key}) : super(key: key);
@@ -24,6 +25,10 @@ class FriendsView extends StatefulWidget {
   @override
   State<FriendsView> createState() => _FriendsViewState();
 }
+
+//LsUdPipRPnXuntsWHbPg9g==
+//1662660194535
+//{{fulop.zsolt.2004@gmail.com}, {sndffsdfds}}
 
 class _FriendsViewState extends State<FriendsView> {
   void getData() async {
@@ -35,6 +40,8 @@ class _FriendsViewState extends State<FriendsView> {
     for (final friend in friends) {
       displayNames[friend] = await getDisplayName(friend);
     }
+
+    unreadMessages = await getUnreadMessages();
   }
 
   @override
@@ -50,6 +57,7 @@ class _FriendsViewState extends State<FriendsView> {
     });
     getData();
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       backgroundColor: getColor("background2"),
       body: Stack(
         children: [
@@ -260,14 +268,24 @@ class _FriendsViewState extends State<FriendsView> {
                         selectedIndex = 0;
                         pushReplacement(context, const MainView());
                       },
-                      child: AnimatedOpacity(
-                        duration: const Duration(milliseconds: 250),
-                        opacity: selectedIndex == 0 ? 1 : 0.5,
-                        // ignore: prefer_const_constructors
-                        child: AnimatedLogo(
-                          sizeMul: 0.3,
-                          stopAfterFirstCycle: true,
-                        ),
+                      child: Stack(
+                        children: [
+                          AnimatedOpacity(
+                            duration: const Duration(milliseconds: 250),
+                            opacity: selectedIndex == 0 ? 1 : 0.5,
+                            // ignore: prefer_const_constructors
+                            child: AnimatedLogo(
+                              sizeMul: 0.3,
+                              stopAfterFirstCycle: true,
+                            ),
+                          ),
+                          Align(
+                            alignment: const Alignment(0.1, 1),
+                            child: NotificationBubble(
+                              amount: unreadMessages,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -346,33 +364,12 @@ class _FriendRequestButtonState extends State<FriendRequestButton> {
               ),
             ),
             Expanded(
-              child: AnimatedOpacity(
-                duration: const Duration(milliseconds: 200),
-                opacity: widget.requests.isEmpty ? 0 : 1,
-                child: Align(
-                  alignment: Alignment.centerRight,
-                  child: ClipRRect(
-                    borderRadius: const BorderRadius.all(
-                      Radius.circular(50),
-                    ),
-                    child: Container(
-                      color: getColor("notification"),
-                      width: 19,
-                      height: 19,
-                      alignment: Alignment.center,
-                      child: Text(
-                        widget.requests.length.toString().length > 2
-                            ? "99+"
-                            : widget.requests.length.toString(),
-                        textAlign: TextAlign.center,
-                        style: getFont("mainfont")(
-                          color: getColor("secondarytext"),
-                          fontSize: 9.5,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ),
-                  ),
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: NotificationBubble(
+                  amount: widget.requests.length,
+                  fontSize: 9.5,
+                  size: 19,
                 ),
               ),
             ),

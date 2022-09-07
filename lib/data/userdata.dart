@@ -23,7 +23,7 @@ Future<void> sendMessage(String message, String to) async {
     'messages',
   );
   await messages.add({
-    'message': encryptText(message),
+    'message': encryptText(message.trimRight()),
     'users': "{{${FirebaseAuth.instance.currentUser?.email}}, {$to}}",
     'sender': FirebaseAuth.instance.currentUser?.email,
     'timestamp': DateTime.now().millisecondsSinceEpoch,
@@ -212,4 +212,20 @@ Future<void> setMessageRead(String user, String message, int timestamp) async {
       doc.reference.update({'read': true});
     }
   }
+}
+
+Future<int> getUnreadMessages() async {
+  final conversations = await getConversations();
+  int unread = 0;
+  for (final conversation in conversations) {
+    List messages = await getMessages(conversation);
+    messages.sort((a, b) => a['timestamp'].compareTo(b['timestamp']));
+    if (messages.isNotEmpty) {
+      if (messages.last['sender'] != FirebaseAuth.instance.currentUser?.email &&
+          !(messages.last['read'] ?? false)) {
+        unread++;
+      }
+    }
+  }
+  return unread;
 }

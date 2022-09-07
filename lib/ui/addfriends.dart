@@ -16,6 +16,7 @@ import 'mainscreen.dart';
 TextEditingController nameController = TextEditingController();
 List users = [];
 List friends = [];
+int unreadMessages = 0;
 
 class AddFriendsView extends StatefulWidget {
   const AddFriendsView({Key? key}) : super(key: key);
@@ -34,6 +35,8 @@ class _AddFriendsViewState extends State<AddFriendsView> {
       f.add(request["receiver"]);
     }
     friends = f.toSet().toList();
+
+    unreadMessages = await getUnreadMessages();
   }
 
   @override
@@ -304,14 +307,24 @@ class _AddFriendsViewState extends State<AddFriendsView> {
                           selectedIndex = 0;
                           pushReplacement(context, const MainView());
                         },
-                        child: AnimatedOpacity(
-                          duration: const Duration(milliseconds: 250),
-                          opacity: selectedIndex == 0 ? 1 : 0.5,
-                          // ignore: prefer_const_constructors
-                          child: AnimatedLogo(
-                            sizeMul: 0.3,
-                            stopAfterFirstCycle: true,
-                          ),
+                        child: Stack(
+                          children: [
+                            AnimatedOpacity(
+                              duration: const Duration(milliseconds: 250),
+                              opacity: selectedIndex == 0 ? 1 : 0.5,
+                              // ignore: prefer_const_constructors
+                              child: AnimatedLogo(
+                                sizeMul: 0.3,
+                                stopAfterFirstCycle: true,
+                              ),
+                            ),
+                            Align(
+                              alignment: const Alignment(0.1, 1),
+                              child: NotificationBubble(
+                                amount: unreadMessages,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),

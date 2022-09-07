@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:myst/data/theme.dart';
+import 'package:myst/data/userdata.dart';
 import 'package:myst/data/util.dart';
 import 'package:myst/ui/conversations.dart';
 import 'package:myst/ui/loading.dart';
@@ -15,6 +16,8 @@ var gkey = _myKey;
 RevealSide actualSide = RevealSide.left;
 bool shouldRebuild = true;
 int selectedIndex = 0;
+int lastNotificationAmountRequest = 0;
+int friendRequestAmount = 0;
 
 void slideToCenter() {
   swipeDirection = RevealSide.right;
@@ -32,6 +35,15 @@ class MainView extends StatefulWidget {
 }
 
 class _MainViewState extends State<MainView> {
+  void getFriendRequestAmount() async {
+    if (DateTime.now().millisecondsSinceEpoch - lastNotificationAmountRequest >
+        1000) {
+      lastNotificationAmountRequest = DateTime.now().millisecondsSinceEpoch;
+      friendRequestAmount = (await getSentFriendRequests()).length +
+          (await getFriendRequests()).length;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     Timer(const Duration(milliseconds: 50), () {
@@ -48,6 +60,7 @@ class _MainViewState extends State<MainView> {
         t = true;
       });
     }
+    getFriendRequestAmount();
     return Stack(
       children: [
         OverlappingPanels(
@@ -169,15 +182,27 @@ class _MainViewState extends State<MainView> {
                       selectedIndex = 1;
                       pushReplacement(context, const FriendsView());
                     },
-                    child: AnimatedOpacity(
-                      duration: const Duration(milliseconds: 250),
-                      opacity: selectedIndex == 1 ? 1 : 0.5,
-                      child: Image.asset(
-                        "assets/friends.png",
-                        color: getColor("logo"),
-                        height: 37,
-                        width: 37,
-                      ),
+                    child: Stack(
+                      children: [
+                        Center(
+                          child: AnimatedOpacity(
+                            duration: const Duration(milliseconds: 250),
+                            opacity: selectedIndex == 1 ? 1 : 0.5,
+                            child: Image.asset(
+                              "assets/friends.png",
+                              color: getColor("logo"),
+                              height: 37,
+                              width: 37,
+                            ),
+                          ),
+                        ),
+                        Align(
+                          alignment: const Alignment(0.1, 1),
+                          child: NotificationBubble(
+                            amount: friendRequestAmount,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -186,6 +211,53 @@ class _MainViewState extends State<MainView> {
           ),
         )
       ],
+    );
+  }
+}
+
+class NotificationBubble extends StatefulWidget {
+  const NotificationBubble({
+    Key? key,
+    this.size,
+    this.fontSize,
+    required this.amount,
+  }) : super(key: key);
+  final double? size;
+  final int amount;
+  final double? fontSize;
+
+  @override
+  State<NotificationBubble> createState() => _NotificationBubbleState();
+}
+
+class _NotificationBubbleState extends State<NotificationBubble> {
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedOpacity(
+      duration: const Duration(milliseconds: 200),
+      opacity: widget.amount != 0 ? 1 : 0,
+      child: ClipRRect(
+        borderRadius: const BorderRadius.all(
+          Radius.circular(50),
+        ),
+        child: Container(
+          color: getColor("notification"),
+          width: widget.size ?? 13,
+          height: widget.size ?? 13,
+          alignment: Alignment.center,
+          child: Text(
+            widget.amount.toString().length > 2
+                ? "99+"
+                : widget.amount.toString(),
+            textAlign: TextAlign.center,
+            style: getFont("mainfont")(
+              color: getColor("secondarytext"),
+              fontSize: widget.fontSize ?? 7,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
