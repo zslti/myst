@@ -87,6 +87,9 @@ Future<List> getUsersNamed(String name) async {
 }
 
 Future<void> sendFriendRequest(String to) async {
+  if (to == FirebaseAuth.instance.currentUser?.email) {
+    return;
+  }
   CollectionReference friendRequests =
       FirebaseFirestore.instance.collection('friendrequests');
   await friendRequests.add({

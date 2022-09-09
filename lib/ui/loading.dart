@@ -39,41 +39,53 @@ class AnimatedLogoState extends State<AnimatedLogo> {
       for (int i = 0; i < 5; i++) {
         setState(() {});
         Timer(Duration(milliseconds: 200 * (i + 1)), () {
-          setState(() {
-            opacity[i] = 1;
-          });
+          if (mounted) {
+            setState(() {
+              opacity[i] = 1;
+            });
+          }
         });
       }
       Timer(const Duration(milliseconds: 3000), () {
         for (int i = 0; i < 5; i++) {
-          setState(() {});
-          Timer(Duration(milliseconds: 200 * (i + 1)), () {
-            setState(() {
-              opacity[i] = 0;
+          if (mounted) {
+            setState(() {});
+            Timer(Duration(milliseconds: 200 * (i + 1)), () {
+              if (mounted) {
+                setState(() {
+                  opacity[i] = 0;
+                });
+              }
             });
-          });
+          }
         }
       });
 
       Timer.periodic(const Duration(milliseconds: 6000), (timer) {
         for (int i = 0; i < 5; i++) {
-          setState(() {});
-          Timer(Duration(milliseconds: 200 * (i + 1)), () {
-            setState(() {
-              opacity[i] = 1;
+          if (mounted) {
+            setState(() {});
+            Timer(Duration(milliseconds: 200 * (i + 1)), () {
+              setState(() {
+                opacity[i] = 1;
+              });
             });
-          });
+          }
         }
       });
       Timer(const Duration(milliseconds: 3000), () {
         Timer.periodic(const Duration(milliseconds: 6000), (timer) {
           for (int i = 0; i < 5; i++) {
-            setState(() {});
-            Timer(Duration(milliseconds: 200 * (i + 1)), () {
-              setState(() {
-                opacity[i] = 0;
+            if (mounted) {
+              setState(() {});
+              Timer(Duration(milliseconds: 200 * (i + 1)), () {
+                if (mounted) {
+                  setState(() {
+                    opacity[i] = 0;
+                  });
+                }
               });
-            });
+            }
           }
         });
       });

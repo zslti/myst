@@ -75,6 +75,12 @@ Map translation = {
     "monthsuffix12": "of December",
     "noincomingrequests": "You have no incoming friend requests.",
     "nooutgoingrequests": "You have no outgoing friend requests.",
+    "addfriendqr": "Add friend with QR code",
+    "myqr": "My QR code",
+    "addfriendqrtext":
+        "Your friends can scan this QR code to add you as a friend.",
+    "scanqr": "Scan a QR code",
+    "requestsent": "Friend request sent.",
   },
   "hu": {
     "countrycode": "hu",
@@ -153,5 +159,11 @@ Map translation = {
     "monthprefix12": "December ",
     "noincomingrequests": "Nincsenek bejövő barátkérelmeid.",
     "nooutgoingrequests": "Nincsenek kimenő barátkérelmeid.",
+    "addfriendqr": "Barát hozzáadása QR kóddal",
+    "myqr": "QR kódom",
+    "addfriendqrtext":
+        "A barátaid ezt a QR kódot beolvasva hozzáadhatnak a barátlistájukhoz.",
+    "scanqr": "QR kód beolvasása",
+    "requestsent": "Barátkérelem elküldve.",
   }
 };

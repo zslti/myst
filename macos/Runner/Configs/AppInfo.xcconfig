@@ -8,7 +8,7 @@
 PRODUCT_NAME = myst
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = com.example.myst
+PRODUCT_BUNDLE_IDENTIFIER = com.example.myst_
 
 // The copyright displayed in application information
 PRODUCT_COPYRIGHT = Copyright © 2022 com.example. All rights reserved.

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:myst/data/theme.dart';
 import 'package:myst/data/userdata.dart';
 import 'package:myst/data/util.dart';
+import 'package:myst/ui/addfriendsqr.dart';
 import 'package:myst/ui/conversations.dart';
 import 'package:myst/ui/messages.dart';
 
@@ -115,109 +116,150 @@ class _AddFriendsViewState extends State<AddFriendsView> {
                   Builder(builder: (context) {
                     Timer(const Duration(milliseconds: 500), () {
                       getData();
-                      setState(() {});
+                      if (mounted) {
+                        setState(() {});
+                      }
                     });
                     //print(friends);
                     return Padding(
                       padding: const EdgeInsets.only(top: 16.0),
-                      child: ListView(
-                        shrinkWrap: true,
-                        children: [
-                          for (final user in users)
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 16.0),
+                      child: Builder(builder: (context) {
+                        if (users.isEmpty) {
+                          //   child: QrImage(
+                          //     data: "1234567890",
+                          //     version: QrVersions.auto,
+                          //     size: 200.0,
+                          //     //foregroundColor: Colors.white,
+                          //     backgroundColor: Colors.white,
+                          //   ),
+                          // ),
+                          return Padding(
+                            padding: const EdgeInsets.only(top: 32.0),
+                            child: GestureDetector(
+                              onTap: () {
+                                push(context, const AddFriendsQR());
+                              },
                               child: Row(
                                 children: [
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(
-                                      50,
-                                    ),
-                                    child: Container(
-                                      width: 32,
-                                      height: 32,
-                                      color: getColor(
-                                        "button",
-                                      ),
-                                    ),
+                                  Icon(
+                                    Icons.qr_code_rounded,
+                                    color: getColor("secondarytext"),
+                                    size: 26,
                                   ),
                                   const SizedBox(
-                                    width: 10,
+                                    width: 8,
                                   ),
-                                  Expanded(
-                                    child: Text(
-                                      user["username"],
-                                      overflow: TextOverflow.ellipsis,
-                                      style: getFont("main")(
-                                        color: getColor("secondarytext"),
-                                      ),
+                                  Text(
+                                    translation[currentLanguage]["addfriendqr"],
+                                    style: getFont("mainfont")(
+                                      color: getColor("secondarytext"),
                                     ),
                                   ),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: [
-                                      GestureDetector(
-                                        onTap: () {
-                                          if (!friends.contains(
-                                            user["email"],
-                                          )) {
-                                            sendFriendRequest(user["email"]);
-                                          }
-                                        },
-                                        child: Padding(
-                                          padding: const EdgeInsets.only(
-                                            left: 8,
-                                            right: 8,
-                                          ),
-                                          child: friends.contains(user["email"])
-                                              ? Image.asset(
-                                                  "assets/friendadded.png",
-                                                  width: 20,
-                                                  height: 20,
-                                                  color: getColor(
-                                                    "secondarytext",
-                                                  ),
-                                                )
-                                              : Icon(
-                                                  Icons
-                                                      .person_add_alt_1_outlined,
-                                                  color: getColor(
-                                                    "secondarytext",
-                                                  ),
-                                                  size: 25,
-                                                ),
-                                        ),
-                                      ),
-                                      GestureDetector(
-                                        onTap: () {
-                                          user["displayname"] =
-                                              user["username"];
-                                          conversations.add(user);
-                                          currentConversation = user;
-                                          Timer(
-                                            const Duration(milliseconds: 500),
-                                            () {
-                                              slideToCenter();
-                                            },
-                                          );
-                                          selectedIndex = 0;
-                                          pushReplacement(
-                                            context,
-                                            const MainView(),
-                                          );
-                                        },
-                                        child: Icon(
-                                          Icons.messenger_outline,
-                                          color: getColor("secondarytext"),
-                                          size: 22,
-                                        ),
-                                      ),
-                                    ],
-                                  )
                                 ],
                               ),
                             ),
-                        ],
-                      ),
+                          );
+                        }
+                        return ListView(
+                          shrinkWrap: true,
+                          children: [
+                            for (final user in users)
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 16.0),
+                                child: Row(
+                                  children: [
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(
+                                        50,
+                                      ),
+                                      child: Container(
+                                        width: 32,
+                                        height: 32,
+                                        color: getColor(
+                                          "button",
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(
+                                      width: 10,
+                                    ),
+                                    Expanded(
+                                      child: Text(
+                                        user["username"],
+                                        overflow: TextOverflow.ellipsis,
+                                        style: getFont("main")(
+                                          color: getColor("secondarytext"),
+                                        ),
+                                      ),
+                                    ),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [
+                                        GestureDetector(
+                                          onTap: () {
+                                            if (!friends.contains(
+                                              user["email"],
+                                            )) {
+                                              sendFriendRequest(user["email"]);
+                                            }
+                                          },
+                                          child: Padding(
+                                            padding: const EdgeInsets.only(
+                                              left: 8,
+                                              right: 8,
+                                            ),
+                                            child:
+                                                friends.contains(user["email"])
+                                                    ? Image.asset(
+                                                        "assets/friendadded.png",
+                                                        width: 20,
+                                                        height: 20,
+                                                        color: getColor(
+                                                          "secondarytext",
+                                                        ),
+                                                      )
+                                                    : Icon(
+                                                        Icons
+                                                            .person_add_alt_1_outlined,
+                                                        color: getColor(
+                                                          "secondarytext",
+                                                        ),
+                                                        size: 25,
+                                                      ),
+                                          ),
+                                        ),
+                                        GestureDetector(
+                                          onTap: () {
+                                            user["displayname"] =
+                                                user["username"];
+                                            conversations.add(user);
+                                            currentConversation = user;
+                                            Timer(
+                                              const Duration(milliseconds: 500),
+                                              () {
+                                                slideToCenter();
+                                              },
+                                            );
+                                            selectedIndex = 0;
+                                            pushReplacement(
+                                              context,
+                                              const MainView(),
+                                            );
+                                          },
+                                          child: Icon(
+                                            Icons.messenger_outline,
+                                            color: getColor("secondarytext"),
+                                            size: 22,
+                                          ),
+                                        ),
+                                      ],
+                                    )
+                                  ],
+                                ),
+                              ),
+                          ],
+                        );
+                      }),
                     );
                   })
                 ],
@@ -353,7 +395,7 @@ class _AddFriendsViewState extends State<AddFriendsView> {
                   ],
                 ),
               ),
-            )
+            ),
           ],
         ),
       ),

@@ -51,7 +51,9 @@ class _MainViewState extends State<MainView> {
         setState(() {});
       } else {
         Timer(const Duration(milliseconds: 100), () {
-          setState(() {});
+          if (mounted) {
+            setState(() {});
+          }
         });
       }
     });

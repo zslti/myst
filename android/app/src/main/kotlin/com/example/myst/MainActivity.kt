@@ -1,4 +1,4 @@
-package com.example.myst
+package com.example.myst_
 
 import io.flutter.embedding.android.FlutterActivity
 

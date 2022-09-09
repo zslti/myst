@@ -318,11 +318,19 @@ final key = encrypt.Key.fromBase64('yE9tgqNxWcYDTSPNM+EGQw==');
 final iv = encrypt.IV.fromBase64('8PzGKSMLuqSm0MVbviaWHA==');
 
 String encryptText(String text) {
-  return encrypt.Encrypter(encrypt.AES(key)).encrypt(text, iv: iv).base64;
+  try {
+    return encrypt.Encrypter(encrypt.AES(key)).encrypt(text, iv: iv).base64;
+  } catch (e) {
+    return "";
+  }
 }
 
 String decryptText(String text) {
-  return encrypt.Encrypter(encrypt.AES(key)).decrypt64(text, iv: iv);
+  try {
+    return encrypt.Encrypter(encrypt.AES(key)).decrypt64(text, iv: iv);
+  } catch (e) {
+    return "";
+  }
 }
 
 String hourMinuteFormat(int hour, int minute) {

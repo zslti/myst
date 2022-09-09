@@ -53,7 +53,9 @@ class _FriendsViewState extends State<FriendsView> {
   @override
   Widget build(BuildContext context) {
     Timer(const Duration(milliseconds: 500), () {
-      setState(() {});
+      if (mounted) {
+        setState(() {});
+      }
     });
     getData();
     return Scaffold(
@@ -405,7 +407,9 @@ class _FriendRequestsViewState extends State<FriendRequestsView> {
               ? incomingRequests
               : outgoingRequests;
       //WidgetsBinding.instance.addPostFrameCallback((_) {
-      setState(() {});
+      if (mounted) {
+        setState(() {});
+      }
       //});
     });
     return Scaffold(

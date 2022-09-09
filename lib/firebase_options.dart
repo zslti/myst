@@ -54,7 +54,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '79250125102',
     projectId: 'myst-a7305',
     storageBucket: 'myst-a7305.appspot.com',
-    iosClientId: '79250125102-gc75numl6u84rfqgagirvkcids4eqid5.apps.googleusercontent.com',
-    iosBundleId: 'com.example.myst',
+    iosClientId:
+        '79250125102-gc75numl6u84rfqgagirvkcids4eqid5.apps.googleusercontent.com',
+    iosBundleId: 'com.example.myst_',
   );
 }
