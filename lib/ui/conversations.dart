@@ -52,6 +52,7 @@ class _ConversationsViewState extends State<ConversationsView> {
       c[i] = {
         "email": c[i],
         "displayname": await getDisplayName(c[i]),
+        "status": await getStatus(c[i]),
       };
     }
     conversations = c;
@@ -109,8 +110,11 @@ class _ConversationsViewState extends State<ConversationsView> {
                   height: double.infinity,
                   color: getColor("background2"),
                   child: Padding(
-                    padding:
-                        const EdgeInsets.only(top: 12, left: 16, right: 16),
+                    padding: const EdgeInsets.only(
+                      top: 12,
+                      left: 16,
+                      right: 16,
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -185,19 +189,35 @@ class _ConversationsViewState extends State<ConversationsView> {
                                                   ),
                                                   child: Row(
                                                     children: [
-                                                      ClipRRect(
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(
-                                                          50,
-                                                        ),
-                                                        child: Container(
-                                                          width: 32,
-                                                          height: 32,
-                                                          color: getColor(
-                                                            "button",
+                                                      Stack(
+                                                        children: [
+                                                          ClipRRect(
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                              50,
+                                                            ),
+                                                            child: Container(
+                                                              width: 32,
+                                                              height: 32,
+                                                              color: getColor(
+                                                                "button",
+                                                              ),
+                                                            ),
                                                           ),
-                                                        ),
+                                                          Container(
+                                                            width: 32,
+                                                            height: 32,
+                                                            alignment: Alignment
+                                                                .bottomRight,
+                                                            child:
+                                                                StatusIndicator(
+                                                              status: conversation[
+                                                                      "status"] ??
+                                                                  "offline",
+                                                            ),
+                                                          ),
+                                                        ],
                                                       ),
                                                       const SizedBox(
                                                         width: 10,
@@ -338,6 +358,45 @@ class _ConversationsViewState extends State<ConversationsView> {
               );
             }),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class StatusIndicator extends StatefulWidget {
+  const StatusIndicator({super.key, required this.status, this.size = 10});
+  final String status;
+  final double size;
+
+  @override
+  State<StatusIndicator> createState() => _StatusIndicatorState();
+}
+
+class _StatusIndicatorState extends State<StatusIndicator> {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: widget.size,
+      height: widget.size,
+      decoration: BoxDecoration(
+        color: widget.status == "online"
+            ? const Color.fromARGB(255, 0, 180, 0)
+            : widget.status == "away"
+                ? const Color.fromARGB(255, 230, 157, 0)
+                : widget.status == "busy"
+                    ? const Color.fromARGB(255, 222, 0, 0)
+                    : const Color.fromARGB(255, 109, 109, 109),
+        borderRadius: BorderRadius.circular(widget.size),
+        border: Border.all(
+          color: widget.status == "online"
+              ? const Color.fromARGB(255, 0, 143, 0)
+              : widget.status == "away"
+                  ? const Color.fromARGB(255, 176, 108, 0)
+                  : widget.status == "busy"
+                      ? const Color.fromARGB(255, 158, 0, 0)
+                      : const Color.fromARGB(255, 71, 71, 71),
+          width: widget.size / 5,
         ),
       ),
     );

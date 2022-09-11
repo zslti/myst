@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:myst/data/theme.dart';
 import 'package:myst/data/userdata.dart';
+import 'package:myst/ui/conversations.dart';
 
 import '../data/translation.dart';
 import '../data/util.dart';
@@ -16,6 +17,7 @@ import 'messages.dart';
 List outgoingRequests = [];
 List incomingRequests = [];
 Map displayNames = {};
+Map statuses = {};
 List friends = [];
 int unreadMessages = 0;
 
@@ -39,6 +41,7 @@ class _FriendsViewState extends State<FriendsView> {
     friends = f.toSet().toList();
     for (final friend in friends) {
       displayNames[friend] = await getDisplayName(friend);
+      statuses[friend] = await getStatus(friend);
     }
 
     unreadMessages = await getUnreadMessages();
@@ -133,7 +136,8 @@ class _FriendsViewState extends State<FriendsView> {
                                 onPressed: () {
                                   currentConversation = {
                                     "email": friend,
-                                    "displayname": displayNames[friend]
+                                    "displayname": displayNames[friend],
+                                    "status": statuses[friend],
                                   };
                                   Timer(
                                     const Duration(milliseconds: 500),
@@ -152,17 +156,30 @@ class _FriendsViewState extends State<FriendsView> {
                                 ),
                                 child: Row(
                                   children: [
-                                    ClipRRect(
-                                      borderRadius: BorderRadius.circular(
-                                        50,
-                                      ),
-                                      child: Container(
-                                        width: 32,
-                                        height: 32,
-                                        color: getColor(
-                                          "button",
+                                    Stack(
+                                      children: [
+                                        ClipRRect(
+                                          borderRadius: BorderRadius.circular(
+                                            50,
+                                          ),
+                                          child: Container(
+                                            width: 32,
+                                            height: 32,
+                                            color: getColor(
+                                              "button",
+                                            ),
+                                          ),
                                         ),
-                                      ),
+                                        Container(
+                                          width: 32,
+                                          height: 32,
+                                          alignment: Alignment.bottomRight,
+                                          child: StatusIndicator(
+                                            status:
+                                                statuses[friend] ?? "offline",
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                     const SizedBox(
                                       width: 10,

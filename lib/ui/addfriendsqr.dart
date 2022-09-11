@@ -301,9 +301,10 @@ class _ScanQRViewState extends State<ScanQRView> {
         title: Text(
           translation[currentLanguage]["scanqr"],
           style: getFont("mainfont")(
-              color: getColor("maintext"),
-              fontSize: 20,
-              fontWeight: FontWeight.w500),
+            color: getColor("maintext"),
+            fontSize: 20,
+            fontWeight: FontWeight.w500,
+          ),
         ),
         actions: [
           IconButton(
@@ -313,11 +314,17 @@ class _ScanQRViewState extends State<ScanQRView> {
               builder: (context, state, child) {
                 switch (state as TorchState) {
                   case TorchState.off:
-                    return Icon(Icons.flash_off,
-                        color: getColor("secondarytext"));
+                    return Icon(
+                      Icons.flash_off,
+                      color: getColor("secondarytext"),
+                      size: 24,
+                    );
                   case TorchState.on:
-                    return Icon(Icons.flash_on,
-                        color: getColor("secondarytext"));
+                    return Icon(
+                      Icons.flash_on,
+                      color: getColor("secondarytext"),
+                      size: 24,
+                    );
                 }
               },
             ),
@@ -334,11 +341,13 @@ class _ScanQRViewState extends State<ScanQRView> {
                     return Icon(
                       Icons.camera_front,
                       color: getColor("secondarytext"),
+                      size: 24,
                     );
                   case CameraFacing.back:
                     return Icon(
                       Icons.camera_rear,
                       color: getColor("secondarytext"),
+                      size: 24,
                     );
                 }
               },

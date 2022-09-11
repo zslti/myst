@@ -50,6 +50,7 @@ dependencies:
   flutter_blue: ^0.8.0
   qr_flutter: ^4.0.0
   mobile_scanner: ^2.0.0
+  flutter_local_notifications: ^9.9.1
 
 dev_dependencies:
   flutter_test:

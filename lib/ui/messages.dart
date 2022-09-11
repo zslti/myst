@@ -12,6 +12,7 @@ import 'package:myst/data/util.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 import '../main.dart';
+import 'conversations.dart';
 import 'mainscreen.dart';
 
 dynamic currentConversation;
@@ -439,13 +440,32 @@ class _MessagesViewState extends State<MessagesView> {
                                             .isNotEmpty
                                     ? 1
                                     : 0)),
-                        child: Text(
-                          currentConversation["displayname"],
+                        child: RichText(
                           overflow: TextOverflow.ellipsis,
-                          style: getFont("mainfont")(
-                            color: getColor("maintext"),
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
+                          text: TextSpan(
+                            children: [
+                              TextSpan(
+                                text: currentConversation["displayname"],
+                                //overflow: TextOverflow.ellipsis,
+                                style: getFont("mainfont")(
+                                  color: getColor("maintext"),
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              WidgetSpan(
+                                child: Padding(
+                                  padding: const EdgeInsets.only(
+                                    left: 4,
+                                    bottom: 2.5,
+                                  ),
+                                  child: StatusIndicator(
+                                    status: currentConversation["status"] ??
+                                        "offline",
+                                  ),
+                                ),
+                              )
+                            ],
                           ),
                         ),
                       ),

@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+import '../main.dart';
 import 'util.dart';
 
 Future<List> getAllMessages() async {
@@ -73,6 +74,9 @@ Future<String> getDisplayName(String email) async {
   QuerySnapshot querySnapshot = await users.get();
   List allData = querySnapshot.docs.map((doc) => doc.data()).toList();
   allData.removeWhere((element) => element['email'] != email);
+  if (allData.isEmpty) {
+    return "";
+  }
   return allData[0]['username'];
 }
 
@@ -87,7 +91,19 @@ Future<List> getUsersNamed(String name) async {
 }
 
 Future<void> sendFriendRequest(String to) async {
-  if (to == FirebaseAuth.instance.currentUser?.email) {
+  if (to == FirebaseAuth.instance.currentUser?.email ||
+      FirebaseAuth.instance.currentUser?.email == null) {
+    return;
+  }
+  List friends = await getFriends(
+    FirebaseAuth.instance.currentUser?.email ?? "",
+  );
+  List requests = await getSentFriendRequests();
+  for (final request in requests) {
+    friends.add(request["receiver"]);
+  }
+  friends = friends.toSet().toList();
+  if (friends.contains(to)) {
     return;
   }
   CollectionReference friendRequests =
@@ -231,4 +247,42 @@ Future<int> getUnreadMessages() async {
     }
   }
   return unread;
+}
+
+Future<void> updateStatus() async {
+  String status = prefs?.getString('status') ?? 'online';
+  if (status == "invisible") {
+    return;
+  }
+  QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+      .collection('users')
+      .where("email", isEqualTo: FirebaseAuth.instance.currentUser?.email)
+      .get();
+  for (var doc in querySnapshot.docs) {
+    if (FirebaseAuth.instance.currentUser?.email != null &&
+        doc.data().toString().contains(
+              FirebaseAuth.instance.currentUser?.email ?? "",
+            )) {
+      doc.reference.update({
+        'status': {
+          "state": status,
+          "last_changed": DateTime.now().millisecondsSinceEpoch,
+        }
+      });
+    }
+  }
+}
+
+Future<String> getStatus(String email) async {
+  Map? status = await FirebaseFirestore.instance
+      .collection('users')
+      .where("email", isEqualTo: email)
+      .get()
+      .then((value) => value.docs[0].data()['status']);
+
+  if (status == null ||
+      DateTime.now().millisecondsSinceEpoch - status['last_changed'] > 10000) {
+    return "offline";
+  }
+  return status['state'] ?? "offline";
 }

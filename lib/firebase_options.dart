@@ -56,6 +56,6 @@ class DefaultFirebaseOptions {
     storageBucket: 'myst-a7305.appspot.com',
     iosClientId:
         '79250125102-gc75numl6u84rfqgagirvkcids4eqid5.apps.googleusercontent.com',
-    iosBundleId: 'com.example.myst_',
+    iosBundleId: 'com.example.myst',
   );
 }

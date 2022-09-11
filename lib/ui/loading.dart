@@ -30,9 +30,11 @@ class AnimatedLogoState extends State<AnimatedLogo> {
     if (stopAfterFirstCycle) {
       for (int i = 0; i < 5; i++) {
         Timer(Duration(milliseconds: 300 * (i + 1)), () {
-          setState(() {
-            opacity[i] = 1;
-          });
+          if (mounted) {
+            setState(() {
+              opacity[i] = 1;
+            });
+          }
         });
       }
     } else {
@@ -66,9 +68,11 @@ class AnimatedLogoState extends State<AnimatedLogo> {
           if (mounted) {
             setState(() {});
             Timer(Duration(milliseconds: 200 * (i + 1)), () {
-              setState(() {
-                opacity[i] = 1;
-              });
+              if (mounted) {
+                setState(() {
+                  opacity[i] = 1;
+                });
+              }
             });
           }
         }
