@@ -91,16 +91,6 @@ class _FriendsViewState extends State<FriendsView> {
                     FriendRequestOption.cancel,
                   ],
                 ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                    '${translation[currentLanguage]["friends"]} - ${friends.length}',
-                    style: getFont("mainfont")(
-                      color: getColor("secondarytext"),
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
                 ScrollConfiguration(
                   behavior: MyBehavior(),
                   child: SizedBox(
@@ -128,76 +118,53 @@ class _FriendsViewState extends State<FriendsView> {
                           ).createShader(rect);
                         },
                         blendMode: BlendMode.dstOut,
-                        child: ListView(
-                          shrinkWrap: true,
-                          children: [
-                            for (final friend in friends)
-                              TextButton(
-                                onPressed: () {
-                                  currentConversation = {
-                                    "email": friend,
-                                    "displayname": displayNames[friend],
-                                    "status": statuses[friend],
-                                  };
-                                  Timer(
-                                    const Duration(milliseconds: 500),
-                                    () {
-                                      slideToCenter();
-                                    },
-                                  );
-                                  selectedIndex = 0;
-                                  pushReplacement(
-                                    context,
-                                    const MainView(),
-                                  );
-                                },
-                                style: const ButtonStyle(
-                                  splashFactory: NoSplash.splashFactory,
-                                ),
-                                child: Row(
-                                  children: [
-                                    Stack(
-                                      children: [
-                                        ClipRRect(
-                                          borderRadius: BorderRadius.circular(
-                                            50,
-                                          ),
-                                          child: Container(
-                                            width: 32,
-                                            height: 32,
-                                            color: getColor(
-                                              "button",
-                                            ),
-                                          ),
-                                        ),
-                                        Container(
-                                          width: 32,
-                                          height: 32,
-                                          alignment: Alignment.bottomRight,
-                                          child: StatusIndicator(
-                                            status:
-                                                statuses[friend] ?? "offline",
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(
-                                      width: 10,
-                                    ),
-                                    Expanded(
-                                      child: Text(
-                                        displayNames[friend] ?? "",
-                                        overflow: TextOverflow.ellipsis,
-                                        style: getFont("mainfont")(
-                                          color: getColor("secondarytext"),
-                                        ),
-                                      ),
-                                    )
-                                  ],
+                        child: Builder(builder: (context) {
+                          List onlineFriends = friends;
+                          List offlineFriends = friends;
+                          //if (widget.online) {
+                          onlineFriends = onlineFriends
+                              .where(
+                                  (element) => statuses[element] != "offline")
+                              .toList();
+                          //} else {
+                          offlineFriends = offlineFriends
+                              .where(
+                                  (element) => statuses[element] == "offline")
+                              .toList();
+                          //}
+                          return ListView(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                  '${translation[currentLanguage]["online"]} - ${onlineFriends.length}',
+                                  style: getFont("mainfont")(
+                                    color: getColor("secondarytext"),
+                                    fontWeight: FontWeight.w500,
+                                  ),
                                 ),
                               ),
-                          ],
-                        ),
+                              for (final friend in onlineFriends)
+                                Friend(
+                                  friend: friend,
+                                ),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                  '${translation[currentLanguage]["offline"]} - ${offlineFriends.length}',
+                                  style: getFont("mainfont")(
+                                    color: getColor("secondarytext"),
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                              for (final friend in offlineFriends)
+                                Friend(
+                                  friend: friend,
+                                ),
+                            ],
+                          );
+                        }),
                       ),
                     ),
                   ),
@@ -337,6 +304,93 @@ class _FriendsViewState extends State<FriendsView> {
         ],
       ),
     );
+  }
+}
+
+class Friend extends StatefulWidget {
+  const Friend({
+    Key? key,
+    required this.friend,
+  }) : super(key: key);
+  final friend;
+
+  @override
+  State<Friend> createState() => _FriendState();
+}
+
+class _FriendState extends State<Friend> {
+  @override
+  Widget build(BuildContext context) {
+    return //ListView(
+        //shrinkWrap: true,
+        //children: [
+        //for (int i = 0; i < 20; i++)
+        //for (final friend in f)
+        TextButton(
+      onPressed: () {
+        currentConversation = {
+          "email": widget.friend,
+          "displayname": displayNames[widget.friend],
+          "status": statuses[widget.friend],
+        };
+        Timer(
+          const Duration(milliseconds: 500),
+          () {
+            slideToCenter();
+          },
+        );
+        selectedIndex = 0;
+        pushReplacement(
+          context,
+          const MainView(),
+        );
+      },
+      style: const ButtonStyle(
+        splashFactory: NoSplash.splashFactory,
+      ),
+      child: Row(
+        children: [
+          Stack(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(
+                  50,
+                ),
+                child: Container(
+                  width: 32,
+                  height: 32,
+                  color: getColor(
+                    "button",
+                  ),
+                ),
+              ),
+              Container(
+                width: 32,
+                height: 32,
+                alignment: Alignment.bottomRight,
+                child: StatusIndicator(
+                  status: statuses[widget.friend] ?? "offline",
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(
+            width: 10,
+          ),
+          Expanded(
+            child: Text(
+              displayNames[widget.friend] ?? "",
+              overflow: TextOverflow.ellipsis,
+              style: getFont("mainfont")(
+                color: getColor("secondarytext"),
+              ),
+            ),
+          )
+        ],
+      ),
+    );
+    //],
+    //);
   }
 }
 

@@ -182,6 +182,8 @@ class _MessagesViewState extends State<MessagesView> {
     lastRequestTime = now;
 
     currentMessages = await getMessages(currentConversation["email"]);
+    currentConversation["status"] =
+        await getStatus(currentConversation["email"]);
     built = true;
     done = false;
 

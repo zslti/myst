@@ -112,8 +112,6 @@ class _MyAppState extends State<MyApp> {
 
   Future<bool> initializeApp() async {
     prefs?.setString("theme", ""); //TODO: remove line when everything is done
-    //TODO: update status indicator when message is open, currently it only updates when reopening conversation
-    //TODO: on friends screen categorize online and offline friends
     //TODO: avatars
     //TODO: check what happens when u dont have internet
     //TODO: sound when u get and send a message

@@ -81,6 +81,8 @@ Map translation = {
         "Your friends can scan this QR code to add you as a friend.",
     "scanqr": "Scan a QR code",
     "requestsent": "Friend request sent.",
+    "online": "Online",
+    "offline": "Offline",
   },
   "hu": {
     "countrycode": "hu",
@@ -165,5 +167,7 @@ Map translation = {
         "A barátaid ezt a QR kódot beolvasva hozzáadhatnak a barátlistájukhoz.",
     "scanqr": "QR kód beolvasása",
     "requestsent": "Barátkérelem elküldve.",
+    "online": "Elérhető",
+    "offline": "Nem elérhető",
   }
 };
