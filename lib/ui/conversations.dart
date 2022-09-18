@@ -166,6 +166,12 @@ class _ConversationsViewState extends State<ConversationsView> {
                                                         : 1),
                                                 child: TextButton(
                                                   onPressed: () {
+                                                    scrollController.animateTo(
+                                                      0,
+                                                      duration: const Duration(
+                                                          milliseconds: 400),
+                                                      curve: Curves.ease,
+                                                    );
                                                     swipeDirection =
                                                         RevealSide.right;
                                                     gkey.currentState

@@ -10,10 +10,15 @@ import '../data/translation.dart';
 import '../data/userdata.dart';
 import '../data/util.dart';
 import '../main.dart';
+import 'conversations.dart';
 import 'loading.dart';
 import 'mainscreen.dart';
 
 int unreadMessages = 0;
+DraggableScrollableController scrollController =
+    DraggableScrollableController();
+double scrollSize = 0;
+bool isScrolling = false;
 
 class AddFriendsQR extends StatefulWidget {
   const AddFriendsQR({super.key});
@@ -25,6 +30,10 @@ class AddFriendsQR extends StatefulWidget {
 class _AddFriendsQRState extends State<AddFriendsQR> {
   Future<void> getData() async {
     unreadMessages = await getUnreadMessages();
+    myStatus = await getStatus(FirebaseAuth.instance.currentUser?.email ?? "");
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   @override
@@ -35,6 +44,18 @@ class _AddFriendsQRState extends State<AddFriendsQR> {
         setState(() {});
       }
     });
+    if (scrollController.isAttached) {
+      scrollSize = scrollController.size;
+      if (scrollController.size < 0.3 &&
+          scrollController.size > 0.01 &&
+          !isScrolling) {
+        scrollController.animateTo(
+          0,
+          duration: const Duration(milliseconds: 400),
+          curve: Curves.ease,
+        );
+      }
+    }
     return Scaffold(
       backgroundColor: getColor("background2"),
       body: Stack(children: [
@@ -49,90 +70,99 @@ class _AddFriendsQRState extends State<AddFriendsQR> {
                     left: 16,
                     right: 16,
                   ),
-                  child: Container(
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: getColor("background"),
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.45),
-                          spreadRadius: 5,
-                          blurRadius: 7,
-                          offset: const Offset(
-                            0,
-                            3,
-                          ),
-                        ),
-                      ],
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            translation[currentLanguage]["addfriendqr"],
-                            style: getFont("mainfont")(
-                              color: getColor("maintext"),
-                              fontSize: 18,
+                  child: GestureDetector(
+                    onTap: (() {
+                      scrollController.animateTo(
+                        0,
+                        duration: const Duration(milliseconds: 400),
+                        curve: Curves.ease,
+                      );
+                    }),
+                    child: Container(
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: getColor("background"),
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.45),
+                            spreadRadius: 5,
+                            blurRadius: 7,
+                            offset: const Offset(
+                              0,
+                              3,
                             ),
                           ),
-                          Padding(
-                            padding: const EdgeInsets.only(left: 8.0),
-                            child: Text(
-                              translation[currentLanguage]["addfriendqrtext"],
-                              style: getFont("mainfont")(
-                                color: getColor("secondarytext"),
-                                fontSize: 14,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(
-                            height: 18,
-                          ),
-                          Center(
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(10),
-                              child: QrImage(
-                                data: encryptText(
-                                  FirebaseAuth.instance.currentUser?.email ??
-                                      "",
-                                ),
-                                version: QrVersions.auto,
-                                size: 275.0,
-                                foregroundColor: Colors.black,
-                                backgroundColor: Colors.white,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(
-                            height: 24,
-                          ),
-                          GestureDetector(
-                            onTap: () {
-                              push(context, const ScanQRView());
-                            },
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Icons.qr_code_rounded,
-                                  color: getColor("secondarytext"),
-                                  size: 26,
-                                ),
-                                const SizedBox(
-                                  width: 8,
-                                ),
-                                Text(
-                                  translation[currentLanguage]["scanqr"],
-                                  style: getFont("mainfont")(
-                                    color: getColor("secondarytext"),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          )
                         ],
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              translation[currentLanguage]["addfriendqr"],
+                              style: getFont("mainfont")(
+                                color: getColor("maintext"),
+                                fontSize: 18,
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(left: 8.0),
+                              child: Text(
+                                translation[currentLanguage]["addfriendqrtext"],
+                                style: getFont("mainfont")(
+                                  color: getColor("secondarytext"),
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(
+                              height: 18,
+                            ),
+                            Center(
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(10),
+                                child: QrImage(
+                                  data: encryptText(
+                                    FirebaseAuth.instance.currentUser?.email ??
+                                        "",
+                                  ),
+                                  version: QrVersions.auto,
+                                  size: 275.0,
+                                  foregroundColor: Colors.black,
+                                  backgroundColor: Colors.white,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(
+                              height: 24,
+                            ),
+                            GestureDetector(
+                              onTap: () {
+                                push(context, const ScanQRView());
+                              },
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.qr_code_rounded,
+                                    color: getColor("secondarytext"),
+                                    size: 26,
+                                  ),
+                                  const SizedBox(
+                                    width: 8,
+                                  ),
+                                  Text(
+                                    translation[currentLanguage]["scanqr"],
+                                    style: getFont("mainfont")(
+                                      color: getColor("secondarytext"),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -226,26 +256,16 @@ class _AddFriendsQRState extends State<AddFriendsQR> {
                     onPressed: () {
                       if (selectedIndex == 0) return;
                       selectedIndex = 0;
-                      pushReplacement(context, const MainView());
+                      push(context, const MainView());
                     },
-                    child: Stack(
-                      children: [
-                        AnimatedOpacity(
-                          duration: const Duration(milliseconds: 250),
-                          opacity: selectedIndex == 0 ? 1 : 0.5,
-                          // ignore: prefer_const_constructors
-                          child: AnimatedLogo(
-                            sizeMul: 0.3,
-                            stopAfterFirstCycle: true,
-                          ),
-                        ),
-                        Align(
-                          alignment: const Alignment(0.1, 1),
-                          child: NotificationBubble(
-                            amount: unreadMessages,
-                          ),
-                        ),
-                      ],
+                    child: AnimatedOpacity(
+                      duration: const Duration(milliseconds: 250),
+                      opacity: selectedIndex == 0 ? 1 : 0.5,
+                      // ignore: prefer_const_constructors
+                      child: AnimatedLogo(
+                        sizeMul: 0.3,
+                        stopAfterFirstCycle: true,
+                      ),
                     ),
                   ),
                 ),
@@ -259,14 +279,70 @@ class _AddFriendsQRState extends State<AddFriendsQR> {
                       selectedIndex = 1;
                       //pushReplacement(context, const FriendsView());
                     },
+                    child: Stack(
+                      children: [
+                        Center(
+                          child: AnimatedOpacity(
+                            duration: const Duration(milliseconds: 250),
+                            opacity: selectedIndex == 1 ? 1 : 0.5,
+                            child: Image.asset(
+                              "assets/friends.png",
+                              color: getColor("logo"),
+                              height: 37,
+                              width: 37,
+                            ),
+                          ),
+                        ),
+                        Align(
+                          alignment: const Alignment(0.2, 1),
+                          child: NotificationBubble(
+                            amount: friendRequestAmount,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: TextButton(
+                    style: const ButtonStyle(
+                      splashFactory: NoSplash.splashFactory,
+                    ),
+                    onPressed: () {
+                      //if (selectedIndex == 2) return;
+                      //selectedIndex = 2;
+                      //push(context, const MainView());
+                      scrollController.animateTo(
+                        0.5,
+                        duration: const Duration(milliseconds: 400),
+                        curve: Curves.ease,
+                      );
+                      isScrolling = true;
+                      Timer(const Duration(milliseconds: 400), () {
+                        isScrolling = false;
+                      });
+                    },
                     child: AnimatedOpacity(
                       duration: const Duration(milliseconds: 250),
-                      opacity: selectedIndex == 1 ? 1 : 0.5,
-                      child: Image.asset(
-                        "assets/friends.png",
-                        color: getColor("logo"),
-                        height: 37,
-                        width: 37,
+                      opacity: selectedIndex == 2 ? 1 : 0.5,
+                      // ignore: prefer_const_constructors
+                      child: SizedBox(
+                        width: 30,
+                        height: 30,
+                        child: Stack(
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(50),
+                              child: AvatarImage(
+                                url: myProfilePicture,
+                              ),
+                            ),
+                            Align(
+                              alignment: Alignment.bottomRight,
+                              child: StatusIndicator(status: myStatus),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -274,6 +350,16 @@ class _AddFriendsQRState extends State<AddFriendsQR> {
               ],
             ),
           ),
+        ),
+        DraggableScrollableSheet(
+          minChildSize: 0,
+          initialChildSize: scrollSize,
+          controller: scrollController,
+          builder: (context, scrollController) {
+            return SettingsView(
+              scrollController: scrollController,
+            );
+          },
         ),
       ]),
     );

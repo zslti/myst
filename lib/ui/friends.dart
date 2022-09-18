@@ -20,6 +20,10 @@ Map displayNames = {};
 Map statuses = {};
 List friends = [];
 int unreadMessages = 0;
+DraggableScrollableController scrollController =
+    DraggableScrollableController();
+double scrollSize = 0;
+bool isScrolling = false;
 
 class FriendsView extends StatefulWidget {
   const FriendsView({Key? key}) : super(key: key);
@@ -45,6 +49,8 @@ class _FriendsViewState extends State<FriendsView> {
     }
 
     unreadMessages = await getUnreadMessages();
+    myStatus = await getStatus(FirebaseAuth.instance.currentUser?.email ?? "");
+    setState(() {});
   }
 
   @override
@@ -61,6 +67,18 @@ class _FriendsViewState extends State<FriendsView> {
       }
     });
     getData();
+    if (scrollController.isAttached) {
+      scrollSize = scrollController.size;
+      if (scrollController.size < 0.3 &&
+          scrollController.size > 0.01 &&
+          !isScrolling) {
+        scrollController.animateTo(
+          0,
+          duration: const Duration(milliseconds: 400),
+          curve: Curves.ease,
+        );
+      }
+    }
     return Scaffold(
       resizeToAvoidBottomInset: false,
       backgroundColor: getColor("background2"),
@@ -252,26 +270,16 @@ class _FriendsViewState extends State<FriendsView> {
                       onPressed: () {
                         if (selectedIndex == 0) return;
                         selectedIndex = 0;
-                        pushReplacement(context, const MainView());
+                        push(context, const MainView());
                       },
-                      child: Stack(
-                        children: [
-                          AnimatedOpacity(
-                            duration: const Duration(milliseconds: 250),
-                            opacity: selectedIndex == 0 ? 1 : 0.5,
-                            // ignore: prefer_const_constructors
-                            child: AnimatedLogo(
-                              sizeMul: 0.3,
-                              stopAfterFirstCycle: true,
-                            ),
-                          ),
-                          Align(
-                            alignment: const Alignment(0.1, 1),
-                            child: NotificationBubble(
-                              amount: unreadMessages,
-                            ),
-                          ),
-                        ],
+                      child: AnimatedOpacity(
+                        duration: const Duration(milliseconds: 250),
+                        opacity: selectedIndex == 0 ? 1 : 0.5,
+                        // ignore: prefer_const_constructors
+                        child: AnimatedLogo(
+                          sizeMul: 0.3,
+                          stopAfterFirstCycle: true,
+                        ),
                       ),
                     ),
                   ),
@@ -285,14 +293,70 @@ class _FriendsViewState extends State<FriendsView> {
                         selectedIndex = 1;
                         //pushReplacement(context, const FriendsView());
                       },
+                      child: Stack(
+                        children: [
+                          Center(
+                            child: AnimatedOpacity(
+                              duration: const Duration(milliseconds: 250),
+                              opacity: selectedIndex == 1 ? 1 : 0.5,
+                              child: Image.asset(
+                                "assets/friends.png",
+                                color: getColor("logo"),
+                                height: 37,
+                                width: 37,
+                              ),
+                            ),
+                          ),
+                          Align(
+                            alignment: const Alignment(0.2, 1),
+                            child: NotificationBubble(
+                              amount: friendRequestAmount,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: TextButton(
+                      style: const ButtonStyle(
+                        splashFactory: NoSplash.splashFactory,
+                      ),
+                      onPressed: () {
+                        //if (selectedIndex == 2) return;
+                        //selectedIndex = 2;
+                        //push(context, const MainView());
+                        scrollController.animateTo(
+                          0.5,
+                          duration: const Duration(milliseconds: 400),
+                          curve: Curves.ease,
+                        );
+                        isScrolling = true;
+                        Timer(const Duration(milliseconds: 400), () {
+                          isScrolling = false;
+                        });
+                      },
                       child: AnimatedOpacity(
                         duration: const Duration(milliseconds: 250),
-                        opacity: selectedIndex == 1 ? 1 : 0.5,
-                        child: Image.asset(
-                          "assets/friends.png",
-                          color: getColor("logo"),
-                          height: 37,
-                          width: 37,
+                        opacity: selectedIndex == 2 ? 1 : 0.5,
+                        // ignore: prefer_const_constructors
+                        child: SizedBox(
+                          width: 30,
+                          height: 30,
+                          child: Stack(
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(50),
+                                child: AvatarImage(
+                                  url: myProfilePicture,
+                                ),
+                              ),
+                              Align(
+                                alignment: Alignment.bottomRight,
+                                child: StatusIndicator(status: myStatus),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -300,6 +364,16 @@ class _FriendsViewState extends State<FriendsView> {
                 ],
               ),
             ),
+          ),
+          DraggableScrollableSheet(
+            minChildSize: 0,
+            initialChildSize: scrollSize,
+            controller: scrollController,
+            builder: (context, scrollController) {
+              return SettingsView(
+                scrollController: scrollController,
+              );
+            },
           ),
         ],
       ),
@@ -489,39 +563,49 @@ class _FriendRequestsViewState extends State<FriendRequestsView> {
         behavior: MyBehavior(),
         child: Stack(
           children: [
-            Builder(builder: (context) {
-              if (widget.requests.isEmpty) {
-                return Center(
-                  child: Opacity(
-                    opacity: 0.5,
-                    child: Text(
-                      widget.text ==
-                              translation[currentLanguage]["incomingrequests"]
-                          ? translation[currentLanguage]["noincomingrequests"]
-                          : translation[currentLanguage]["nooutgoingrequests"],
-                      style: getFont("mainfont")(
-                        color: getColor("secondarytext"),
-                      ),
-                    ),
-                  ),
+            GestureDetector(
+              onTap: () {
+                scrollController.animateTo(
+                  0,
+                  duration: const Duration(milliseconds: 400),
+                  curve: Curves.ease,
                 );
-              }
-              return Padding(
-                padding: const EdgeInsets.only(left: 12, right: 12, top: 55),
-                child: ListView(
-                  children: [
-                    for (final request in widget.requests)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: FriendRequest(
-                          request: request,
-                          options: widget.options,
+              },
+              child: Builder(builder: (context) {
+                if (widget.requests.isEmpty) {
+                  return Center(
+                    child: Opacity(
+                      opacity: 0.5,
+                      child: Text(
+                        widget.text ==
+                                translation[currentLanguage]["incomingrequests"]
+                            ? translation[currentLanguage]["noincomingrequests"]
+                            : translation[currentLanguage]
+                                ["nooutgoingrequests"],
+                        style: getFont("mainfont")(
+                          color: getColor("secondarytext"),
                         ),
                       ),
-                  ],
-                ),
-              );
-            }),
+                    ),
+                  );
+                }
+                return Padding(
+                  padding: const EdgeInsets.only(left: 12, right: 12, top: 55),
+                  child: ListView(
+                    children: [
+                      for (final request in widget.requests)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: FriendRequest(
+                            request: request,
+                            options: widget.options,
+                          ),
+                        ),
+                    ],
+                  ),
+                );
+              }),
+            ),
             Container(
               width: MediaQuery.of(context).size.width,
               height: 73,
@@ -604,7 +688,7 @@ class _FriendRequestsViewState extends State<FriendRequestsView> {
                         onPressed: () {
                           if (selectedIndex == 0) return;
                           selectedIndex = 0;
-                          pushReplacement(context, const MainView());
+                          push(context, const MainView());
                         },
                         child: AnimatedOpacity(
                           duration: const Duration(milliseconds: 250),
@@ -627,14 +711,70 @@ class _FriendRequestsViewState extends State<FriendRequestsView> {
                           selectedIndex = 1;
                           //pushReplacement(context, const FriendsView());
                         },
+                        child: Stack(
+                          children: [
+                            Center(
+                              child: AnimatedOpacity(
+                                duration: const Duration(milliseconds: 250),
+                                opacity: selectedIndex == 1 ? 1 : 0.5,
+                                child: Image.asset(
+                                  "assets/friends.png",
+                                  color: getColor("logo"),
+                                  height: 37,
+                                  width: 37,
+                                ),
+                              ),
+                            ),
+                            Align(
+                              alignment: const Alignment(0.2, 1),
+                              child: NotificationBubble(
+                                amount: friendRequestAmount,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: TextButton(
+                        style: const ButtonStyle(
+                          splashFactory: NoSplash.splashFactory,
+                        ),
+                        onPressed: () {
+                          //if (selectedIndex == 2) return;
+                          //selectedIndex = 2;
+                          //push(context, const MainView());
+                          scrollController.animateTo(
+                            0.5,
+                            duration: const Duration(milliseconds: 400),
+                            curve: Curves.ease,
+                          );
+                          isScrolling = true;
+                          Timer(const Duration(milliseconds: 400), () {
+                            isScrolling = false;
+                          });
+                        },
                         child: AnimatedOpacity(
                           duration: const Duration(milliseconds: 250),
-                          opacity: selectedIndex == 1 ? 1 : 0.5,
-                          child: Image.asset(
-                            "assets/friends.png",
-                            color: getColor("logo"),
-                            height: 37,
-                            width: 37,
+                          opacity: selectedIndex == 2 ? 1 : 0.5,
+                          // ignore: prefer_const_constructors
+                          child: SizedBox(
+                            width: 30,
+                            height: 30,
+                            child: Stack(
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(50),
+                                  child: AvatarImage(
+                                    url: myProfilePicture,
+                                  ),
+                                ),
+                                Align(
+                                  alignment: Alignment.bottomRight,
+                                  child: StatusIndicator(status: myStatus),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
@@ -642,6 +782,16 @@ class _FriendRequestsViewState extends State<FriendRequestsView> {
                   ],
                 ),
               ),
+            ),
+            DraggableScrollableSheet(
+              minChildSize: 0,
+              initialChildSize: scrollSize,
+              controller: scrollController,
+              builder: (context, scrollController) {
+                return SettingsView(
+                  scrollController: scrollController,
+                );
+              },
             ),
           ],
         ),

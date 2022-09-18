@@ -51,6 +51,8 @@ dependencies:
   qr_flutter: ^4.0.0
   mobile_scanner: ^2.0.0
   flutter_local_notifications: ^9.9.1
+  image_picker: ^0.8.5+3
+  firebase_storage: ^10.3.8
 
 dev_dependencies:
   flutter_test:

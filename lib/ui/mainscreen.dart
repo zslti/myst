@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:myst/data/theme.dart';
 import 'package:myst/data/userdata.dart';
@@ -18,6 +19,11 @@ bool shouldRebuild = true;
 int selectedIndex = 0;
 int lastNotificationAmountRequest = 0;
 int friendRequestAmount = 0;
+String myStatus = "online", myProfilePicture = "";
+DraggableScrollableController scrollController =
+    DraggableScrollableController();
+double scrollSize = 0;
+bool isScrolling = false;
 
 void slideToCenter() {
   swipeDirection = RevealSide.right;
@@ -35,12 +41,16 @@ class MainView extends StatefulWidget {
 }
 
 class _MainViewState extends State<MainView> {
-  void getFriendRequestAmount() async {
+  void getData() async {
     if (DateTime.now().millisecondsSinceEpoch - lastNotificationAmountRequest >
         1000) {
       lastNotificationAmountRequest = DateTime.now().millisecondsSinceEpoch;
       friendRequestAmount = (await getSentFriendRequests()).length +
           (await getFriendRequests()).length;
+      myStatus =
+          await getStatus(FirebaseAuth.instance.currentUser?.email ?? "");
+      myProfilePicture = await getProfilePicture(
+          FirebaseAuth.instance.currentUser?.email ?? "");
     }
   }
 
@@ -62,70 +72,92 @@ class _MainViewState extends State<MainView> {
         t = true;
       });
     }
-    getFriendRequestAmount();
+    if (scrollController.isAttached) {
+      scrollSize = scrollController.size;
+      if (scrollController.size < 0.3 &&
+          scrollController.size > 0.01 &&
+          !isScrolling) {
+        scrollController.animateTo(
+          0,
+          duration: const Duration(milliseconds: 400),
+          curve: Curves.ease,
+        );
+      }
+    }
+    getData();
+
     return Stack(
       children: [
-        OverlappingPanels(
-          onSideChange: (value) {
-            actualSide = value;
+        GestureDetector(
+          onTap: () {
+            scrollController.animateTo(
+              0,
+              duration: const Duration(milliseconds: 400),
+              curve: Curves.ease,
+            );
           },
-          key: _myKey,
-          main: Stack(
-            children: [
-              AnimatedOpacity(
-                duration: const Duration(milliseconds: 500),
-                opacity: t ? 1 : 0,
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 35),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(15),
-                    child: Stack(
-                      children: [
-                        // ignore: prefer_const_constructors
-                        MessagesView(),
-                        IgnorePointer(
-                          ignoring: actualSide == RevealSide.main,
-                          child: AnimatedOpacity(
-                            opacity: isSliding ? 0.05 : 0,
-                            duration: const Duration(milliseconds: 200),
-                            child: GestureDetector(
-                              onTap: () {
-                                if (actualSide == RevealSide.left) {
-                                  swipeDirection = RevealSide.right;
-                                  gkey.currentState?.onTranslate(
-                                    -50 *
-                                        MediaQuery.of(context).size.width /
-                                        400,
-                                    shouldApplyTransition: true,
-                                  );
-                                } else {
-                                  swipeDirection = RevealSide.left;
-                                  gkey.currentState?.onTranslate(
-                                    50 *
-                                        MediaQuery.of(context).size.width /
-                                        400,
-                                    shouldApplyTransition: true,
-                                  );
-                                }
-                              },
-                              child: const Scaffold(
-                                backgroundColor:
-                                    Color.fromARGB(255, 78, 78, 78),
+          child: OverlappingPanels(
+            onSideChange: (value) {
+              actualSide = value;
+            },
+            key: _myKey,
+            main: Stack(
+              children: [
+                AnimatedOpacity(
+                  duration: const Duration(milliseconds: 500),
+                  opacity: t ? 1 : 0,
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 35),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(15),
+                      child: Stack(
+                        children: [
+                          // ignore: prefer_const_constructors
+                          MessagesView(),
+                          IgnorePointer(
+                            ignoring: actualSide == RevealSide.main,
+                            child: AnimatedOpacity(
+                              opacity: isSliding ? 0.05 : 0,
+                              duration: const Duration(milliseconds: 200),
+                              child: GestureDetector(
+                                onTap: () {
+                                  if (actualSide == RevealSide.left) {
+                                    swipeDirection = RevealSide.right;
+                                    gkey.currentState?.onTranslate(
+                                      -50 *
+                                          MediaQuery.of(context).size.width /
+                                          400,
+                                      shouldApplyTransition: true,
+                                    );
+                                  } else {
+                                    swipeDirection = RevealSide.left;
+                                    gkey.currentState?.onTranslate(
+                                      50 *
+                                          MediaQuery.of(context).size.width /
+                                          400,
+                                      shouldApplyTransition: true,
+                                    );
+                                  }
+                                },
+                                child: const Scaffold(
+                                  backgroundColor:
+                                      Color.fromARGB(255, 78, 78, 78),
+                                ),
                               ),
                             ),
-                          ),
-                        )
-                      ],
+                          )
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
-          ),
-          // ignore: prefer_const_constructors
-          left: ConversationsView(),
-          right: Scaffold(
-            backgroundColor: getColor("background"),
+              ],
+            ),
+            // ignore: prefer_const_constructors
+            left: ConversationsView(),
+            right: Scaffold(
+              backgroundColor: getColor("background"),
+            ),
           ),
         ),
         AnimatedAlign(
@@ -199,7 +231,7 @@ class _MainViewState extends State<MainView> {
                           ),
                         ),
                         Align(
-                          alignment: const Alignment(0.1, 1),
+                          alignment: const Alignment(0.2, 1),
                           child: NotificationBubble(
                             amount: friendRequestAmount,
                           ),
@@ -208,11 +240,150 @@ class _MainViewState extends State<MainView> {
                     ),
                   ),
                 ),
+                Expanded(
+                  child: TextButton(
+                    style: const ButtonStyle(
+                      splashFactory: NoSplash.splashFactory,
+                    ),
+                    onPressed: () {
+                      //if (selectedIndex == 2) return;
+                      //selectedIndex = 2;
+                      //push(context, const MainView());
+                      scrollController.animateTo(
+                        0.5,
+                        duration: const Duration(milliseconds: 400),
+                        curve: Curves.ease,
+                      );
+                      isScrolling = true;
+                      Timer(const Duration(milliseconds: 400), () {
+                        isScrolling = false;
+                      });
+                    },
+                    child: AnimatedOpacity(
+                      duration: const Duration(milliseconds: 250),
+                      opacity: selectedIndex == 2 ? 1 : 0.5,
+                      // ignore: prefer_const_constructors
+                      child: SizedBox(
+                        width: 30,
+                        height: 30,
+                        child: Stack(
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(50),
+                              child: AvatarImage(
+                                url: myProfilePicture,
+                              ),
+                            ),
+                            Align(
+                              alignment: Alignment.bottomRight,
+                              child: StatusIndicator(status: myStatus),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
+        ),
+        DraggableScrollableSheet(
+          minChildSize: 0,
+          initialChildSize: scrollSize,
+          controller: scrollController,
+          builder: (context, scrollController) {
+            return SettingsView(
+              scrollController: scrollController,
+            );
+          },
         )
       ],
+    );
+  }
+}
+
+class SettingsView extends StatefulWidget {
+  const SettingsView({
+    Key? key,
+    required this.scrollController,
+  }) : super(key: key);
+  final ScrollController scrollController;
+  @override
+  State<SettingsView> createState() => _SettingsViewState();
+}
+
+class _SettingsViewState extends State<SettingsView> {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: getColor("background"),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.45),
+            spreadRadius: 5,
+            blurRadius: 7,
+            offset: const Offset(
+              0,
+              3,
+            ),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: Scaffold(
+          backgroundColor: getColor("background"),
+          body: ListView(
+            controller: widget.scrollController,
+            children: [
+              const SizedBox(
+                height: 50,
+              ),
+              const Text(
+                "ideiglenes shit",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 30,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(
+                height: 50,
+              ),
+              const ListTile(
+                title: Text("Dark mode"),
+              ),
+              ListTile(
+                title: const Text("Status"),
+                trailing: TextButton(
+                  onPressed: () {},
+                  child: const Text("Edit"),
+                ),
+              ),
+              ListTile(
+                title: const Text("Profile picture"),
+                trailing: TextButton(
+                  onPressed: () {},
+                  child: const Text("Edit"),
+                ),
+              ),
+              ListTile(
+                title: const Text("Log out"),
+                trailing: TextButton(
+                  onPressed: () {
+                    FirebaseAuth.instance.signOut();
+                  },
+                  child: const Text("Log out"),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

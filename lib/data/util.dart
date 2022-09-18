@@ -407,3 +407,47 @@ String timestampToDate(int timestamp, {bool showOnlyDate = false}) {
     return "${date.year} $theDate${hourMinuteFormat(date.hour, date.minute)}";
   }
 }
+
+class AvatarImage extends StatefulWidget {
+  const AvatarImage({Key? key, this.url = ""}) : super(key: key);
+  final String url;
+
+  @override
+  State<AvatarImage> createState() => _AvatarImageState();
+}
+
+class _AvatarImageState extends State<AvatarImage> {
+  @override
+  Widget build(BuildContext context) {
+    if (widget.url == "empty") {
+      return Container();
+    }
+    if (widget.url.isEmpty ||
+        widget.url.contains(" ") ||
+        !widget.url.contains("https://")) {
+      return Image(
+        image: Image.network(
+          "https://i.pinimg.com/736x/6b/f6/2c/6bf62c6c123cdcd33d2d693782a46b34.jpg",
+        ).image,
+      );
+    }
+    return AspectRatio(
+      aspectRatio: 1,
+      child: Image(
+        fit: BoxFit.cover,
+        errorBuilder:
+            (BuildContext context, Object exception, StackTrace? stackTrace) {
+          return Image(
+            image: Image.network(
+              "https://i.pinimg.com/736x/6b/f6/2c/6bf62c6c123cdcd33d2d693782a46b34.jpg",
+            ).image,
+          );
+        },
+        image: Image.network(
+          widget.url,
+          //fit: BoxFit.cover,
+        ).image,
+      ),
+    );
+  }
+}

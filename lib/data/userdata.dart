@@ -1,5 +1,10 @@
+import 'dart:io';
+
+import 'package:firebase_storage/firebase_storage.dart';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../main.dart';
 import 'util.dart';
@@ -285,4 +290,26 @@ Future<String> getStatus(String email) async {
     return "offline";
   }
   return status['state'] ?? "offline";
+}
+
+Future<void> updateProfilePicture(ImageSource source) async {
+  XFile? image = await ImagePicker().pickImage(source: source);
+  if (image == null) {
+    return;
+  }
+  final storageRef = FirebaseStorage.instance.ref();
+  final imageRef = storageRef.child(
+    "profiles/${FirebaseAuth.instance.currentUser?.email}",
+  );
+  await imageRef.putFile(File(image.path));
+}
+
+Future<String> getProfilePicture(String email) async {
+  final storageRef = FirebaseStorage.instance.ref();
+  final imageRef = storageRef.child("profiles/$email");
+  try {
+    return await imageRef.getDownloadURL();
+  } catch (e) {
+    return "";
+  }
 }
