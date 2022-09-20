@@ -22,6 +22,8 @@ List friends = [];
 int unreadMessages = 0;
 DraggableScrollableController scrollController =
     DraggableScrollableController();
+DraggableScrollableController scrollController2 =
+    DraggableScrollableController();
 double scrollSize = 0;
 bool isScrolling = false;
 
@@ -493,9 +495,10 @@ class _FriendRequestButtonState extends State<FriendRequestButton> {
           push(
             context,
             FriendRequestsView(
-                text: widget.text,
-                requests: widget.requests,
-                options: widget.options),
+              text: widget.text,
+              requests: widget.requests,
+              options: widget.options,
+            ),
           );
         },
         style: TextButton.styleFrom(
@@ -557,6 +560,7 @@ class _FriendRequestsViewState extends State<FriendRequestsView> {
       }
       //});
     });
+
     return Scaffold(
       backgroundColor: getColor("background2"),
       body: ScrollConfiguration(
@@ -565,7 +569,7 @@ class _FriendRequestsViewState extends State<FriendRequestsView> {
           children: [
             GestureDetector(
               onTap: () {
-                scrollController.animateTo(
+                scrollController2.animateTo(
                   0,
                   duration: const Duration(milliseconds: 400),
                   curve: Curves.ease,
@@ -744,7 +748,7 @@ class _FriendRequestsViewState extends State<FriendRequestsView> {
                           //if (selectedIndex == 2) return;
                           //selectedIndex = 2;
                           //push(context, const MainView());
-                          scrollController.animateTo(
+                          scrollController2.animateTo(
                             0.5,
                             duration: const Duration(milliseconds: 400),
                             curve: Curves.ease,
@@ -786,7 +790,7 @@ class _FriendRequestsViewState extends State<FriendRequestsView> {
             DraggableScrollableSheet(
               minChildSize: 0,
               initialChildSize: scrollSize,
-              controller: scrollController,
+              controller: scrollController2,
               builder: (context, scrollController) {
                 return SettingsView(
                   scrollController: scrollController,

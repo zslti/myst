@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:myst/data/theme.dart';
 import 'package:myst/data/userdata.dart';
 import 'package:myst/data/util.dart';
@@ -19,7 +20,7 @@ bool shouldRebuild = true;
 int selectedIndex = 0;
 int lastNotificationAmountRequest = 0;
 int friendRequestAmount = 0;
-String myStatus = "online", myProfilePicture = "";
+String myStatus = "online", myProfilePicture = "", myDisplayName = "";
 DraggableScrollableController scrollController =
     DraggableScrollableController();
 double scrollSize = 0;
@@ -47,10 +48,15 @@ class _MainViewState extends State<MainView> {
       lastNotificationAmountRequest = DateTime.now().millisecondsSinceEpoch;
       friendRequestAmount = (await getSentFriendRequests()).length +
           (await getFriendRequests()).length;
-      myStatus =
-          await getStatus(FirebaseAuth.instance.currentUser?.email ?? "");
+      myStatus = await getStatus(
+        FirebaseAuth.instance.currentUser?.email ?? "",
+      );
       myProfilePicture = await getProfilePicture(
-          FirebaseAuth.instance.currentUser?.email ?? "");
+        FirebaseAuth.instance.currentUser?.email ?? "",
+      );
+      myDisplayName = await getDisplayName(
+        FirebaseAuth.instance.currentUser?.email ?? "",
+      );
     }
   }
 
@@ -316,71 +322,208 @@ class SettingsView extends StatefulWidget {
 class _SettingsViewState extends State<SettingsView> {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: getColor("background"),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.45),
-            spreadRadius: 5,
-            blurRadius: 7,
-            offset: const Offset(
-              0,
-              3,
+    return Padding(
+      padding: const EdgeInsets.only(top: 35),
+      child: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: getColor("background"),
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.45),
+              spreadRadius: 5,
+              blurRadius: 7,
+              offset: const Offset(
+                0,
+                3,
+              ),
             ),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: Scaffold(
-          backgroundColor: getColor("background"),
-          body: ListView(
-            controller: widget.scrollController,
-            children: [
-              const SizedBox(
-                height: 50,
-              ),
-              const Text(
-                "ideiglenes shit",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 30,
-                  fontWeight: FontWeight.bold,
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: Scaffold(
+            backgroundColor: getColor("background"),
+            body: Stack(
+              children: [
+                ListView(
+                  padding: EdgeInsets.zero,
+                  //shrinkWrap: true,
+                  controller: widget.scrollController,
+                  children: [
+                    Container(
+                      height: 200,
+                      decoration: BoxDecoration(
+                        //color: getColor("background2"),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.25),
+                            spreadRadius: 3,
+                            blurRadius: 10,
+                            offset: const Offset(
+                              0,
+                              -5,
+                            ),
+                          ),
+                        ],
+                      ),
+                      child: Stack(
+                        children: [
+                          Column(
+                            children: [
+                              Expanded(
+                                flex: 3,
+                                child: Container(
+                                  color: const Color.fromARGB(255, 0, 70, 75),
+                                  child: const Center(
+                                    child: Text("banner here"),
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                flex: 2,
+                                child: Container(
+                                  color: getColor("background2"),
+                                ),
+                              ),
+                            ],
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(
+                              left: 16,
+                              right: 16,
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    SizedBox(
+                                      height: 90,
+                                      width: 90,
+                                      child: Stack(
+                                        children: [
+                                          ClipRRect(
+                                            borderRadius:
+                                                BorderRadius.circular(50),
+                                            child: AvatarImage(
+                                              url: myProfilePicture,
+                                            ),
+                                          ),
+                                          Align(
+                                            alignment:
+                                                const Alignment(0.85, 0.85),
+                                            child: StatusIndicator(
+                                              status: myStatus,
+                                              size: 15,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    GestureDetector(
+                                      onTap: () {
+                                        updateProfilePicture(
+                                          ImageSource.camera,
+                                        );
+                                      },
+                                      child: Padding(
+                                        padding: const EdgeInsets.only(
+                                          left: 4.0,
+                                          right: 4.0,
+                                        ),
+                                        child: Icon(
+                                          Icons.camera_outlined,
+                                          color: getColor("secondarytext"),
+                                          size: 24,
+                                        ),
+                                      ),
+                                    ),
+                                    GestureDetector(
+                                      onTap: () {
+                                        updateProfilePicture(
+                                          ImageSource.gallery,
+                                        );
+                                      },
+                                      child: Padding(
+                                        padding: const EdgeInsets.only(
+                                          left: 4.0,
+                                          right: 4.0,
+                                        ),
+                                        child: Icon(
+                                          Icons.image_outlined,
+                                          color: getColor("secondarytext"),
+                                          size: 24,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                    top: 6.0,
+                                    bottom: 8.0,
+                                  ),
+                                  child: RichText(
+                                    overflow: TextOverflow.ellipsis,
+                                    text: TextSpan(children: [
+                                      TextSpan(
+                                        text: myDisplayName.length > 25
+                                            ? "${myDisplayName.substring(
+                                                  0,
+                                                  25,
+                                                ).trimRight()}..."
+                                            : myDisplayName,
+                                        style: getFont("mainfont")(
+                                          color: getColor("maintext"),
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      WidgetSpan(
+                                        child: Padding(
+                                          padding: const EdgeInsets.only(
+                                            left: 4.0,
+                                          ),
+                                          child: Icon(
+                                            Icons.edit,
+                                            size: 20,
+                                            color: getColor("secondarytext"),
+                                          ),
+                                        ),
+                                      ),
+                                    ]),
+                                  ),
+                                )
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  ],
                 ),
-              ),
-              const SizedBox(
-                height: 50,
-              ),
-              const ListTile(
-                title: Text("Dark mode"),
-              ),
-              ListTile(
-                title: const Text("Status"),
-                trailing: TextButton(
-                  onPressed: () {},
-                  child: const Text("Edit"),
+                IgnorePointer(
+                  child: Align(
+                    alignment: Alignment.topCenter,
+                    child: Padding(
+                      padding: const EdgeInsets.all(8),
+                      child: Container(
+                        width: MediaQuery.of(context).size.width / 4,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
+                          color: getColor("secondarytext").withOpacity(0.25),
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-              ListTile(
-                title: const Text("Profile picture"),
-                trailing: TextButton(
-                  onPressed: () {},
-                  child: const Text("Edit"),
-                ),
-              ),
-              ListTile(
-                title: const Text("Log out"),
-                trailing: TextButton(
-                  onPressed: () {
-                    FirebaseAuth.instance.signOut();
-                  },
-                  child: const Text("Log out"),
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

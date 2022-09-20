@@ -42,7 +42,9 @@ class _AddFriendsViewState extends State<AddFriendsView> {
     friends = f.toSet().toList();
     myStatus = await getStatus(FirebaseAuth.instance.currentUser?.email ?? "");
     unreadMessages = await getUnreadMessages();
-    setState(() {});
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   @override
