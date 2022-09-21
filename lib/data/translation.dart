@@ -83,6 +83,10 @@ Map translation = {
     "requestsent": "Friend request sent.",
     "online": "Online",
     "offline": "Offline",
+    "appsettings": "App settings",
+    "changelanguage": "Language",
+    "changetheme": "Theme",
+    "apply": "Apply",
   },
   "hu": {
     "countrycode": "hu",
@@ -169,5 +173,9 @@ Map translation = {
     "requestsent": "Barátkérelem elküldve.",
     "online": "Elérhető",
     "offline": "Nem elérhető",
+    "appsettings": "Alkalmazás beállítások",
+    "changelanguage": "Nyelv",
+    "changetheme": "Téma",
+    "apply": "Alkalmazás",
   }
 };

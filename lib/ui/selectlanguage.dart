@@ -30,8 +30,9 @@ int clang = 0;
 bool alreadySet = false, textVisible = true;
 
 class SelectLanguageView extends StatefulWidget {
-  const SelectLanguageView({Key? key}) : super(key: key);
-
+  const SelectLanguageView({Key? key, this.shouldPop = false})
+      : super(key: key);
+  final bool shouldPop;
   @override
   State<SelectLanguageView> createState() => _SelectLanguageViewState();
 }
@@ -166,10 +167,14 @@ class _SelectLanguageViewState extends State<SelectLanguageView> {
                               onPressed: () {
                                 prefs?.setString("language", language);
                                 currentLanguage = language;
-                                pushReplacement(
-                                  context,
-                                  const SelectThemeView(),
-                                );
+                                if (widget.shouldPop) {
+                                  Navigator.pop(context);
+                                } else {
+                                  pushReplacement(
+                                    context,
+                                    const SelectThemeView(),
+                                  );
+                                }
                               },
                               style: TextButton.styleFrom(
                                 backgroundColor: getColor(

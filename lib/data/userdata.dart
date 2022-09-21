@@ -313,3 +313,20 @@ Future<String> getProfilePicture(String email) async {
     return "";
   }
 }
+
+Future<void> changeUsername(String email, String name) async {
+  QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+      .collection('users')
+      .where("email", isEqualTo: email)
+      .get();
+  for (var doc in querySnapshot.docs) {
+    if (FirebaseAuth.instance.currentUser?.email != null &&
+        doc.data().toString().contains(
+              FirebaseAuth.instance.currentUser?.email ?? "",
+            )) {
+      doc.reference.update({
+        'username': name,
+      });
+    }
+  }
+}

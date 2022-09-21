@@ -19,6 +19,7 @@ dynamic currentConversation;
 List currentMessages = [];
 int lastRequestTime = 0;
 Map displayNames = {};
+Map profilePictures = {};
 TextEditingController messageController = TextEditingController();
 ItemScrollController _scrollController = ItemScrollController();
 ItemPositionsListener _itemPositionsListener = ItemPositionsListener.create();
@@ -70,11 +71,11 @@ class _MessageState extends State<Message> {
             borderRadius: BorderRadius.circular(
               50,
             ),
-            child: Container(
+            child: SizedBox(
               width: 32,
               height: 32,
-              color: getColor(
-                "button",
+              child: ProfileImage(
+                url: profilePictures[widget.message['sender']] ?? "",
               ),
             ),
           ),
@@ -167,6 +168,10 @@ class _MessagesViewState extends State<MessagesView> {
     }
   }
 
+  Future<void> getProfilePictureOf(String email) async {
+    profilePictures[email] = await getProfilePicture(email);
+  }
+
   Future<void> refreshMessages() async {
     if (currentConversation == null) {
       Timer(const Duration(milliseconds: 500), () {
@@ -199,6 +204,8 @@ class _MessagesViewState extends State<MessagesView> {
       for (int i = 0; i < jsonDecode(users).length; i++) {
         String email = jsonDecode(users)[i];
         names[email] = await getDisplayName(email);
+        //profilePictures[email] = await getProfilePicture(email);
+        getProfilePictureOf(email);
         if (currentMessages.length > messageCount &&
                 !done &&
                 currentMessages.length >

@@ -47,6 +47,12 @@ class _AddFriendsViewState extends State<AddFriendsView> {
     }
   }
 
+  Future<void> getProfilePictures() async {
+    for (final user in users) {
+      user["picture"] = await getProfilePicture(user["email"]);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (scrollController.isAttached) {
@@ -87,6 +93,7 @@ class _AddFriendsViewState extends State<AddFriendsView> {
                       child: TextField(
                         onChanged: (str) async {
                           users = await getUsersNamed(str);
+                          getProfilePictures();
                           users.removeWhere(
                             (element) =>
                                 element["email"] ==
@@ -191,11 +198,11 @@ class _AddFriendsViewState extends State<AddFriendsView> {
                                       borderRadius: BorderRadius.circular(
                                         50,
                                       ),
-                                      child: Container(
+                                      child: SizedBox(
                                         width: 32,
                                         height: 32,
-                                        color: getColor(
-                                          "button",
+                                        child: ProfileImage(
+                                          url: user["picture"] ?? "",
                                         ),
                                       ),
                                     ),
@@ -372,10 +379,15 @@ class _AddFriendsViewState extends State<AddFriendsView> {
                           duration: const Duration(milliseconds: 250),
                           opacity: selectedIndex == 0 ? 1 : 0.5,
                           // ignore: prefer_const_constructors
-                          child: AnimatedLogo(
-                            sizeMul: 0.3,
-                            stopAfterFirstCycle: true,
-                          ),
+                          child: Builder(builder: (context) {
+                            Timer(const Duration(milliseconds: 10), () {
+                              setState(() {});
+                            });
+                            return const AnimatedLogo(
+                              sizeMul: 0.3,
+                              stopAfterFirstCycle: true,
+                            );
+                          }),
                         ),
                       ),
                     ),
@@ -443,7 +455,7 @@ class _AddFriendsViewState extends State<AddFriendsView> {
                               children: [
                                 ClipRRect(
                                   borderRadius: BorderRadius.circular(50),
-                                  child: AvatarImage(
+                                  child: ProfileImage(
                                     url: myProfilePicture,
                                   ),
                                 ),

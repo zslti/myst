@@ -408,15 +408,15 @@ String timestampToDate(int timestamp, {bool showOnlyDate = false}) {
   }
 }
 
-class AvatarImage extends StatefulWidget {
-  const AvatarImage({Key? key, this.url = ""}) : super(key: key);
+class ProfileImage extends StatefulWidget {
+  const ProfileImage({Key? key, this.url = ""}) : super(key: key);
   final String url;
 
   @override
-  State<AvatarImage> createState() => _AvatarImageState();
+  State<ProfileImage> createState() => _ProfileImageState();
 }
 
-class _AvatarImageState extends State<AvatarImage> {
+class _ProfileImageState extends State<ProfileImage> {
   @override
   Widget build(BuildContext context) {
     if (widget.url == "empty") {

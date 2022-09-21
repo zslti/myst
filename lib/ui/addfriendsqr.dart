@@ -262,10 +262,15 @@ class _AddFriendsQRState extends State<AddFriendsQR> {
                       duration: const Duration(milliseconds: 250),
                       opacity: selectedIndex == 0 ? 1 : 0.5,
                       // ignore: prefer_const_constructors
-                      child: AnimatedLogo(
-                        sizeMul: 0.3,
-                        stopAfterFirstCycle: true,
-                      ),
+                      child: Builder(builder: (context) {
+                        Timer(const Duration(milliseconds: 10), () {
+                          setState(() {});
+                        });
+                        return const AnimatedLogo(
+                          sizeMul: 0.3,
+                          stopAfterFirstCycle: true,
+                        );
+                      }),
                     ),
                   ),
                 ),
@@ -333,7 +338,7 @@ class _AddFriendsQRState extends State<AddFriendsQR> {
                           children: [
                             ClipRRect(
                               borderRadius: BorderRadius.circular(50),
-                              child: AvatarImage(
+                              child: ProfileImage(
                                 url: myProfilePicture,
                               ),
                             ),

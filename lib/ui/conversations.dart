@@ -18,6 +18,7 @@ String searchText = "";
 int lastSearchTime = 0, searchApplyTime = 0;
 bool searchApplied = false;
 int lastRequestTime = 0;
+Map profilePictures = {};
 
 void applySearchTerm(String str) {
   isSearching = true;
@@ -43,6 +44,17 @@ class ConversationsView extends StatefulWidget {
 }
 
 class _ConversationsViewState extends State<ConversationsView> {
+  Future<void> getProfilePictures() async {
+    for (int i = 0; i < conversations.length; i++) {
+      // conversations[i]["picture"] = await getProfilePicture(
+      //   conversations[i]["email"],
+      // );
+      profilePictures[conversations[i]["email"]] = await getProfilePicture(
+        conversations[i]["email"],
+      );
+    }
+  }
+
   void getData() async {
     if (DateTime.now().millisecondsSinceEpoch - lastRequestTime < 100) {
       return;
@@ -53,9 +65,15 @@ class _ConversationsViewState extends State<ConversationsView> {
         "email": c[i],
         "displayname": await getDisplayName(c[i]),
         "status": await getStatus(c[i]),
+        //"picture": conversations[i]["picture"],
       };
+      // String email = c[i];
+      // c[i]["email"] = email;
+      // c[i]["displayname"] = await getDisplayName(email);
+      // c[i]["status"] = await getStatus(email);
     }
     conversations = c;
+    getProfilePictures();
     lastRequestTime = DateTime.now().millisecondsSinceEpoch;
     //setState(() {});
   }
@@ -169,7 +187,8 @@ class _ConversationsViewState extends State<ConversationsView> {
                                                     scrollController.animateTo(
                                                       0,
                                                       duration: const Duration(
-                                                          milliseconds: 400),
+                                                        milliseconds: 400,
+                                                      ),
                                                       curve: Curves.ease,
                                                     );
                                                     swipeDirection =
@@ -203,11 +222,15 @@ class _ConversationsViewState extends State<ConversationsView> {
                                                                     .circular(
                                                               50,
                                                             ),
-                                                            child: Container(
+                                                            child: SizedBox(
                                                               width: 32,
                                                               height: 32,
-                                                              color: getColor(
-                                                                "button",
+                                                              child:
+                                                                  ProfileImage(
+                                                                url: profilePictures[
+                                                                        conversation[
+                                                                            "email"]] ??
+                                                                    "",
                                                               ),
                                                             ),
                                                           ),

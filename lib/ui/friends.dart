@@ -18,6 +18,7 @@ List outgoingRequests = [];
 List incomingRequests = [];
 Map displayNames = {};
 Map statuses = {};
+Map profilePictures = {};
 List friends = [];
 int unreadMessages = 0;
 DraggableScrollableController scrollController =
@@ -48,11 +49,14 @@ class _FriendsViewState extends State<FriendsView> {
     for (final friend in friends) {
       displayNames[friend] = await getDisplayName(friend);
       statuses[friend] = await getStatus(friend);
+      profilePictures[friend] = await getProfilePicture(friend);
     }
 
     unreadMessages = await getUnreadMessages();
     myStatus = await getStatus(FirebaseAuth.instance.currentUser?.email ?? "");
-    setState(() {});
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   @override
@@ -278,10 +282,15 @@ class _FriendsViewState extends State<FriendsView> {
                         duration: const Duration(milliseconds: 250),
                         opacity: selectedIndex == 0 ? 1 : 0.5,
                         // ignore: prefer_const_constructors
-                        child: AnimatedLogo(
-                          sizeMul: 0.3,
-                          stopAfterFirstCycle: true,
-                        ),
+                        child: Builder(builder: (context) {
+                          Timer(const Duration(milliseconds: 10), () {
+                            setState(() {});
+                          });
+                          return const AnimatedLogo(
+                            sizeMul: 0.3,
+                            stopAfterFirstCycle: true,
+                          );
+                        }),
                       ),
                     ),
                   ),
@@ -349,7 +358,7 @@ class _FriendsViewState extends State<FriendsView> {
                             children: [
                               ClipRRect(
                                 borderRadius: BorderRadius.circular(50),
-                                child: AvatarImage(
+                                child: ProfileImage(
                                   url: myProfilePicture,
                                 ),
                               ),
@@ -388,7 +397,7 @@ class Friend extends StatefulWidget {
     Key? key,
     required this.friend,
   }) : super(key: key);
-  final friend;
+  final String friend;
 
   @override
   State<Friend> createState() => _FriendState();
@@ -432,11 +441,11 @@ class _FriendState extends State<Friend> {
                 borderRadius: BorderRadius.circular(
                   50,
                 ),
-                child: Container(
+                child: SizedBox(
                   width: 32,
                   height: 32,
-                  color: getColor(
-                    "button",
+                  child: ProfileImage(
+                    url: profilePictures[widget.friend] ?? "",
                   ),
                 ),
               ),
@@ -698,10 +707,15 @@ class _FriendRequestsViewState extends State<FriendRequestsView> {
                           duration: const Duration(milliseconds: 250),
                           opacity: selectedIndex == 0 ? 1 : 0.5,
                           // ignore: prefer_const_constructors
-                          child: AnimatedLogo(
-                            sizeMul: 0.3,
-                            stopAfterFirstCycle: true,
-                          ),
+                          child: Builder(builder: (context) {
+                            Timer(const Duration(milliseconds: 10), () {
+                              setState(() {});
+                            });
+                            return const AnimatedLogo(
+                              sizeMul: 0.3,
+                              stopAfterFirstCycle: true,
+                            );
+                          }),
                         ),
                       ),
                     ),
@@ -769,7 +783,7 @@ class _FriendRequestsViewState extends State<FriendRequestsView> {
                               children: [
                                 ClipRRect(
                                   borderRadius: BorderRadius.circular(50),
-                                  child: AvatarImage(
+                                  child: ProfileImage(
                                     url: myProfilePicture,
                                   ),
                                 ),
@@ -823,6 +837,7 @@ class _FriendRequestState extends State<FriendRequest> {
         (element) => element == FirebaseAuth.instance.currentUser?.email);
     String name = await getDisplayName(users[0]);
     displayNames[users[0]] = name;
+    profilePictures[users[0]] = await getProfilePicture(users[0]);
     if (mounted) {
       setState(() {});
     }
@@ -838,11 +853,11 @@ class _FriendRequestState extends State<FriendRequest> {
           borderRadius: BorderRadius.circular(
             50,
           ),
-          child: Container(
+          child: SizedBox(
             width: 32,
             height: 32,
-            color: getColor(
-              "button",
+            child: ProfileImage(
+              url: profilePictures[widget.request['sender']] ?? "",
             ),
           ),
         ),

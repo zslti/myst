@@ -13,8 +13,8 @@ import 'loading.dart';
 bool t = false;
 
 class SelectThemeView extends StatefulWidget {
-  const SelectThemeView({Key? key}) : super(key: key);
-
+  const SelectThemeView({Key? key, this.shouldPop = false}) : super(key: key);
+  final bool shouldPop;
   @override
   State<SelectThemeView> createState() => _SelectThemeViewState();
 }
@@ -146,21 +146,6 @@ class _SelectThemeViewState extends State<SelectThemeView> {
                             ),
                           );
                         }),
-                        // Builder(builder: (context) {
-                        //   if (i + 1 >= themes.length) {
-                        //     return Container();
-                        //   }
-                        //   return Expanded(
-                        //     child: Padding(
-                        //       padding: const EdgeInsets.only(
-                        //         left: 4,
-                        //         right: 8,
-                        //         top: 8,
-                        //       ),
-                        //       child: ThemeCard(theme: themes[i + 1]),
-                        //     ),
-                        //   );
-                        // }),
                       ],
                     ),
                   const SizedBox(
@@ -180,7 +165,11 @@ class _SelectThemeViewState extends State<SelectThemeView> {
                     borderRadius: BorderRadius.circular(10),
                     child: TextButton(
                       onPressed: () {
-                        pushReplacement(context, const RegisterView());
+                        if (widget.shouldPop) {
+                          Navigator.pop(context);
+                        } else {
+                          pushReplacement(context, const RegisterView());
+                        }
                       },
                       style: TextButton.styleFrom(
                         splashFactory: NoSplash.splashFactory,
@@ -189,7 +178,9 @@ class _SelectThemeViewState extends State<SelectThemeView> {
                       child: SizedBox(
                         width: 1000,
                         child: Text(
-                          translation[currentLanguage]["next"],
+                          widget.shouldPop
+                              ? translation[currentLanguage]["apply"]
+                              : translation[currentLanguage]["next"],
                           textAlign: TextAlign.center,
                           style: getFont("mainfont")(
                             color: getColor("background"),
