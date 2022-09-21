@@ -408,6 +408,12 @@ String timestampToDate(int timestamp, {bool showOnlyDate = false}) {
   }
 }
 
+Map downloadedImages = {
+  "default": Image.network(
+    "https://i.pinimg.com/736x/6b/f6/2c/6bf62c6c123cdcd33d2d693782a46b34.jpg",
+  ).image
+};
+
 class ProfileImage extends StatefulWidget {
   const ProfileImage({Key? key, this.url = ""}) : super(key: key);
   final String url;
@@ -426,10 +432,13 @@ class _ProfileImageState extends State<ProfileImage> {
         widget.url.contains(" ") ||
         !widget.url.contains("https://")) {
       return Image(
-        image: Image.network(
-          "https://i.pinimg.com/736x/6b/f6/2c/6bf62c6c123cdcd33d2d693782a46b34.jpg",
-        ).image,
+        image: downloadedImages["default"],
       );
+    }
+    if (!downloadedImages.containsKey(widget.url)) {
+      downloadedImages[widget.url] = Image.network(
+        widget.url,
+      ).image;
     }
     return AspectRatio(
       aspectRatio: 1,
@@ -438,15 +447,10 @@ class _ProfileImageState extends State<ProfileImage> {
         errorBuilder:
             (BuildContext context, Object exception, StackTrace? stackTrace) {
           return Image(
-            image: Image.network(
-              "https://i.pinimg.com/736x/6b/f6/2c/6bf62c6c123cdcd33d2d693782a46b34.jpg",
-            ).image,
+            image: downloadedImages["default"],
           );
         },
-        image: Image.network(
-          widget.url,
-          //fit: BoxFit.cover,
-        ).image,
+        image: downloadedImages[widget.url],
       ),
     );
   }

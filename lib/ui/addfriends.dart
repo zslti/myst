@@ -62,7 +62,7 @@ class _AddFriendsViewState extends State<AddFriendsView> {
           !isScrolling) {
         scrollController.animateTo(
           0,
-          duration: const Duration(milliseconds: 400),
+          duration: const Duration(milliseconds: 300),
           curve: Curves.ease,
         );
       }
@@ -151,14 +151,6 @@ class _AddFriendsViewState extends State<AddFriendsView> {
                       padding: const EdgeInsets.only(top: 16.0),
                       child: Builder(builder: (context) {
                         if (users.isEmpty) {
-                          //   child: QrImage(
-                          //     data: "1234567890",
-                          //     version: QrVersions.auto,
-                          //     size: 200.0,
-                          //     //foregroundColor: Colors.white,
-                          //     backgroundColor: Colors.white,
-                          //   ),
-                          // ),
                           return Padding(
                             padding: const EdgeInsets.only(top: 32.0),
                             child: GestureDetector(

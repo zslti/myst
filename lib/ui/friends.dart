@@ -80,7 +80,7 @@ class _FriendsViewState extends State<FriendsView> {
           !isScrolling) {
         scrollController.animateTo(
           0,
-          duration: const Duration(milliseconds: 400),
+          duration: const Duration(milliseconds: 300),
           curve: Curves.ease,
         );
       }
@@ -133,29 +133,23 @@ class _FriendsViewState extends State<FriendsView> {
                               Colors.transparent,
                               Colors.black.withAlpha(220),
                             ],
-                            stops: const [
-                              0.0,
-                              0.06,
-                              0.875,
-                              1.0
-                            ], // 10% purple, 80% transparent, 10% purple
+                            stops: const [0.0, 0.06, 0.875, 1.0],
                           ).createShader(rect);
                         },
                         blendMode: BlendMode.dstOut,
                         child: Builder(builder: (context) {
                           List onlineFriends = friends;
                           List offlineFriends = friends;
-                          //if (widget.online) {
                           onlineFriends = onlineFriends
                               .where(
-                                  (element) => statuses[element] != "offline")
+                                (element) => statuses[element] != "offline",
+                              )
                               .toList();
-                          //} else {
                           offlineFriends = offlineFriends
                               .where(
-                                  (element) => statuses[element] == "offline")
+                                (element) => statuses[element] == "offline",
+                              )
                               .toList();
-                          //}
                           return ListView(
                             children: [
                               Padding(
@@ -406,12 +400,7 @@ class Friend extends StatefulWidget {
 class _FriendState extends State<Friend> {
   @override
   Widget build(BuildContext context) {
-    return //ListView(
-        //shrinkWrap: true,
-        //children: [
-        //for (int i = 0; i < 20; i++)
-        //for (final friend in f)
-        TextButton(
+    return TextButton(
       onPressed: () {
         currentConversation = {
           "email": widget.friend,
@@ -474,8 +463,6 @@ class _FriendState extends State<Friend> {
         ],
       ),
     );
-    //],
-    //);
   }
 }
 
@@ -541,12 +528,12 @@ class _FriendRequestButtonState extends State<FriendRequestButton> {
 
 // ignore: must_be_immutable
 class FriendRequestsView extends StatefulWidget {
-  FriendRequestsView(
-      {Key? key,
-      required this.text,
-      required this.requests,
-      required this.options})
-      : super(key: key);
+  FriendRequestsView({
+    Key? key,
+    required this.text,
+    required this.requests,
+    required this.options,
+  }) : super(key: key);
   final String text;
   List requests;
   final List<FriendRequestOption> options;
@@ -563,11 +550,9 @@ class _FriendRequestsViewState extends State<FriendRequestsView> {
           widget.text == translation[currentLanguage]["incomingrequests"]
               ? incomingRequests
               : outgoingRequests;
-      //WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         setState(() {});
       }
-      //});
     });
 
     return Scaffold(

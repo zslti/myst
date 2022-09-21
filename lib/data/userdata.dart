@@ -304,12 +304,20 @@ Future<void> updateProfilePicture(ImageSource source) async {
   await imageRef.putFile(File(image.path));
 }
 
+Map downloadURLs = {};
+
 Future<String> getProfilePicture(String email) async {
+  if (downloadURLs.containsKey(email)) {
+    return downloadURLs[email];
+  }
   final storageRef = FirebaseStorage.instance.ref();
   final imageRef = storageRef.child("profiles/$email");
   try {
-    return await imageRef.getDownloadURL();
+    String downloadURL = await imageRef.getDownloadURL();
+    downloadURLs[email] = downloadURL;
+    return downloadURL;
   } catch (e) {
+    downloadURLs[email] = "";
     return "";
   }
 }

@@ -51,7 +51,7 @@ class _AddFriendsQRState extends State<AddFriendsQR> {
           !isScrolling) {
         scrollController.animateTo(
           0,
-          duration: const Duration(milliseconds: 400),
+          duration: const Duration(milliseconds: 300),
           curve: Curves.ease,
         );
       }
@@ -66,7 +66,7 @@ class _AddFriendsQRState extends State<AddFriendsQR> {
               children: [
                 Padding(
                   padding: const EdgeInsets.only(
-                    top: 90.0,
+                    top: 90,
                     left: 16,
                     right: 16,
                   ),
@@ -74,7 +74,7 @@ class _AddFriendsQRState extends State<AddFriendsQR> {
                     onTap: (() {
                       scrollController.animateTo(
                         0,
-                        duration: const Duration(milliseconds: 400),
+                        duration: const Duration(milliseconds: 300),
                         curve: Curves.ease,
                       );
                     }),

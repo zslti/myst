@@ -94,7 +94,7 @@ class _MainViewState extends State<MainView> {
           !isScrolling) {
         scrollController.animateTo(
           0,
-          duration: const Duration(milliseconds: 400),
+          duration: const Duration(milliseconds: 300),
           curve: Curves.ease,
         );
       }
@@ -107,7 +107,7 @@ class _MainViewState extends State<MainView> {
           onTap: () {
             scrollController.animateTo(
               0,
-              duration: const Duration(milliseconds: 400),
+              duration: const Duration(milliseconds: 300),
               curve: Curves.ease,
             );
           },
