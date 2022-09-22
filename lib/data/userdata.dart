@@ -292,37 +292,58 @@ Future<String> getStatus(String email) async {
   return status['state'] ?? "offline";
 }
 
-Future<void> updateProfilePicture(ImageSource source) async {
+Future<void> updatePicture(ImageSource source,
+    {String folder = "profiles"}) async {
   XFile? image = await ImagePicker().pickImage(source: source);
   if (image == null) {
     return;
   }
   final storageRef = FirebaseStorage.instance.ref();
   final imageRef = storageRef.child(
-    "profiles/${FirebaseAuth.instance.currentUser?.email}",
+    "$folder/${FirebaseAuth.instance.currentUser?.email}",
   );
   await imageRef.putFile(File(image.path));
+  if (folder == "profiles") {
+    profileDownloadURLs.remove(FirebaseAuth.instance.currentUser?.email);
+  } else if (folder == "banners") {
+    bannerDownloadURLs.remove(FirebaseAuth.instance.currentUser?.email);
+  }
 }
 
-Map downloadURLs = {};
+Map profileDownloadURLs = {};
+Map bannerDownloadURLs = {};
 
-Future<String> getProfilePicture(String email) async {
-  if (downloadURLs.containsKey(email)) {
-    return downloadURLs[email];
+Future<String> getPicture(String email, {String folder = "profiles"}) async {
+  if (folder == "profiles" && profileDownloadURLs.containsKey(email)) {
+    return profileDownloadURLs[email];
+  }
+  if (folder == "banners" && bannerDownloadURLs.containsKey(email)) {
+    return bannerDownloadURLs[email];
   }
   final storageRef = FirebaseStorage.instance.ref();
-  final imageRef = storageRef.child("profiles/$email");
+  final imageRef = storageRef.child("$folder/$email");
   try {
     String downloadURL = await imageRef.getDownloadURL();
-    downloadURLs[email] = downloadURL;
+    if (folder == "profiles") {
+      profileDownloadURLs[email] = downloadURL;
+    } else if (folder == "banners") {
+      bannerDownloadURLs[email] = downloadURL;
+    }
     return downloadURL;
   } catch (e) {
-    downloadURLs[email] = "";
+    if (folder == "profiles") {
+      profileDownloadURLs[email] = "";
+    } else if (folder == "banners") {
+      bannerDownloadURLs[email] = "";
+    }
     return "";
   }
 }
 
 Future<void> changeUsername(String email, String name) async {
+  if (name.isEmpty) {
+    return;
+  }
   QuerySnapshot querySnapshot = await FirebaseFirestore.instance
       .collection('users')
       .where("email", isEqualTo: email)

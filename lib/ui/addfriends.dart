@@ -49,7 +49,7 @@ class _AddFriendsViewState extends State<AddFriendsView> {
 
   Future<void> getProfilePictures() async {
     for (final user in users) {
-      user["picture"] = await getProfilePicture(user["email"]);
+      user["picture"] = await getPicture(user["email"]);
     }
   }
 

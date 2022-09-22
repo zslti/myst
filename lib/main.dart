@@ -111,8 +111,6 @@ class _MyAppState extends State<MyApp> {
 
   Future<bool> initializeApp() async {
     prefs?.setString("theme", ""); //TODO: remove line when everything is done
-    //TODO: change icon of theme setting
-    //TODO: banner picture
     //TODO: check what happens when u dont have internet
     //TODO: sound when u get and send a message
     //TODO: set custom status

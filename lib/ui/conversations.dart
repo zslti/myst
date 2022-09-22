@@ -49,7 +49,7 @@ class _ConversationsViewState extends State<ConversationsView> {
       // conversations[i]["picture"] = await getProfilePicture(
       //   conversations[i]["email"],
       // );
-      profilePictures[conversations[i]["email"]] = await getProfilePicture(
+      profilePictures[conversations[i]["email"]] = await getPicture(
         conversations[i]["email"],
       );
     }

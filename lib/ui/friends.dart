@@ -49,7 +49,7 @@ class _FriendsViewState extends State<FriendsView> {
     for (final friend in friends) {
       displayNames[friend] = await getDisplayName(friend);
       statuses[friend] = await getStatus(friend);
-      profilePictures[friend] = await getProfilePicture(friend);
+      profilePictures[friend] = await getPicture(friend);
     }
 
     unreadMessages = await getUnreadMessages();
@@ -822,7 +822,7 @@ class _FriendRequestState extends State<FriendRequest> {
         (element) => element == FirebaseAuth.instance.currentUser?.email);
     String name = await getDisplayName(users[0]);
     displayNames[users[0]] = name;
-    profilePictures[users[0]] = await getProfilePicture(users[0]);
+    profilePictures[users[0]] = await getPicture(users[0]);
     if (mounted) {
       setState(() {});
     }

@@ -415,8 +415,10 @@ Map downloadedImages = {
 };
 
 class ProfileImage extends StatefulWidget {
-  const ProfileImage({Key? key, this.url = ""}) : super(key: key);
+  const ProfileImage({Key? key, this.url = "", this.type = "profile"})
+      : super(key: key);
   final String url;
+  final String type;
 
   @override
   State<ProfileImage> createState() => _ProfileImageState();
@@ -431,8 +433,25 @@ class _ProfileImageState extends State<ProfileImage> {
     if (widget.url.isEmpty ||
         widget.url.contains(" ") ||
         !widget.url.contains("https://")) {
-      return Image(
-        image: downloadedImages["default"],
+      if (widget.type == "profile") {
+        return Image(
+          image: downloadedImages["default"],
+        );
+      }
+      String myName = myDisplayName;
+      if (myName.length < 3) {
+        myName += "   ";
+      }
+      Color color = Color.fromARGB(
+        255,
+        (myName.codeUnitAt(0) % 10 * 25.5).round(),
+        (myName.codeUnitAt(1) % 10 * 25.5).round(),
+        (myName.codeUnitAt(2) % 10 * 25.5).round(),
+      ).withOpacity(0.2);
+      return Container(
+        width: double.infinity,
+        height: double.infinity,
+        color: color,
       );
     }
     if (!downloadedImages.containsKey(widget.url)) {
@@ -440,10 +459,24 @@ class _ProfileImageState extends State<ProfileImage> {
         widget.url,
       ).image;
     }
-    return AspectRatio(
-      aspectRatio: 1,
-      child: Image(
-        fit: BoxFit.cover,
+    if (widget.type == "profile") {
+      return AspectRatio(
+        aspectRatio: 1,
+        child: Image(
+          fit: BoxFit.cover,
+          errorBuilder:
+              (BuildContext context, Object exception, StackTrace? stackTrace) {
+            return Image(
+              image: downloadedImages["default"],
+            );
+          },
+          image: downloadedImages[widget.url],
+        ),
+      );
+    } else {
+      return Image(
+        fit: BoxFit.fitWidth,
+        width: double.infinity,
         errorBuilder:
             (BuildContext context, Object exception, StackTrace? stackTrace) {
           return Image(
@@ -451,7 +484,7 @@ class _ProfileImageState extends State<ProfileImage> {
           );
         },
         image: downloadedImages[widget.url],
-      ),
-    );
+      );
+    }
   }
 }

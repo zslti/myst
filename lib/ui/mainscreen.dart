@@ -47,7 +47,7 @@ class MainView extends StatefulWidget {
 
 class _MainViewState extends State<MainView> {
   Future<void> getMyProfilePicture() async {
-    myProfilePicture = await getProfilePicture(
+    myProfilePicture = await getPicture(
       FirebaseAuth.instance.currentUser?.email ?? "",
     );
   }
@@ -337,8 +337,16 @@ class SettingsView extends StatefulWidget {
 }
 
 class _SettingsViewState extends State<SettingsView> {
+  Future<void> getBanner() async {
+    await getPicture(
+      FirebaseAuth.instance.currentUser?.email ?? "",
+      folder: "banners",
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    getBanner();
     return Padding(
       padding: const EdgeInsets.only(top: 35),
       child: Container(
@@ -393,11 +401,74 @@ class _SettingsViewState extends State<SettingsView> {
                               children: [
                                 Expanded(
                                   flex: 3,
-                                  child: Container(
-                                    color: const Color.fromARGB(255, 0, 70, 75),
-                                    child: const Center(
-                                      child: Text("banner here"),
-                                    ),
+                                  child: Stack(
+                                    children: [
+                                      ProfileImage(
+                                        url: bannerDownloadURLs[FirebaseAuth
+                                                .instance.currentUser?.email] ??
+                                            "",
+                                        type: "banners",
+                                      ),
+                                      Align(
+                                        alignment: Alignment.bottomRight,
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Opacity(
+                                            opacity: 0.5,
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.end,
+                                              children: [
+                                                GestureDetector(
+                                                  onTap: () {
+                                                    updatePicture(
+                                                      ImageSource.camera,
+                                                      folder: "banners",
+                                                    );
+                                                  },
+                                                  child: Padding(
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                      left: 4.0,
+                                                      right: 4.0,
+                                                    ),
+                                                    child: Icon(
+                                                      Icons.camera_outlined,
+                                                      color: getColor(
+                                                        "secondarytext",
+                                                      ),
+                                                      size: 24,
+                                                    ),
+                                                  ),
+                                                ),
+                                                GestureDetector(
+                                                  onTap: () {
+                                                    updatePicture(
+                                                      ImageSource.gallery,
+                                                      folder: "banners",
+                                                    );
+                                                  },
+                                                  child: Padding(
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                      left: 4.0,
+                                                      right: 4.0,
+                                                    ),
+                                                    child: Icon(
+                                                      Icons.image_outlined,
+                                                      color: getColor(
+                                                        "secondarytext",
+                                                      ),
+                                                      size: 24,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      )
+                                    ],
                                   ),
                                 ),
                                 Expanded(
@@ -445,7 +516,7 @@ class _SettingsViewState extends State<SettingsView> {
                                       ),
                                       GestureDetector(
                                         onTap: () {
-                                          updateProfilePicture(
+                                          updatePicture(
                                             ImageSource.camera,
                                           );
                                         },
@@ -463,7 +534,7 @@ class _SettingsViewState extends State<SettingsView> {
                                       ),
                                       GestureDetector(
                                         onTap: () {
-                                          updateProfilePicture(
+                                          updatePicture(
                                             ImageSource.gallery,
                                           );
                                         },
@@ -634,7 +705,7 @@ class _SettingsViewState extends State<SettingsView> {
                       ),
                       SettingButton(
                         icon: Image.asset(
-                          "assets/language.png",
+                          "assets/theme.png",
                           width: 20,
                           height: 20,
                           color: getColor("secondarytext"),

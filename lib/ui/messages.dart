@@ -169,7 +169,7 @@ class _MessagesViewState extends State<MessagesView> {
   }
 
   Future<void> getProfilePictureOf(String email) async {
-    profilePictures[email] = await getProfilePicture(email);
+    profilePictures[email] = await getPicture(email);
   }
 
   Future<void> refreshMessages() async {
