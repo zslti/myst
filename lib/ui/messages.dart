@@ -30,6 +30,7 @@ int messageCount = 0;
 bool done = false;
 bool built = false;
 bool readMessageShown = false;
+double connectionIndicatorProgress = 0;
 
 void startTransition() {
   if (transitionProgress != 0 ||
@@ -173,6 +174,7 @@ class _MessagesViewState extends State<MessagesView> {
   }
 
   Future<void> refreshMessages() async {
+    hasNetwork();
     if (currentConversation == null) {
       Timer(const Duration(milliseconds: 500), () {
         refreshMessages();
@@ -376,7 +378,10 @@ class _MessagesViewState extends State<MessagesView> {
                             );
                           }
                           return Padding(
-                            padding: const EdgeInsets.only(top: 6.0),
+                            padding: EdgeInsets.only(
+                              top: 6.0,
+                              bottom: index == 0 ? 10 : 0,
+                            ),
                             child: Message(
                               message: currentMessages[index],
                               read: read,
@@ -505,134 +510,188 @@ class _MessagesViewState extends State<MessagesView> {
               ),
               Align(
                 alignment: Alignment.bottomCenter,
-                child: Container(
-                  width: MediaQuery.of(context).size.width,
-                  height: currentBarHeight,
-                  decoration: BoxDecoration(
-                    color: getColor("background3"),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.25),
-                        spreadRadius: 5,
-                        blurRadius: 7,
-                        offset: const Offset(
-                          0,
-                          -3,
+                child: Stack(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(0),
+                      child: Container(
+                        width: MediaQuery.of(context).size.width,
+                        height: currentBarHeight,
+                        decoration: BoxDecoration(
+                          color: getColor("background3"),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.25),
+                              spreadRadius: 5,
+                              blurRadius: 7,
+                              offset: const Offset(
+                                0,
+                                -3,
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                    ],
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.only(left: 8, right: 8),
-                    child: Container(
-                      height: currentFieldHeight,
-                      //height: 20,
-                      alignment: Alignment.center,
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(30),
-                              child: SizedBox(
-                                height: currentFieldHeight,
-                                child: TextField(
-                                  maxLines: 5,
-                                  //keyboardType: TextInputType.multiline,
-                                  onChanged: (str) {
-                                    targetFieldHeight = max(
-                                      35,
-                                      14 +
-                                          messageController.text.textHeight(
-                                            getFont("mainfont")(
-                                              color: getColor("secondarytext"),
-                                              fontSize: 14,
-                                            ),
-                                            MediaQuery.of(context).size.width -
-                                                70,
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 8, right: 8),
+                          child: Container(
+                            height: currentFieldHeight,
+                            //height: 20,
+                            alignment: Alignment.center,
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(30),
+                                    child: SizedBox(
+                                      height: currentFieldHeight,
+                                      child: TextField(
+                                        maxLines: 5,
+                                        //keyboardType: TextInputType.multiline,
+                                        onChanged: (str) {
+                                          targetFieldHeight = max(
+                                            35,
+                                            14 +
+                                                messageController.text
+                                                    .textHeight(
+                                                  getFont("mainfont")(
+                                                    color: getColor(
+                                                        "secondarytext"),
+                                                    fontSize: 14,
+                                                  ),
+                                                  MediaQuery.of(context)
+                                                          .size
+                                                          .width -
+                                                      70,
+                                                ),
+                                          );
+                                          targetBarHeight = max(
+                                            50,
+                                            29 +
+                                                messageController.text
+                                                    .textHeight(
+                                                  getFont("mainfont")(
+                                                    color: getColor(
+                                                        "secondarytext"),
+                                                    fontSize: 14,
+                                                  ),
+                                                  MediaQuery.of(context)
+                                                          .size
+                                                          .width -
+                                                      70,
+                                                ),
+                                          );
+                                          startTransition();
+                                        },
+                                        textAlignVertical:
+                                            const TextAlignVertical(
+                                          y: -1,
+                                        ),
+                                        controller: messageController,
+                                        cursorColor: getColor("cursor"),
+                                        cursorRadius: const Radius.circular(4),
+                                        style: getFont("mainfont")(
+                                          color: getColor("secondarytext"),
+                                          fontSize: 14,
+                                        ),
+                                        decoration: InputDecoration(
+                                          isDense: true,
+                                          fillColor: getColor("background"),
+                                          filled: true,
+                                          hintText: translation[currentLanguage]
+                                              ["message"],
+                                          hintStyle: getFont("mainfont")(
+                                            color: getColor("secondarytext"),
+                                            fontSize: 14,
+                                            height: 1.3,
                                           ),
+                                          border: InputBorder.none,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                GestureDetector(
+                                  onTap: () {
+                                    if (messageController.text.isEmpty) {
+                                      return;
+                                    }
+                                    sendMessage(
+                                      messageController.text,
+                                      currentConversation["email"],
                                     );
-                                    targetBarHeight = max(
-                                      50,
-                                      29 +
-                                          messageController.text.textHeight(
-                                            getFont("mainfont")(
-                                              color: getColor("secondarytext"),
-                                              fontSize: 14,
-                                            ),
-                                            MediaQuery.of(context).size.width -
-                                                70,
-                                          ),
-                                    );
+                                    messageController.clear();
+                                    targetFieldHeight = 35;
+                                    targetBarHeight = 50;
                                     startTransition();
                                   },
-                                  textAlignVertical: const TextAlignVertical(
-                                    y: -1,
-                                  ),
-                                  controller: messageController,
-                                  cursorColor: getColor("cursor"),
-                                  cursorRadius: const Radius.circular(4),
-                                  style: getFont("mainfont")(
-                                    color: getColor("secondarytext"),
-                                    fontSize: 14,
-                                  ),
-                                  decoration: InputDecoration(
-                                    isDense: true,
-                                    fillColor: getColor("background"),
-                                    filled: true,
-                                    hintText: translation[currentLanguage]
-                                        ["message"],
-                                    hintStyle: getFont("mainfont")(
-                                      color: getColor("secondarytext"),
-                                      fontSize: 14,
-                                      height: 1.3,
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(left: 6.0),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(30),
+                                      child: Container(
+                                        color: getColor("button2"),
+                                        width: 35,
+                                        height: 35,
+                                        padding: const EdgeInsets.only(
+                                          left: 8.0,
+                                          right: 6.0,
+                                          top: 2.0,
+                                          bottom: 2.0,
+                                        ),
+                                        child: Icon(
+                                          Icons.send_rounded,
+                                          color: getColor("maintext"),
+                                          size: 20,
+                                        ),
+                                      ),
                                     ),
-                                    border: InputBorder.none,
                                   ),
                                 ),
-                              ),
+                              ],
                             ),
                           ),
-                          GestureDetector(
-                            onTap: () {
-                              if (messageController.text.isEmpty) {
-                                return;
-                              }
-                              sendMessage(
-                                messageController.text,
-                                currentConversation["email"],
-                              );
-                              messageController.clear();
-                              targetFieldHeight = 35;
-                              targetBarHeight = 50;
-                              startTransition();
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.only(left: 6.0),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(30),
-                                child: Container(
-                                  color: getColor("button2"),
-                                  width: 35,
-                                  height: 35,
-                                  padding: const EdgeInsets.only(
-                                    left: 8.0,
-                                    right: 6.0,
-                                    top: 2.0,
-                                    bottom: 2.0,
-                                  ),
-                                  child: Icon(
-                                    Icons.send_rounded,
-                                    color: getColor("maintext"),
-                                    size: 20,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
                     ),
-                  ),
+                    Builder(builder: (context) {
+                      if (connectionIndicatorProgress < 1) {
+                        connectionIndicatorProgress += 0.025;
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          Timer(const Duration(milliseconds: 10), () {
+                            setState(() {});
+                          });
+                        });
+                      } else {
+                        connectionIndicatorProgress = 0;
+                      }
+                      connectionIndicatorProgress = min(
+                        connectionIndicatorProgress,
+                        1,
+                      );
+                      double size = MediaQuery.of(context).size.width / 2;
+                      return AnimatedOpacity(
+                        opacity: !hasConnection &&
+                                connectionIndicatorProgress < 0.8 &&
+                                connectionIndicatorProgress != 0
+                            ? 1
+                            : 0,
+                        duration: const Duration(milliseconds: 125),
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: size -
+                                (size *
+                                    Curves.easeIn.transform(
+                                        connectionIndicatorProgress)),
+                          ),
+                          child: Container(
+                            width: double.infinity,
+                            height: 1,
+                            color: getColor("secondarytext"),
+                          ),
+                        ),
+                      );
+                    }),
+                  ],
                 ),
               ),
             ],

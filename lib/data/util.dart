@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:math';
 
 import 'package:encrypt/encrypt.dart' as encrypt;
@@ -486,5 +487,18 @@ class _ProfileImageState extends State<ProfileImage> {
         image: downloadedImages[widget.url],
       );
     }
+  }
+}
+
+bool hasConnection = true;
+
+Future<bool> hasNetwork() async {
+  try {
+    final result = await InternetAddress.lookup('example.com');
+    hasConnection = result.isNotEmpty && result[0].rawAddress.isNotEmpty;
+    return hasConnection;
+  } on SocketException catch (_) {
+    hasConnection = false;
+    return false;
   }
 }
