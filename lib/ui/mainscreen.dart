@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_const_constructors
+
 import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
@@ -670,11 +672,31 @@ class _SettingsViewState extends State<SettingsView> {
                           ],
                         ),
                       ),
+                      SettingButton(
+                        icon: Image.asset(
+                          "assets/status.png",
+                          width: 20,
+                          height: 20,
+                          color: getColor("secondarytext"),
+                        ),
+                        text: translation[currentLanguage]["setstatus"],
+                        rightText: translation[currentLanguage]
+                            [prefs?.getString("status") ?? "online"],
+                        isOpenable: true,
+                        openableWidgetId: 0,
+                        // ignore: prefer_const_literals_to_create_immutables
+                        openedWidgets: [
+                          ChangeStatusButton(status: "online"),
+                          ChangeStatusButton(status: "away"),
+                          ChangeStatusButton(status: "busy"),
+                          ChangeStatusButton(status: "invisible"),
+                        ],
+                      ),
                       Padding(
                         padding: const EdgeInsets.only(
                           left: 8,
                           right: 8,
-                          top: 8,
+                          top: 4,
                         ),
                         child: Text(
                           translation[currentLanguage]["appsettings"],
@@ -749,18 +771,57 @@ class _SettingsViewState extends State<SettingsView> {
   }
 }
 
+class ChangeStatusButton extends StatefulWidget {
+  const ChangeStatusButton({
+    Key? key,
+    required this.status,
+  }) : super(key: key);
+  final String status;
+  @override
+  State<ChangeStatusButton> createState() => _ChangeStatusButtonState();
+}
+
+class _ChangeStatusButtonState extends State<ChangeStatusButton> {
+  @override
+  Widget build(BuildContext context) {
+    return SettingButton(
+      icon: StatusIndicator(
+        status: widget.status,
+        size: 12,
+      ),
+      text: translation[currentLanguage][widget.status],
+      showArrow: false,
+      onTap: () {
+        prefs?.setString("status", widget.status);
+        updateStatus();
+        openableWidgetStates[0]["state"] = false;
+      },
+    );
+  }
+}
+
+Map openableWidgetStates = {};
+
 class SettingButton extends StatefulWidget {
   const SettingButton({
     Key? key,
     required this.icon,
     required this.text,
     this.rightText = "",
-    required this.onTap,
+    this.onTap,
+    this.isOpenable = false,
+    this.openedWidgets = const [],
+    this.openableWidgetId = -1,
+    this.showArrow = true,
   }) : super(key: key);
   final Widget icon;
   final String text;
   final String rightText;
-  final Function onTap;
+  final Function? onTap;
+  final bool isOpenable;
+  final List<Widget> openedWidgets;
+  final int openableWidgetId;
+  final bool showArrow;
   @override
   State<SettingButton> createState() => _SettingButtonState();
 }
@@ -768,50 +829,131 @@ class SettingButton extends StatefulWidget {
 class _SettingButtonState extends State<SettingButton> {
   @override
   Widget build(BuildContext context) {
-    return TextButton(
-      onPressed: widget.onTap as void Function(),
-      style: const ButtonStyle(
-        splashFactory: NoSplash.splashFactory,
-        alignment: Alignment.centerLeft,
-      ),
-      child: Row(
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 8, right: 8),
-            child: widget.icon,
+    if (widget.isOpenable) {
+      Timer(const Duration(milliseconds: 10), () {
+        if (mounted) {
+          setState(() {});
+        }
+      });
+    }
+    openableWidgetStates[widget.openableWidgetId] ??= {
+      "state": false,
+      "progress": 0
+    };
+    double progressModifier = 0.05 *
+        (openableWidgetStates[widget.openableWidgetId]?["state"] ?? false
+            ? 1
+            : -1);
+    openableWidgetStates[widget.openableWidgetId]["progress"] =
+        (openableWidgetStates[widget.openableWidgetId]["progress"] ?? 0) +
+            progressModifier;
+    if (openableWidgetStates[widget.openableWidgetId]["progress"] >= 1) {
+      openableWidgetStates[widget.openableWidgetId]["progress"] = 1;
+    } else if (openableWidgetStates[widget.openableWidgetId]["progress"] <= 0) {
+      openableWidgetStates[widget.openableWidgetId]["progress"] = 0;
+    }
+    double progress = Curves.easeInOut.transform(
+      openableWidgetStates[widget.openableWidgetId]["progress"] * 1.0,
+    );
+    return Column(
+      children: [
+        TextButton(
+          onPressed: widget.onTap != null && !widget.isOpenable
+              ? widget.onTap as void Function()
+              : () {
+                  openableWidgetStates[widget.openableWidgetId]["state"] =
+                      !(openableWidgetStates[widget.openableWidgetId]
+                              ["state"] ??
+                          false);
+                },
+          style: const ButtonStyle(
+            splashFactory: NoSplash.splashFactory,
+            alignment: Alignment.centerLeft,
           ),
-          Text(
-            widget.text,
-            style: getFont("mainfont")(
-              color: getColor("maintext"),
-            ),
-          ),
-          Expanded(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Text(
-                  widget.rightText,
-                  style: getFont("mainfont")(
-                    color: getColor("secondarytext"),
-                  ),
+          child: Row(
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(left: 8, right: 8),
+                child: widget.icon,
+              ),
+              Text(
+                widget.text,
+                style: getFont("mainfont")(
+                  color: getColor("maintext"),
                 ),
-                Padding(
-                  padding: const EdgeInsets.only(left: 6, right: 2),
-                  child: RotatedBox(
-                    quarterTurns: 2,
-                    child: Icon(
-                      Icons.arrow_back_ios_new_rounded,
-                      color: getColor("secondarytext"),
-                      size: 16,
+              ),
+              Expanded(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Text(
+                      widget.rightText,
+                      style: getFont("mainfont")(
+                        color: getColor("secondarytext"),
+                      ),
                     ),
-                  ),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 6, right: 2),
+                      child: Builder(builder: (context) {
+                        if (!widget.showArrow) {
+                          return const SizedBox();
+                        }
+                        return RotationTransition(
+                          turns: widget.isOpenable
+                              ? AlwaysStoppedAnimation(90 * progress / 360)
+                              : const AlwaysStoppedAnimation(0),
+                          child: RotatedBox(
+                            quarterTurns: 2,
+                            child: Icon(
+                              Icons.arrow_back_ios_new_rounded,
+                              color: getColor("secondarytext"),
+                              size: 16,
+                            ),
+                          ),
+                        );
+                      }),
+                    ),
+                  ],
                 ),
+              ),
+            ],
+          ),
+        ),
+        ShaderMask(
+          shaderCallback: (Rect rect) {
+            return LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Colors.black.withAlpha(220),
+                Colors.transparent,
+                Colors.transparent,
+                Colors.black.withAlpha(220),
+              ],
+              stops: const [0.0, 0.15, 0.85, 1.0],
+            ).createShader(rect);
+          },
+          blendMode: BlendMode.dstOut,
+          child: SizeTransition(
+            sizeFactor: AlwaysStoppedAnimation(progress),
+            child: ListView(
+              shrinkWrap: true,
+              padding: EdgeInsets.zero,
+              physics: const NeverScrollableScrollPhysics(),
+              children: [
+                ...widget.openedWidgets
+                    .map(
+                      (e) => Padding(
+                        padding: const EdgeInsets.only(left: 28, right: 8),
+                        child: e,
+                      ),
+                    )
+                    .toList(),
               ],
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
