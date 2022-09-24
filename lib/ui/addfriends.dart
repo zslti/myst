@@ -184,95 +184,118 @@ class _AddFriendsViewState extends State<AddFriendsView> {
                             for (final user in users)
                               Padding(
                                 padding: const EdgeInsets.only(bottom: 16.0),
-                                child: Row(
-                                  children: [
-                                    ClipRRect(
-                                      borderRadius: BorderRadius.circular(
-                                        50,
-                                      ),
-                                      child: SizedBox(
-                                        width: 32,
-                                        height: 32,
-                                        child: ProfileImage(
-                                          url: user["picture"] ?? "",
+                                child: GestureDetector(
+                                  onLongPress: () {
+                                    bottomSheetData = {
+                                      "email": user["email"],
+                                      "displayname": user["username"],
+                                      "image": user["picture"],
+                                    };
+                                    scrollController.animateTo(
+                                      0.5,
+                                      duration:
+                                          const Duration(milliseconds: 400),
+                                      curve: Curves.ease,
+                                    );
+                                    isScrolling = true;
+                                    Timer(const Duration(milliseconds: 400),
+                                        () {
+                                      isScrolling = false;
+                                    });
+                                  },
+                                  child: Row(
+                                    children: [
+                                      ClipRRect(
+                                        borderRadius: BorderRadius.circular(
+                                          50,
                                         ),
-                                      ),
-                                    ),
-                                    const SizedBox(
-                                      width: 10,
-                                    ),
-                                    Expanded(
-                                      child: Text(
-                                        user["username"],
-                                        overflow: TextOverflow.ellipsis,
-                                        style: getFont("main")(
-                                          color: getColor("secondarytext"),
-                                        ),
-                                      ),
-                                    ),
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.end,
-                                      children: [
-                                        GestureDetector(
-                                          onTap: () {
-                                            if (!friends.contains(
-                                              user["email"],
-                                            )) {
-                                              sendFriendRequest(user["email"]);
-                                            }
-                                          },
-                                          child: Padding(
-                                            padding: const EdgeInsets.only(
-                                              left: 8,
-                                              right: 8,
-                                            ),
-                                            child:
-                                                friends.contains(user["email"])
-                                                    ? Image.asset(
-                                                        "assets/friendadded.png",
-                                                        width: 20,
-                                                        height: 20,
-                                                        color: getColor(
-                                                          "secondarytext",
-                                                        ),
-                                                      )
-                                                    : Icon(
-                                                        Icons
-                                                            .person_add_alt_1_outlined,
-                                                        color: getColor(
-                                                          "secondarytext",
-                                                        ),
-                                                        size: 25,
-                                                      ),
+                                        child: SizedBox(
+                                          width: 32,
+                                          height: 32,
+                                          child: ProfileImage(
+                                            url: user["picture"] ?? "",
                                           ),
                                         ),
-                                        GestureDetector(
-                                          onTap: () {
-                                            user["displayname"] =
-                                                user["username"];
-                                            conversations.add(user);
-                                            currentConversation = user;
-                                            Timer(
-                                              const Duration(milliseconds: 500),
-                                              () {
-                                                slideToCenter();
-                                              },
-                                            );
-                                            selectedIndex = 0;
-                                            pushReplacement(
-                                              context,
-                                              const MainView(),
-                                            );
-                                          },
-                                          child: Icon(
-                                            Icons.messenger_outline,
+                                      ),
+                                      const SizedBox(
+                                        width: 10,
+                                      ),
+                                      Expanded(
+                                        child: Text(
+                                          user["username"],
+                                          overflow: TextOverflow.ellipsis,
+                                          style: getFont("main")(
                                             color: getColor("secondarytext"),
-                                            size: 22,
                                           ),
                                         ),
-                                      ],
-                                    )
-                                  ],
+                                      ),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.end,
+                                        children: [
+                                          GestureDetector(
+                                            onTap: () {
+                                              if (!friends.contains(
+                                                user["email"],
+                                              )) {
+                                                sendFriendRequest(
+                                                    user["email"]);
+                                              }
+                                            },
+                                            child: Padding(
+                                              padding: const EdgeInsets.only(
+                                                left: 8,
+                                                right: 8,
+                                              ),
+                                              child: friends
+                                                      .contains(user["email"])
+                                                  ? Image.asset(
+                                                      "assets/friendadded.png",
+                                                      width: 20,
+                                                      height: 20,
+                                                      color: getColor(
+                                                        "secondarytext",
+                                                      ),
+                                                    )
+                                                  : Icon(
+                                                      Icons
+                                                          .person_add_alt_1_outlined,
+                                                      color: getColor(
+                                                        "secondarytext",
+                                                      ),
+                                                      size: 25,
+                                                    ),
+                                            ),
+                                          ),
+                                          GestureDetector(
+                                            onTap: () {
+                                              user["displayname"] =
+                                                  user["username"];
+                                              conversations.add(user);
+                                              currentConversation = user;
+                                              Timer(
+                                                const Duration(
+                                                    milliseconds: 500),
+                                                () {
+                                                  slideToCenter();
+                                                },
+                                              );
+                                              selectedIndex = 0;
+                                              pushReplacement(
+                                                context,
+                                                const MainView(),
+                                              );
+                                            },
+                                            child: Icon(
+                                              Icons.messenger_outline,
+                                              color: getColor("secondarytext"),
+                                              size: 22,
+                                            ),
+                                          ),
+                                        ],
+                                      )
+                                    ],
+                                  ),
                                 ),
                               ),
                           ],
@@ -426,6 +449,7 @@ class _AddFriendsViewState extends State<AddFriendsView> {
                           //if (selectedIndex == 2) return;
                           //selectedIndex = 2;
                           //push(context, const MainView());
+                          bottomSheetData = {};
                           scrollController.animateTo(
                             0.5,
                             duration: const Duration(milliseconds: 400),

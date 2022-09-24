@@ -180,16 +180,48 @@ class _ConversationsViewState extends State<ConversationsView> {
                                                           ? 0
                                                           : 1),
                                                   child: TextButton(
-                                                    onPressed: () {
+                                                    onLongPress: () {
+                                                      bottomSheetData = {
+                                                        "email": conversation[
+                                                            "email"],
+                                                        "displayname":
+                                                            conversation[
+                                                                "displayname"],
+                                                        "image": profilePictures[
+                                                                conversation[
+                                                                    "email"]] ??
+                                                            "",
+                                                      };
                                                       scrollController
                                                           .animateTo(
-                                                        0,
+                                                        0.5,
                                                         duration:
                                                             const Duration(
-                                                          milliseconds: 300,
-                                                        ),
+                                                                milliseconds:
+                                                                    400),
                                                         curve: Curves.ease,
                                                       );
+                                                      isScrolling = true;
+                                                      Timer(
+                                                          const Duration(
+                                                              milliseconds:
+                                                                  400), () {
+                                                        isScrolling = false;
+                                                      });
+                                                    },
+                                                    onPressed: () {
+                                                      if (scrollController
+                                                          .isAttached) {
+                                                        scrollController
+                                                            .animateTo(
+                                                          0,
+                                                          duration:
+                                                              const Duration(
+                                                            milliseconds: 300,
+                                                          ),
+                                                          curve: Curves.ease,
+                                                        );
+                                                      }
                                                       swipeDirection =
                                                           RevealSide.right;
                                                       gkey.currentState

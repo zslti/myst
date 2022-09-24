@@ -54,6 +54,9 @@ class _FriendsViewState extends State<FriendsView> {
 
     unreadMessages = await getUnreadMessages();
     myStatus = await getStatus(FirebaseAuth.instance.currentUser?.email ?? "");
+    if (bottomSheetData["email"] != null && scrollSize != 0) {
+      bottomSheetProfileStatus = await getStatus(bottomSheetData["email"]!);
+    }
     if (mounted) {
       setState(() {});
     }
@@ -331,6 +334,7 @@ class _FriendsViewState extends State<FriendsView> {
                         //if (selectedIndex == 2) return;
                         //selectedIndex = 2;
                         //push(context, const MainView());
+                        bottomSheetData = {};
                         scrollController.animateTo(
                           0.5,
                           duration: const Duration(milliseconds: 400),
@@ -401,6 +405,22 @@ class _FriendState extends State<Friend> {
   @override
   Widget build(BuildContext context) {
     return TextButton(
+      onLongPress: () {
+        bottomSheetData = {
+          "email": widget.friend,
+          "displayname": displayNames[widget.friend],
+          "image": profilePictures[widget.friend] ?? "",
+        };
+        scrollController.animateTo(
+          0.5,
+          duration: const Duration(milliseconds: 400),
+          curve: Curves.ease,
+        );
+        isScrolling = true;
+        Timer(const Duration(milliseconds: 400), () {
+          isScrolling = false;
+        });
+      },
       onPressed: () {
         currentConversation = {
           "email": widget.friend,
@@ -554,7 +574,18 @@ class _FriendRequestsViewState extends State<FriendRequestsView> {
         setState(() {});
       }
     });
-
+    if (scrollController2.isAttached) {
+      scrollSize = scrollController2.size;
+      if (scrollController2.size < 0.3 &&
+          scrollController2.size > 0.01 &&
+          !isScrolling) {
+        scrollController2.animateTo(
+          0,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.ease,
+        );
+      }
+    }
     return Scaffold(
       backgroundColor: getColor("background2"),
       body: ScrollConfiguration(
@@ -747,6 +778,7 @@ class _FriendRequestsViewState extends State<FriendRequestsView> {
                           //if (selectedIndex == 2) return;
                           //selectedIndex = 2;
                           //push(context, const MainView());
+                          bottomSheetData = {};
                           scrollController2.animateTo(
                             0.5,
                             duration: const Duration(milliseconds: 400),
@@ -823,6 +855,9 @@ class _FriendRequestState extends State<FriendRequest> {
     String name = await getDisplayName(users[0]);
     displayNames[users[0]] = name;
     profilePictures[users[0]] = await getPicture(users[0]);
+    if (bottomSheetData["email"] != null && scrollSize != 0) {
+      bottomSheetProfileStatus = await getStatus(bottomSheetData["email"]!);
+    }
     if (mounted) {
       setState(() {});
     }
@@ -832,95 +867,121 @@ class _FriendRequestState extends State<FriendRequest> {
   @override
   Widget build(BuildContext context) {
     getRequestDisplayName();
-    return Row(
-      children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(
-            50,
-          ),
-          child: SizedBox(
-            width: 32,
-            height: 32,
-            child: ProfileImage(
-              url: profilePictures[widget.request['sender']] ?? "",
+    return GestureDetector(
+      onLongPress: () {
+        bottomSheetData = {
+          "email": widget.options.contains(FriendRequestOption.accept)
+              ? widget.request['sender'] ?? ""
+              : widget.request['receiver'] ?? "",
+          "displayname": widget.options.contains(FriendRequestOption.accept)
+              ? displayNames[widget.request["sender"]] ?? ""
+              : displayNames[widget.request["receiver"]] ?? "",
+          "image": widget.options.contains(FriendRequestOption.accept)
+              ? profilePictures[widget.request['sender']] ?? ""
+              : profilePictures[widget.request['receiver']] ?? "",
+        };
+        scrollController2.animateTo(
+          0.5,
+          duration: const Duration(milliseconds: 400),
+          curve: Curves.ease,
+        );
+        isScrolling = true;
+        Timer(const Duration(milliseconds: 400), () {
+          isScrolling = false;
+        });
+      },
+      child: Row(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(
+              50,
+            ),
+            child: SizedBox(
+              width: 32,
+              height: 32,
+              child: ProfileImage(
+                url: widget.options.contains(FriendRequestOption.accept)
+                    ? profilePictures[widget.request['sender']] ?? ""
+                    : profilePictures[widget.request['receiver']] ?? "",
+              ),
             ),
           ),
-        ),
-        const SizedBox(
-          width: 10,
-        ),
-        Expanded(
-          child: Stack(
-            children: [
-              Text(
-                widget.options.contains(FriendRequestOption.accept)
-                    ? displayNames[widget.request["sender"]] ?? ""
-                    : displayNames[widget.request["receiver"]] ?? "",
-                overflow: TextOverflow.ellipsis,
-                style: getFont("mainfont")(
-                  color: getColor(
-                    "secondarytext",
+          const SizedBox(
+            width: 10,
+          ),
+          Expanded(
+            child: Stack(
+              children: [
+                Text(
+                  widget.options.contains(FriendRequestOption.accept)
+                      ? displayNames[widget.request["sender"]] ?? ""
+                      : displayNames[widget.request["receiver"]] ?? "",
+                  overflow: TextOverflow.ellipsis,
+                  style: getFont("mainfont")(
+                    color: getColor(
+                      "secondarytext",
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-        Row(
-          children: [
-            for (final option in widget.options)
-              Padding(
-                padding: const EdgeInsets.only(left: 12.0),
-                child: GestureDetector(
-                  onTap: () async {
-                    if (option == FriendRequestOption.accept) {
-                      await acceptFriendRequest(widget.request);
-                      incomingRequests.remove(widget.request);
-                      setState(() {});
-                    } else {
-                      await rejectFriendRequest(widget.request);
-                      incomingRequests.remove(widget.request);
-                      setState(() {});
-                    }
-                  },
-                  child: Container(
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      color: getColor("background"),
-                      borderRadius: BorderRadius.circular(50),
-                      boxShadow: [
-                        BoxShadow(
-                          color: (option == FriendRequestOption.accept
-                                  ? getColor("positive")
-                                  : getColor("negative"))
-                              .withOpacity(0.7),
-                          spreadRadius: 1,
-                          blurRadius: 5,
-                          offset: const Offset(
-                            0,
-                            0,
+          Row(
+            children: [
+              for (final option in widget.options)
+                Padding(
+                  padding: const EdgeInsets.only(left: 12.0),
+                  child: GestureDetector(
+                    onTap: () async {
+                      if (option == FriendRequestOption.accept) {
+                        await acceptFriendRequest(widget.request);
+                        incomingRequests.remove(widget.request);
+                        setState(() {});
+                      } else {
+                        await rejectFriendRequest(widget.request);
+                        incomingRequests.remove(widget.request);
+                        setState(() {});
+                      }
+                    },
+                    child: Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: getColor("background"),
+                        borderRadius: BorderRadius.circular(50),
+                        boxShadow: [
+                          BoxShadow(
+                            color: (option == FriendRequestOption.accept
+                                    ? getColor("positive")
+                                    : getColor("negative"))
+                                .withOpacity(0.7),
+                            spreadRadius: 1,
+                            blurRadius: 5,
+                            offset: const Offset(
+                              0,
+                              0,
+                            ),
                           ),
+                        ],
+                      ),
+                      child: Center(
+                        child: Icon(
+                          option == FriendRequestOption.accept
+                              ? Icons.check
+                              : Icons.close,
+                          color: option == FriendRequestOption.accept
+                              ? getColor("positive")
+                              : getColor("negative"),
+                          size: 20,
                         ),
-                      ],
-                    ),
-                    child: Center(
-                      child: Icon(
-                        option == FriendRequestOption.accept
-                            ? Icons.check
-                            : Icons.close,
-                        color: option == FriendRequestOption.accept
-                            ? getColor("positive")
-                            : getColor("negative"),
-                        size: 20,
                       ),
                     ),
                   ),
                 ),
-              ),
-          ],
-        )
-      ],
+            ],
+          )
+        ],
+      ),
     );
   }
 }

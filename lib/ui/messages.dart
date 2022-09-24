@@ -31,6 +31,10 @@ bool done = false;
 bool built = false;
 bool readMessageShown = false;
 double connectionIndicatorProgress = 0;
+// DraggableScrollableController scrollController3 =
+//     DraggableScrollableController();
+// double scrollSize = 0;
+// bool isScrolling = false;
 
 void startTransition() {
   if (transitionProgress != 0 ||
@@ -66,17 +70,35 @@ class _MessageState extends State<Message> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.only(top: 5, left: 10, right: 10),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(
-              50,
-            ),
-            child: SizedBox(
-              width: 32,
-              height: 32,
-              child: ProfileImage(
-                url: profilePictures[widget.message['sender']] ?? "",
+        GestureDetector(
+          onTap: () {
+            bottomSheetData = {
+              "email": widget.message["sender"],
+              "displayname": displayNames[widget.message["sender"]],
+              "image": profilePictures[widget.message["sender"]],
+            };
+            scrollController.animateTo(
+              0.5,
+              duration: const Duration(milliseconds: 400),
+              curve: Curves.ease,
+            );
+            isScrolling = true;
+            Timer(const Duration(milliseconds: 400), () {
+              isScrolling = false;
+            });
+          },
+          child: Padding(
+            padding: const EdgeInsets.only(top: 5, left: 10, right: 10),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(
+                50,
+              ),
+              child: SizedBox(
+                width: 32,
+                height: 32,
+                child: ProfileImage(
+                  url: profilePictures[widget.message['sender']] ?? "",
+                ),
               ),
             ),
           ),
@@ -87,15 +109,33 @@ class _MessageState extends State<Message> {
             Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Container(
-                  constraints: BoxConstraints(
-                    maxWidth: MediaQuery.of(context).size.width / 2.5,
-                  ),
-                  child: Text(
-                    displayNames[widget.message['sender']] ?? "",
-                    overflow: TextOverflow.ellipsis,
-                    style: getFont("mainfont")(
-                      color: getColor("secondarytext"),
+                GestureDetector(
+                  onTap: () {
+                    bottomSheetData = {
+                      "email": widget.message["sender"],
+                      "displayname": displayNames[widget.message["sender"]],
+                      "image": profilePictures[widget.message["sender"]],
+                    };
+                    scrollController.animateTo(
+                      0.5,
+                      duration: const Duration(milliseconds: 400),
+                      curve: Curves.ease,
+                    );
+                    isScrolling = true;
+                    Timer(const Duration(milliseconds: 400), () {
+                      isScrolling = false;
+                    });
+                  },
+                  child: Container(
+                    constraints: BoxConstraints(
+                      maxWidth: MediaQuery.of(context).size.width / 2.5,
+                    ),
+                    child: Text(
+                      displayNames[widget.message['sender']] ?? "",
+                      overflow: TextOverflow.ellipsis,
+                      style: getFont("mainfont")(
+                        color: getColor("secondarytext"),
+                      ),
                     ),
                   ),
                 ),
@@ -245,6 +285,18 @@ class _MessagesViewState extends State<MessagesView> {
   @override
   Widget build(BuildContext context) {
     shouldRebuild = false;
+    if (scrollController.isAttached) {
+      scrollSize = scrollController.size;
+      if (scrollController.size < 0.3 &&
+          scrollController.size > 0.01 &&
+          !isScrolling) {
+        scrollController.animateTo(
+          0,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.ease,
+        );
+      }
+    }
     if (currentConversation == null) {
       return Scaffold(
         backgroundColor: getColor("background2"),
@@ -274,429 +326,452 @@ class _MessagesViewState extends State<MessagesView> {
         }
       });
       readMessageShown = false;
-      return Scaffold(
-        backgroundColor: getColor("background2"),
-        body: ScrollConfiguration(
-          behavior: MyBehavior(),
-          child: Stack(
-            children: [
-              Padding(
-                padding: EdgeInsets.only(top: 50, bottom: currentBarHeight),
-                child: AnimatedOpacity(
-                  opacity: built ? 1 : 0,
-                  duration: Duration(milliseconds: 300 * (built ? 1 : 0)),
-                  child: ScrollablePositionedList.builder(
-                      itemPositionsListener: _itemPositionsListener,
-                      itemScrollController: _scrollController,
-                      itemCount: currentMessages.length,
-                      reverse: true,
-                      scrollDirection: Axis.vertical,
-                      itemBuilder: (context, index) {
-                        try {
-                          DateTime lastMessageTime =
-                              DateTime.fromMillisecondsSinceEpoch(
-                            currentMessages[max(index - 1, 0)]["timestamp"],
-                          );
-                          DateTime thisMessageTime =
-                              DateTime.fromMillisecondsSinceEpoch(
-                            currentMessages[index]["timestamp"],
-                          );
-                          if (index == 0 &&
-                              !(currentMessages[index]["read"] ?? false)) {
-                            readMessage(
-                              currentMessages[index]["sender"],
-                              currentMessages[index]["message"],
-                              currentMessages[index]["timestamp"],
-                            );
-                          }
-                          bool read = false;
-                          if (!readMessageShown &&
-                              ((currentMessages[index]["read"] ?? false) ||
-                                  currentMessages[index]["sender"] !=
-                                      FirebaseAuth
-                                          .instance.currentUser?.email)) {
-                            readMessageShown = true;
-                            read = true;
-                          }
-                          if (lastMessageTime.day != thisMessageTime.day ||
-                              lastMessageTime.month != thisMessageTime.month ||
-                              lastMessageTime.year != thisMessageTime.year) {
-                            return Column(
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 6.0),
-                                  child: Message(
-                                    message: currentMessages[index],
-                                    read: read,
-                                  ),
-                                ),
-                                Opacity(
-                                  opacity: 0.5,
-                                  child: Row(
-                                    children: [
-                                      const SizedBox(
-                                        width: 16,
-                                      ),
-                                      Expanded(
-                                        child: Container(
-                                          width: double.infinity,
-                                          height: 1,
-                                          color: getColor("secondarytext"),
-                                        ),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.only(
-                                          left: 8,
-                                          right: 8,
-                                        ),
-                                        child: Text(
-                                          timestampToDate(
-                                            currentMessages[max(index - 1, 0)]
-                                                ["timestamp"],
-                                            showOnlyDate: true,
-                                          ),
-                                          style: getFont("mainfont")(
-                                            color: getColor("secondarytext"),
-                                            fontSize: 12,
-                                          ),
-                                        ),
-                                      ),
-                                      Expanded(
-                                        child: Container(
-                                          width: double.infinity,
-                                          height: 1,
-                                          color: getColor("secondarytext"),
-                                        ),
-                                      ),
-                                      const SizedBox(
-                                        width: 16,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            );
-                          }
-                          return Padding(
-                            padding: EdgeInsets.only(
-                              top: 6.0,
-                              bottom: index == 0 ? 10 : 0,
-                            ),
-                            child: Message(
-                              message: currentMessages[index],
-                              read: read,
-                            ),
-                          );
-                        } catch (e) {
-                          return Container();
-                        }
-                      }),
-                ),
-              ),
-              Container(
-                width: MediaQuery.of(context).size.width,
-                height: 60,
-                decoration: BoxDecoration(
-                  color: getColor("background3"),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.25),
-                      spreadRadius: 5,
-                      blurRadius: 7,
-                      offset: const Offset(
-                        0,
-                        3,
-                      ),
-                    ),
-                  ],
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 16, right: 10),
-                  child: Row(children: [
-                    GestureDetector(
-                      onTap: () {
-                        if (actualSide != RevealSide.main) {
-                          return;
-                        }
-                        swipeDirection = RevealSide.left;
-                        gkey.currentState?.onTranslate(
-                          50 * MediaQuery.of(context).size.width / 400,
-                          shouldApplyTransition: true,
-                        );
-                      },
-                      child: Icon(
-                        Icons.messenger_outline,
-                        color: getColor("secondarytext"),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 12, right: 4),
-                      child: Image.asset(
-                        "assets/at.png",
-                        width: 15,
-                        height: 15,
-                        color: getColor("secondarytext"),
-                      ),
-                    ),
-                    Expanded(
-                      child: AnimatedOpacity(
-                        opacity: built &&
-                                currentConversation["displayname"]
-                                    .toString()
-                                    .isNotEmpty
-                            ? 1
-                            : 0,
-                        duration: Duration(
-                            milliseconds: 300 *
-                                (built &&
-                                        currentConversation["displayname"]
-                                            .toString()
-                                            .isNotEmpty
-                                    ? 1
-                                    : 0)),
-                        child: RichText(
-                          overflow: TextOverflow.ellipsis,
-                          text: TextSpan(
-                            children: [
-                              TextSpan(
-                                text: currentConversation["displayname"],
-                                //overflow: TextOverflow.ellipsis,
-                                style: getFont("mainfont")(
-                                  color: getColor("maintext"),
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              WidgetSpan(
-                                child: Padding(
-                                  padding: const EdgeInsets.only(
-                                    left: 4,
-                                    bottom: 2.5,
-                                  ),
-                                  child: StatusIndicator(
-                                    status: currentConversation["status"] ??
-                                        "offline",
-                                  ),
-                                ),
-                              )
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: GestureDetector(
-                        onTap: () {
-                          if (actualSide != RevealSide.main) {
-                            return;
-                          }
-                          swipeDirection = RevealSide.right;
-                          gkey.currentState?.onTranslate(
-                            -50 * MediaQuery.of(context).size.width / 400,
-                            shouldApplyTransition: true,
-                          );
-                        },
-                        child: Image.asset(
-                          "assets/more.png",
-                          width: 35,
-                          height: 35,
-                          color: getColor("secondarytext"),
-                        ),
-                      ),
-                    ),
-                  ]),
-                ),
-              ),
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: Stack(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(0),
-                      child: Container(
-                        width: MediaQuery.of(context).size.width,
-                        height: currentBarHeight,
-                        decoration: BoxDecoration(
-                          color: getColor("background3"),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.25),
-                              spreadRadius: 5,
-                              blurRadius: 7,
-                              offset: const Offset(
-                                0,
-                                -3,
-                              ),
-                            ),
-                          ],
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.only(left: 8, right: 8),
-                          child: Container(
-                            height: currentFieldHeight,
-                            //height: 20,
-                            alignment: Alignment.center,
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(30),
-                                    child: SizedBox(
-                                      height: currentFieldHeight,
-                                      child: TextField(
-                                        maxLines: 5,
-                                        //keyboardType: TextInputType.multiline,
-                                        onChanged: (str) {
-                                          targetFieldHeight = max(
-                                            35,
-                                            14 +
-                                                messageController.text
-                                                    .textHeight(
-                                                  getFont("mainfont")(
-                                                    color: getColor(
-                                                        "secondarytext"),
-                                                    fontSize: 14,
-                                                  ),
-                                                  MediaQuery.of(context)
-                                                          .size
-                                                          .width -
-                                                      70,
-                                                ),
-                                          );
-                                          targetBarHeight = max(
-                                            50,
-                                            29 +
-                                                messageController.text
-                                                    .textHeight(
-                                                  getFont("mainfont")(
-                                                    color: getColor(
-                                                        "secondarytext"),
-                                                    fontSize: 14,
-                                                  ),
-                                                  MediaQuery.of(context)
-                                                          .size
-                                                          .width -
-                                                      70,
-                                                ),
-                                          );
-                                          startTransition();
-                                        },
-                                        textAlignVertical:
-                                            const TextAlignVertical(
-                                          y: -1,
-                                        ),
-                                        controller: messageController,
-                                        cursorColor: getColor("cursor"),
-                                        cursorRadius: const Radius.circular(4),
-                                        style: getFont("mainfont")(
-                                          color: getColor("secondarytext"),
-                                          fontSize: 14,
-                                        ),
-                                        decoration: InputDecoration(
-                                          isDense: true,
-                                          fillColor: getColor("background"),
-                                          filled: true,
-                                          hintText: translation[currentLanguage]
-                                              ["message"],
-                                          hintStyle: getFont("mainfont")(
-                                            color: getColor("secondarytext"),
-                                            fontSize: 14,
-                                            height: 1.3,
-                                          ),
-                                          border: InputBorder.none,
-                                        ),
+      return Stack(
+        children: [
+          Scaffold(
+            backgroundColor: getColor("background2"),
+            body: ScrollConfiguration(
+              behavior: MyBehavior(),
+              child: Stack(
+                children: [
+                  Padding(
+                    padding: EdgeInsets.only(top: 50, bottom: currentBarHeight),
+                    child: AnimatedOpacity(
+                      opacity: built ? 1 : 0,
+                      duration: Duration(milliseconds: 300 * (built ? 1 : 0)),
+                      child: ScrollablePositionedList.builder(
+                          itemPositionsListener: _itemPositionsListener,
+                          itemScrollController: _scrollController,
+                          itemCount: currentMessages.length,
+                          reverse: true,
+                          scrollDirection: Axis.vertical,
+                          itemBuilder: (context, index) {
+                            try {
+                              DateTime lastMessageTime =
+                                  DateTime.fromMillisecondsSinceEpoch(
+                                currentMessages[max(index - 1, 0)]["timestamp"],
+                              );
+                              DateTime thisMessageTime =
+                                  DateTime.fromMillisecondsSinceEpoch(
+                                currentMessages[index]["timestamp"],
+                              );
+                              if (index == 0 &&
+                                  !(currentMessages[index]["read"] ?? false)) {
+                                readMessage(
+                                  currentMessages[index]["sender"],
+                                  currentMessages[index]["message"],
+                                  currentMessages[index]["timestamp"],
+                                );
+                              }
+                              bool read = false;
+                              if (!readMessageShown &&
+                                  ((currentMessages[index]["read"] ?? false) ||
+                                      currentMessages[index]["sender"] !=
+                                          FirebaseAuth
+                                              .instance.currentUser?.email)) {
+                                readMessageShown = true;
+                                read = true;
+                              }
+                              if (lastMessageTime.day != thisMessageTime.day ||
+                                  lastMessageTime.month !=
+                                      thisMessageTime.month ||
+                                  lastMessageTime.year !=
+                                      thisMessageTime.year) {
+                                return Column(
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 6.0),
+                                      child: Message(
+                                        message: currentMessages[index],
+                                        read: read,
                                       ),
                                     ),
-                                  ),
-                                ),
-                                GestureDetector(
-                                  onTap: () {
-                                    if (messageController.text.isEmpty) {
-                                      return;
-                                    }
-                                    sendMessage(
-                                      messageController.text,
-                                      currentConversation["email"],
-                                    );
-                                    messageController.clear();
-                                    targetFieldHeight = 35;
-                                    targetBarHeight = 50;
-                                    startTransition();
-                                  },
-                                  child: Padding(
-                                    padding: const EdgeInsets.only(left: 6.0),
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(30),
-                                      child: Container(
-                                        color: getColor("button2"),
-                                        width: 35,
-                                        height: 35,
-                                        padding: const EdgeInsets.only(
-                                          left: 8.0,
-                                          right: 6.0,
-                                          top: 2.0,
-                                          bottom: 2.0,
-                                        ),
-                                        child: Icon(
-                                          Icons.send_rounded,
-                                          color: getColor("maintext"),
-                                          size: 20,
-                                        ),
+                                    Opacity(
+                                      opacity: 0.5,
+                                      child: Row(
+                                        children: [
+                                          const SizedBox(
+                                            width: 16,
+                                          ),
+                                          Expanded(
+                                            child: Container(
+                                              width: double.infinity,
+                                              height: 1,
+                                              color: getColor("secondarytext"),
+                                            ),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                              left: 8,
+                                              right: 8,
+                                            ),
+                                            child: Text(
+                                              timestampToDate(
+                                                currentMessages[
+                                                        max(index - 1, 0)]
+                                                    ["timestamp"],
+                                                showOnlyDate: true,
+                                              ),
+                                              style: getFont("mainfont")(
+                                                color:
+                                                    getColor("secondarytext"),
+                                                fontSize: 12,
+                                              ),
+                                            ),
+                                          ),
+                                          Expanded(
+                                            child: Container(
+                                              width: double.infinity,
+                                              height: 1,
+                                              color: getColor("secondarytext"),
+                                            ),
+                                          ),
+                                          const SizedBox(
+                                            width: 16,
+                                          ),
+                                        ],
                                       ),
                                     ),
-                                  ),
+                                  ],
+                                );
+                              }
+                              return Padding(
+                                padding: EdgeInsets.only(
+                                  top: 6.0,
+                                  bottom: index == 0 ? 10 : 0,
                                 ),
-                              ],
-                            ),
+                                child: Message(
+                                  message: currentMessages[index],
+                                  read: read,
+                                ),
+                              );
+                            } catch (e) {
+                              return Container();
+                            }
+                          }),
+                    ),
+                  ),
+                  Container(
+                    width: MediaQuery.of(context).size.width,
+                    height: 60,
+                    decoration: BoxDecoration(
+                      color: getColor("background3"),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.25),
+                          spreadRadius: 5,
+                          blurRadius: 7,
+                          offset: const Offset(
+                            0,
+                            3,
                           ),
                         ),
-                      ),
+                      ],
                     ),
-                    Builder(builder: (context) {
-                      if (connectionIndicatorProgress < 1) {
-                        connectionIndicatorProgress += 0.025;
-                        WidgetsBinding.instance.addPostFrameCallback((_) {
-                          Timer(const Duration(milliseconds: 10), () {
-                            setState(() {});
-                          });
-                        });
-                      } else {
-                        connectionIndicatorProgress = 0;
-                      }
-                      connectionIndicatorProgress = min(
-                        connectionIndicatorProgress,
-                        1,
-                      );
-                      double size = MediaQuery.of(context).size.width / 2;
-                      return AnimatedOpacity(
-                        opacity: !hasConnection &&
-                                connectionIndicatorProgress < 0.8 &&
-                                connectionIndicatorProgress != 0
-                            ? 1
-                            : 0,
-                        duration: const Duration(milliseconds: 125),
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: size -
-                                (size *
-                                    Curves.easeIn.transform(
-                                        connectionIndicatorProgress)),
-                          ),
-                          child: Container(
-                            width: double.infinity,
-                            height: 1,
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 16, right: 10),
+                      child: Row(children: [
+                        GestureDetector(
+                          onTap: () {
+                            if (actualSide != RevealSide.main) {
+                              return;
+                            }
+                            swipeDirection = RevealSide.left;
+                            gkey.currentState?.onTranslate(
+                              50 * MediaQuery.of(context).size.width / 400,
+                              shouldApplyTransition: true,
+                            );
+                          },
+                          child: Icon(
+                            Icons.messenger_outline,
                             color: getColor("secondarytext"),
                           ),
                         ),
-                      );
-                    }),
-                  ],
-                ),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 12, right: 4),
+                          child: Image.asset(
+                            "assets/at.png",
+                            width: 15,
+                            height: 15,
+                            color: getColor("secondarytext"),
+                          ),
+                        ),
+                        Expanded(
+                          child: AnimatedOpacity(
+                            opacity: built &&
+                                    currentConversation["displayname"]
+                                        .toString()
+                                        .isNotEmpty
+                                ? 1
+                                : 0,
+                            duration: Duration(
+                                milliseconds: 300 *
+                                    (built &&
+                                            currentConversation["displayname"]
+                                                .toString()
+                                                .isNotEmpty
+                                        ? 1
+                                        : 0)),
+                            child: RichText(
+                              overflow: TextOverflow.ellipsis,
+                              text: TextSpan(
+                                children: [
+                                  TextSpan(
+                                    text: currentConversation["displayname"],
+                                    //overflow: TextOverflow.ellipsis,
+                                    style: getFont("mainfont")(
+                                      color: getColor("maintext"),
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  WidgetSpan(
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(
+                                        left: 4,
+                                        bottom: 2.5,
+                                      ),
+                                      child: StatusIndicator(
+                                        status: currentConversation["status"] ??
+                                            "offline",
+                                      ),
+                                    ),
+                                  )
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: GestureDetector(
+                            onTap: () {
+                              if (actualSide != RevealSide.main) {
+                                return;
+                              }
+                              swipeDirection = RevealSide.right;
+                              gkey.currentState?.onTranslate(
+                                -50 * MediaQuery.of(context).size.width / 400,
+                                shouldApplyTransition: true,
+                              );
+                            },
+                            child: Image.asset(
+                              "assets/more.png",
+                              width: 35,
+                              height: 35,
+                              color: getColor("secondarytext"),
+                            ),
+                          ),
+                        ),
+                      ]),
+                    ),
+                  ),
+                  Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Stack(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(0),
+                          child: Container(
+                            width: MediaQuery.of(context).size.width,
+                            height: currentBarHeight,
+                            decoration: BoxDecoration(
+                              color: getColor("background3"),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.25),
+                                  spreadRadius: 5,
+                                  blurRadius: 7,
+                                  offset: const Offset(
+                                    0,
+                                    -3,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.only(left: 8, right: 8),
+                              child: Container(
+                                height: currentFieldHeight,
+                                //height: 20,
+                                alignment: Alignment.center,
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(30),
+                                        child: SizedBox(
+                                          height: currentFieldHeight,
+                                          child: TextField(
+                                            maxLines: 5,
+                                            //keyboardType: TextInputType.multiline,
+                                            onChanged: (str) {
+                                              targetFieldHeight = max(
+                                                35,
+                                                14 +
+                                                    messageController.text
+                                                        .textHeight(
+                                                      getFont("mainfont")(
+                                                        color: getColor(
+                                                            "secondarytext"),
+                                                        fontSize: 14,
+                                                      ),
+                                                      MediaQuery.of(context)
+                                                              .size
+                                                              .width -
+                                                          70,
+                                                    ),
+                                              );
+                                              targetBarHeight = max(
+                                                50,
+                                                29 +
+                                                    messageController.text
+                                                        .textHeight(
+                                                      getFont("mainfont")(
+                                                        color: getColor(
+                                                            "secondarytext"),
+                                                        fontSize: 14,
+                                                      ),
+                                                      MediaQuery.of(context)
+                                                              .size
+                                                              .width -
+                                                          70,
+                                                    ),
+                                              );
+                                              startTransition();
+                                            },
+                                            textAlignVertical:
+                                                const TextAlignVertical(
+                                              y: -1,
+                                            ),
+                                            controller: messageController,
+                                            cursorColor: getColor("cursor"),
+                                            cursorRadius:
+                                                const Radius.circular(4),
+                                            style: getFont("mainfont")(
+                                              color: getColor("secondarytext"),
+                                              fontSize: 14,
+                                            ),
+                                            decoration: InputDecoration(
+                                              isDense: true,
+                                              fillColor: getColor("background"),
+                                              filled: true,
+                                              hintText:
+                                                  translation[currentLanguage]
+                                                      ["message"],
+                                              hintStyle: getFont("mainfont")(
+                                                color:
+                                                    getColor("secondarytext"),
+                                                fontSize: 14,
+                                                height: 1.3,
+                                              ),
+                                              border: InputBorder.none,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    GestureDetector(
+                                      onTap: () {
+                                        if (messageController.text.isEmpty) {
+                                          return;
+                                        }
+                                        sendMessage(
+                                          messageController.text,
+                                          currentConversation["email"],
+                                        );
+                                        messageController.clear();
+                                        targetFieldHeight = 35;
+                                        targetBarHeight = 50;
+                                        startTransition();
+                                      },
+                                      child: Padding(
+                                        padding:
+                                            const EdgeInsets.only(left: 6.0),
+                                        child: ClipRRect(
+                                          borderRadius:
+                                              BorderRadius.circular(30),
+                                          child: Container(
+                                            color: getColor("button2"),
+                                            width: 35,
+                                            height: 35,
+                                            padding: const EdgeInsets.only(
+                                              left: 8.0,
+                                              right: 6.0,
+                                              top: 2.0,
+                                              bottom: 2.0,
+                                            ),
+                                            child: Icon(
+                                              Icons.send_rounded,
+                                              color: getColor("maintext"),
+                                              size: 20,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        Builder(builder: (context) {
+                          if (connectionIndicatorProgress < 1) {
+                            connectionIndicatorProgress += 0.025;
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              Timer(const Duration(milliseconds: 10), () {
+                                setState(() {});
+                              });
+                            });
+                          } else {
+                            connectionIndicatorProgress = 0;
+                          }
+                          connectionIndicatorProgress = min(
+                            connectionIndicatorProgress,
+                            1,
+                          );
+                          double size = MediaQuery.of(context).size.width / 2;
+                          return AnimatedOpacity(
+                            opacity: !hasConnection &&
+                                    connectionIndicatorProgress < 0.8 &&
+                                    connectionIndicatorProgress != 0
+                                ? 1
+                                : 0,
+                            duration: const Duration(milliseconds: 125),
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: size -
+                                    (size *
+                                        Curves.easeIn.transform(
+                                            connectionIndicatorProgress)),
+                              ),
+                              child: Container(
+                                width: double.infinity,
+                                height: 1,
+                                color: getColor("secondarytext"),
+                              ),
+                            ),
+                          );
+                        }),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
+          // DraggableScrollableSheet(
+          //   minChildSize: 0,
+          //   initialChildSize: scrollSize,
+          //   controller: scrollController,
+          //   builder: (context, scrollController) {
+          //     return SettingsView(
+          //       scrollController: scrollController,
+          //     );
+          //   },
+          // )
+        ],
       );
     } on RangeError {
       return Scaffold(

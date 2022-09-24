@@ -416,10 +416,15 @@ Map downloadedImages = {
 };
 
 class ProfileImage extends StatefulWidget {
-  const ProfileImage({Key? key, this.url = "", this.type = "profile"})
-      : super(key: key);
+  const ProfileImage({
+    Key? key,
+    this.url = "",
+    this.type = "profile",
+    this.username = "",
+  }) : super(key: key);
   final String url;
   final String type;
+  final String username;
 
   @override
   State<ProfileImage> createState() => _ProfileImageState();
@@ -439,7 +444,7 @@ class _ProfileImageState extends State<ProfileImage> {
           image: downloadedImages["default"],
         );
       }
-      String myName = myDisplayName;
+      String myName = widget.username.isEmpty ? myDisplayName : widget.username;
       if (myName.length < 3) {
         myName += "   ";
       }

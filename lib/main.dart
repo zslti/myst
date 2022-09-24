@@ -112,7 +112,7 @@ class _MyAppState extends State<MyApp> {
   Future<bool> initializeApp() async {
     prefs?.setString("theme", ""); //TODO: remove line when everything is done
     //TODO: on long press on someone show bottom card with information
-    //TODO: every setting in bottom sheet
+    //TODO: every setting in bottom sheet in settings view and profile view
     //TODO: message actions like delete, copy, forward, reply
 
     //TODO: change push animation

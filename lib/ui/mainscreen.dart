@@ -27,6 +27,7 @@ int selectedIndex = 0;
 int lastNotificationAmountRequest = 0;
 int friendRequestAmount = 0;
 String myStatus = "online", myProfilePicture = "", myDisplayName = "";
+String bottomSheetProfileStatus = "online";
 DraggableScrollableController scrollController =
     DraggableScrollableController();
 double scrollSize = 0;
@@ -63,6 +64,9 @@ class _MainViewState extends State<MainView> {
       myStatus = await getStatus(
         FirebaseAuth.instance.currentUser?.email ?? "",
       );
+      if (bottomSheetData["email"] != null && scrollSize != 0) {
+        bottomSheetProfileStatus = await getStatus(bottomSheetData["email"]!);
+      }
 
       myDisplayName = await getDisplayName(
         FirebaseAuth.instance.currentUser?.email ?? "",
@@ -129,7 +133,6 @@ class _MainViewState extends State<MainView> {
                       borderRadius: BorderRadius.circular(15),
                       child: Stack(
                         children: [
-                          // ignore: prefer_const_constructors
                           MessagesView(),
                           IgnorePointer(
                             ignoring: actualSide == RevealSide.main,
@@ -170,7 +173,6 @@ class _MainViewState extends State<MainView> {
                 ),
               ],
             ),
-            // ignore: prefer_const_constructors
             left: ConversationsView(),
             right: Scaffold(
               backgroundColor: getColor("background"),
@@ -215,7 +217,6 @@ class _MainViewState extends State<MainView> {
                     child: AnimatedOpacity(
                       duration: const Duration(milliseconds: 250),
                       opacity: selectedIndex == 0 ? 1 : 0.5,
-                      // ignore: prefer_const_constructors
                       child: Builder(builder: (context) {
                         Timer(const Duration(milliseconds: 10), () {
                           setState(() {});
@@ -271,6 +272,7 @@ class _MainViewState extends State<MainView> {
                       //if (selectedIndex == 2) return;
                       //selectedIndex = 2;
                       //push(context, const MainView());
+                      bottomSheetData = {};
                       scrollController.animateTo(
                         0.5,
                         duration: const Duration(milliseconds: 400),
@@ -284,7 +286,6 @@ class _MainViewState extends State<MainView> {
                     child: AnimatedOpacity(
                       duration: const Duration(milliseconds: 250),
                       opacity: selectedIndex == 2 ? 1 : 0.5,
-                      // ignore: prefer_const_constructors
                       child: SizedBox(
                         width: 30,
                         height: 30,
@@ -327,6 +328,7 @@ class _MainViewState extends State<MainView> {
 
 bool isEditingUsername = false;
 TextEditingController usernameController = TextEditingController();
+Map bottomSheetData = {};
 
 class SettingsView extends StatefulWidget {
   const SettingsView({
@@ -339,16 +341,20 @@ class SettingsView extends StatefulWidget {
 }
 
 class _SettingsViewState extends State<SettingsView> {
-  Future<void> getBanner() async {
+  Future<void> getBanner(String email) async {
     await getPicture(
-      FirebaseAuth.instance.currentUser?.email ?? "",
+      email,
       folder: "banners",
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    getBanner();
+    bool isProfile = bottomSheetData["email"] != null;
+    getBanner(isProfile
+        ? bottomSheetData["email"]
+        : FirebaseAuth.instance.currentUser?.email ?? "");
+
     return Padding(
       padding: const EdgeInsets.only(top: 35),
       child: Container(
@@ -406,70 +412,78 @@ class _SettingsViewState extends State<SettingsView> {
                                   child: Stack(
                                     children: [
                                       ProfileImage(
-                                        url: bannerDownloadURLs[FirebaseAuth
-                                                .instance.currentUser?.email] ??
+                                        url: bannerDownloadURLs[isProfile
+                                                ? bottomSheetData["email"]
+                                                : FirebaseAuth.instance
+                                                    .currentUser?.email] ??
                                             "",
                                         type: "banners",
+                                        username:
+                                            bottomSheetData["displayname"] ??
+                                                "",
                                       ),
-                                      Align(
-                                        alignment: Alignment.bottomRight,
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(8.0),
-                                          child: Opacity(
-                                            opacity: 0.5,
-                                            child: Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.end,
-                                              children: [
-                                                GestureDetector(
-                                                  onTap: () {
-                                                    updatePicture(
-                                                      ImageSource.camera,
-                                                      folder: "banners",
-                                                    );
-                                                  },
-                                                  child: Padding(
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                      left: 4.0,
-                                                      right: 4.0,
-                                                    ),
-                                                    child: Icon(
-                                                      Icons.camera_outlined,
-                                                      color: getColor(
-                                                        "secondarytext",
+                                      Builder(builder: (context) {
+                                        if (isProfile) return const SizedBox();
+                                        return Align(
+                                          alignment: Alignment.bottomRight,
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Opacity(
+                                              opacity: 0.5,
+                                              child: Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.end,
+                                                children: [
+                                                  GestureDetector(
+                                                    onTap: () {
+                                                      updatePicture(
+                                                        ImageSource.camera,
+                                                        folder: "banners",
+                                                      );
+                                                    },
+                                                    child: Padding(
+                                                      padding:
+                                                          const EdgeInsets.only(
+                                                        left: 4.0,
+                                                        right: 4.0,
                                                       ),
-                                                      size: 24,
+                                                      child: Icon(
+                                                        Icons.camera_outlined,
+                                                        color: getColor(
+                                                          "secondarytext",
+                                                        ),
+                                                        size: 24,
+                                                      ),
                                                     ),
                                                   ),
-                                                ),
-                                                GestureDetector(
-                                                  onTap: () {
-                                                    updatePicture(
-                                                      ImageSource.gallery,
-                                                      folder: "banners",
-                                                    );
-                                                  },
-                                                  child: Padding(
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                      left: 4.0,
-                                                      right: 4.0,
-                                                    ),
-                                                    child: Icon(
-                                                      Icons.image_outlined,
-                                                      color: getColor(
-                                                        "secondarytext",
+                                                  GestureDetector(
+                                                    onTap: () {
+                                                      updatePicture(
+                                                        ImageSource.gallery,
+                                                        folder: "banners",
+                                                      );
+                                                    },
+                                                    child: Padding(
+                                                      padding:
+                                                          const EdgeInsets.only(
+                                                        left: 4.0,
+                                                        right: 4.0,
                                                       ),
-                                                      size: 24,
+                                                      child: Icon(
+                                                        Icons.image_outlined,
+                                                        color: getColor(
+                                                          "secondarytext",
+                                                        ),
+                                                        size: 24,
+                                                      ),
                                                     ),
                                                   ),
-                                                ),
-                                              ],
+                                                ],
+                                              ),
                                             ),
                                           ),
-                                        ),
-                                      )
+                                        );
+                                      })
                                     ],
                                   ),
                                 ),
@@ -502,56 +516,69 @@ class _SettingsViewState extends State<SettingsView> {
                                               borderRadius:
                                                   BorderRadius.circular(50),
                                               child: ProfileImage(
-                                                url: myProfilePicture,
+                                                url: isProfile
+                                                    ? bottomSheetData["image"]
+                                                    : myProfilePicture,
                                               ),
                                             ),
                                             Align(
                                               alignment:
                                                   const Alignment(0.85, 0.85),
                                               child: StatusIndicator(
-                                                status: myStatus,
+                                                status: isProfile
+                                                    ? bottomSheetProfileStatus
+                                                    : myStatus,
                                                 size: 15,
                                               ),
                                             ),
                                           ],
                                         ),
                                       ),
-                                      GestureDetector(
-                                        onTap: () {
-                                          updatePicture(
-                                            ImageSource.camera,
-                                          );
-                                        },
-                                        child: Padding(
-                                          padding: const EdgeInsets.only(
-                                            left: 4.0,
-                                            right: 4.0,
-                                          ),
-                                          child: Icon(
-                                            Icons.camera_outlined,
-                                            color: getColor("secondarytext"),
-                                            size: 24,
-                                          ),
-                                        ),
-                                      ),
-                                      GestureDetector(
-                                        onTap: () {
-                                          updatePicture(
-                                            ImageSource.gallery,
-                                          );
-                                        },
-                                        child: Padding(
-                                          padding: const EdgeInsets.only(
-                                            left: 4.0,
-                                            right: 4.0,
-                                          ),
-                                          child: Icon(
-                                            Icons.image_outlined,
-                                            color: getColor("secondarytext"),
-                                            size: 24,
-                                          ),
-                                        ),
-                                      ),
+                                      Builder(builder: (context) {
+                                        if (isProfile) return const SizedBox();
+                                        return Row(
+                                          children: [
+                                            GestureDetector(
+                                              onTap: () {
+                                                updatePicture(
+                                                  ImageSource.camera,
+                                                );
+                                              },
+                                              child: Padding(
+                                                padding: const EdgeInsets.only(
+                                                  left: 4.0,
+                                                  right: 4.0,
+                                                ),
+                                                child: Icon(
+                                                  Icons.camera_outlined,
+                                                  color:
+                                                      getColor("secondarytext"),
+                                                  size: 24,
+                                                ),
+                                              ),
+                                            ),
+                                            GestureDetector(
+                                              onTap: () {
+                                                updatePicture(
+                                                  ImageSource.gallery,
+                                                );
+                                              },
+                                              child: Padding(
+                                                padding: const EdgeInsets.only(
+                                                  left: 4.0,
+                                                  right: 4.0,
+                                                ),
+                                                child: Icon(
+                                                  Icons.image_outlined,
+                                                  color:
+                                                      getColor("secondarytext"),
+                                                  size: 24,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        );
+                                      }),
                                     ],
                                   ),
                                   Padding(
@@ -624,16 +651,19 @@ class _SettingsViewState extends State<SettingsView> {
                                           ),
                                         );
                                       }
+                                      String displayName = isProfile
+                                          ? bottomSheetData["displayname"]
+                                          : myDisplayName;
                                       return RichText(
                                         overflow: TextOverflow.ellipsis,
                                         text: TextSpan(children: [
                                           TextSpan(
-                                            text: myDisplayName.length > 25
-                                                ? "${myDisplayName.substring(
+                                            text: displayName.length > 25
+                                                ? "${displayName.substring(
                                                       0,
                                                       25,
                                                     ).trimRight()}..."
-                                                : myDisplayName,
+                                                : displayName,
                                             style: getFont("mainfont")(
                                               color: getColor("maintext"),
                                               fontSize: 20,
@@ -641,26 +671,32 @@ class _SettingsViewState extends State<SettingsView> {
                                             ),
                                           ),
                                           WidgetSpan(
-                                            child: GestureDetector(
-                                              onTap: () {
-                                                setState(() {
-                                                  usernameController.text =
-                                                      myDisplayName;
-                                                  isEditingUsername = true;
-                                                });
-                                              },
-                                              child: Padding(
-                                                padding: const EdgeInsets.only(
-                                                  left: 4.0,
+                                            child: Builder(builder: (context) {
+                                              if (isProfile) {
+                                                return const SizedBox();
+                                              }
+                                              return GestureDetector(
+                                                onTap: () {
+                                                  setState(() {
+                                                    usernameController.text =
+                                                        myDisplayName;
+                                                    isEditingUsername = true;
+                                                  });
+                                                },
+                                                child: Padding(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                    left: 4.0,
+                                                  ),
+                                                  child: Icon(
+                                                    Icons.edit,
+                                                    size: 20,
+                                                    color: getColor(
+                                                        "secondarytext"),
+                                                  ),
                                                 ),
-                                                child: Icon(
-                                                  Icons.edit,
-                                                  size: 20,
-                                                  color:
-                                                      getColor("secondarytext"),
-                                                ),
-                                              ),
-                                            ),
+                                              );
+                                            }),
                                           ),
                                         ]),
                                       );
@@ -672,77 +708,89 @@ class _SettingsViewState extends State<SettingsView> {
                           ],
                         ),
                       ),
-                      SettingButton(
-                        icon: Image.asset(
-                          "assets/status.png",
-                          width: 20,
-                          height: 20,
-                          color: getColor("secondarytext"),
-                        ),
-                        text: translation[currentLanguage]["setstatus"],
-                        rightText: translation[currentLanguage]
-                            [prefs?.getString("status") ?? "online"],
-                        isOpenable: true,
-                        openableWidgetId: 0,
-                        // ignore: prefer_const_literals_to_create_immutables
-                        openedWidgets: [
-                          ChangeStatusButton(status: "online"),
-                          ChangeStatusButton(status: "away"),
-                          ChangeStatusButton(status: "busy"),
-                          ChangeStatusButton(status: "invisible"),
-                        ],
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(
-                          left: 8,
-                          right: 8,
-                          top: 4,
-                        ),
-                        child: Text(
-                          translation[currentLanguage]["appsettings"],
-                          style: getFont("mainfont")(
-                            color: getColor("secondarytext"),
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                      SettingButton(
-                        icon: Image.asset(
-                          "assets/language.png",
-                          width: 20,
-                          height: 20,
-                          color: getColor("secondarytext"),
-                        ),
-                        text: translation[currentLanguage]["changelanguage"],
-                        rightText: translation[currentLanguage]["languagename"],
-                        onTap: () {
-                          push(
-                            context,
-                            const SelectLanguageView(
-                              shouldPop: true,
+                      Builder(builder: (context) {
+                        if (isProfile) {
+                          return const SizedBox();
+                        }
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            SettingButton(
+                              icon: Image.asset(
+                                "assets/status.png",
+                                width: 20,
+                                height: 20,
+                                color: getColor("secondarytext"),
+                              ),
+                              text: translation[currentLanguage]["setstatus"],
+                              rightText: translation[currentLanguage]
+                                  [prefs?.getString("status") ?? "online"],
+                              isOpenable: true,
+                              openableWidgetId: 0,
+                              // ignore: prefer_const_literals_to_create_immutables
+                              openedWidgets: [
+                                ChangeStatusButton(status: "online"),
+                                ChangeStatusButton(status: "away"),
+                                ChangeStatusButton(status: "busy"),
+                                ChangeStatusButton(status: "invisible"),
+                              ],
                             ),
-                          );
-                        },
-                      ),
-                      SettingButton(
-                        icon: Image.asset(
-                          "assets/theme.png",
-                          width: 20,
-                          height: 20,
-                          color: getColor("secondarytext"),
-                        ),
-                        text: translation[currentLanguage]["changetheme"],
-                        rightText: currentTheme?["name"] ?? "",
-                        onTap: () {
-                          push(
-                            context,
-                            const SelectThemeView(
-                              shouldPop: true,
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                left: 8,
+                                right: 8,
+                                top: 4,
+                              ),
+                              child: Text(
+                                translation[currentLanguage]["appsettings"],
+                                style: getFont("mainfont")(
+                                  color: getColor("secondarytext"),
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
                             ),
-                          );
-                        },
-                      ),
+                            SettingButton(
+                              icon: Image.asset(
+                                "assets/language.png",
+                                width: 20,
+                                height: 20,
+                                color: getColor("secondarytext"),
+                              ),
+                              text: translation[currentLanguage]
+                                  ["changelanguage"],
+                              rightText: translation[currentLanguage]
+                                  ["languagename"],
+                              onTap: () {
+                                push(
+                                  context,
+                                  const SelectLanguageView(
+                                    shouldPop: true,
+                                  ),
+                                );
+                              },
+                            ),
+                            SettingButton(
+                              icon: Image.asset(
+                                "assets/theme.png",
+                                width: 20,
+                                height: 20,
+                                color: getColor("secondarytext"),
+                              ),
+                              text: translation[currentLanguage]["changetheme"],
+                              rightText: currentTheme?["name"] ?? "",
+                              onTap: () {
+                                push(
+                                  context,
+                                  const SelectThemeView(
+                                    shouldPop: true,
+                                  ),
+                                );
+                              },
+                            ),
+                          ],
+                        );
+                      }),
                     ],
                   ),
                   IgnorePointer(

@@ -31,6 +31,9 @@ class _AddFriendsQRState extends State<AddFriendsQR> {
   Future<void> getData() async {
     unreadMessages = await getUnreadMessages();
     myStatus = await getStatus(FirebaseAuth.instance.currentUser?.email ?? "");
+    if (bottomSheetData["email"] != null && scrollSize != 0) {
+      bottomSheetProfileStatus = await getStatus(bottomSheetData["email"]!);
+    }
     if (mounted) {
       setState(() {});
     }
@@ -317,6 +320,7 @@ class _AddFriendsQRState extends State<AddFriendsQR> {
                       //if (selectedIndex == 2) return;
                       //selectedIndex = 2;
                       //push(context, const MainView());
+                      bottomSheetData = {};
                       scrollController.animateTo(
                         0.5,
                         duration: const Duration(milliseconds: 400),

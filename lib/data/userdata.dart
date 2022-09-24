@@ -279,17 +279,22 @@ Future<void> updateStatus() async {
 }
 
 Future<String> getStatus(String email) async {
-  Map? status = await FirebaseFirestore.instance
-      .collection('users')
-      .where("email", isEqualTo: email)
-      .get()
-      .then((value) => value.docs[0].data()['status']);
+  try {
+    Map? status = await FirebaseFirestore.instance
+        .collection('users')
+        .where("email", isEqualTo: email)
+        .get()
+        .then((value) => value.docs[0].data()['status']);
 
-  if (status == null ||
-      DateTime.now().millisecondsSinceEpoch - status['last_changed'] > 10000) {
+    if (status == null ||
+        DateTime.now().millisecondsSinceEpoch - status['last_changed'] >
+            10000) {
+      return "offline";
+    }
+    return status['state'] ?? "offline";
+  } catch (e) {
     return "offline";
   }
-  return status['state'] ?? "offline";
 }
 
 Future<void> updatePicture(ImageSource source,
