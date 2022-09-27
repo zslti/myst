@@ -79,11 +79,11 @@ class _MessageState extends State<Message> {
             };
             scrollController.animateTo(
               0.5,
-              duration: const Duration(milliseconds: 400),
+              duration: const Duration(milliseconds: 200),
               curve: Curves.ease,
             );
             isScrolling = true;
-            Timer(const Duration(milliseconds: 400), () {
+            Timer(const Duration(milliseconds: 200), () {
               isScrolling = false;
             });
           },
@@ -118,11 +118,11 @@ class _MessageState extends State<Message> {
                     };
                     scrollController.animateTo(
                       0.5,
-                      duration: const Duration(milliseconds: 400),
+                      duration: const Duration(milliseconds: 200),
                       curve: Curves.ease,
                     );
                     isScrolling = true;
-                    Timer(const Duration(milliseconds: 400), () {
+                    Timer(const Duration(milliseconds: 200), () {
                       isScrolling = false;
                     });
                   },
@@ -292,7 +292,7 @@ class _MessagesViewState extends State<MessagesView> {
           !isScrolling) {
         scrollController.animateTo(
           0,
-          duration: const Duration(milliseconds: 300),
+          duration: const Duration(milliseconds: 200),
           curve: Curves.ease,
         );
       }

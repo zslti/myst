@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 
 import '../main.dart';
 import '../ui/mainscreen.dart';
+import 'theme.dart';
 import 'translation.dart';
 
 List<double> interpolateBetween(
@@ -514,4 +515,47 @@ extension StringCasingExtension on String {
       .split(' ')
       .map((str) => str.toCapitalized())
       .join(' ');
+}
+
+void showCustomDialog(
+  BuildContext context,
+  String title,
+  String content,
+  List<Widget> actions,
+) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      actions.add(
+        TextButton(
+          child: Text(
+            translation[currentLanguage]["cancel"],
+            style: getFont("mainfont")(
+              fontSize: 14,
+              color: getColor("secondarytext"),
+            ),
+          ),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
+      );
+      actions = actions.reversed.toList();
+      return AlertDialog(
+        backgroundColor: getColor("background"),
+        title: Text(
+          title,
+          style: getFont("mainfont")(fontSize: 20, color: getColor("maintext")),
+        ),
+        content: Text(
+          content,
+          style: getFont("mainfont")(
+            fontSize: 14,
+            color: getColor("secondarytext"),
+          ),
+        ),
+        actions: actions,
+      );
+    },
+  );
 }

@@ -176,7 +176,8 @@ class _ConversationsViewState extends State<ConversationsView> {
                                                                   "displayname"]
                                                               .toString()
                                                               .contains(
-                                                                  searchText)
+                                                                searchText,
+                                                              )
                                                           ? 0
                                                           : 1),
                                                   child: TextButton(
@@ -198,7 +199,7 @@ class _ConversationsViewState extends State<ConversationsView> {
                                                         duration:
                                                             const Duration(
                                                                 milliseconds:
-                                                                    400),
+                                                                    200),
                                                         curve: Curves.ease,
                                                       );
                                                       isScrolling = true;
@@ -217,7 +218,7 @@ class _ConversationsViewState extends State<ConversationsView> {
                                                           0,
                                                           duration:
                                                               const Duration(
-                                                            milliseconds: 300,
+                                                            milliseconds: 200,
                                                           ),
                                                           curve: Curves.ease,
                                                         );

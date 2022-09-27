@@ -31,14 +31,14 @@ double curveProgress = 0;
 String errorText = "";
 bool errorVisible = false;
 
-class PasswordResetView extends StatefulWidget {
-  const PasswordResetView({Key? key, this.textType = ""}) : super(key: key);
+class DeleteAccountView extends StatefulWidget {
+  const DeleteAccountView({Key? key, this.textType = ""}) : super(key: key);
   final String textType;
   @override
-  State<PasswordResetView> createState() => _PasswordResetViewState();
+  State<DeleteAccountView> createState() => _DeleteAccountViewState();
 }
 
-class _PasswordResetViewState extends State<PasswordResetView> {
+class _DeleteAccountViewState extends State<DeleteAccountView> {
   void displayError(String error) {
     setState(() {
       //print(error);
@@ -76,7 +76,7 @@ class _PasswordResetViewState extends State<PasswordResetView> {
     }
     return Scaffold(
       backgroundColor: getColor("background"),
-      //FirebaseAuth.instance.sendPasswordResetEmail(),
+      //FirebaseAuth.instance.sendDeleteAccountEmail(),
       body: AnimatedOpacity(
         duration: const Duration(milliseconds: 500),
         opacity: t ? 1 : 0,
@@ -184,9 +184,15 @@ class _PasswordResetViewState extends State<PasswordResetView> {
                           clicked = true;
                         });
                         try {
-                          await FirebaseAuth.instance.sendPasswordResetEmail(
-                            email: emailController.text,
+                          final result = await FirebaseAuth.instance.currentUser
+                              ?.reauthenticateWithCredential(
+                            EmailAuthProvider.credential(
+                              email: emailController.text,
+                              password:
+                                  "123456", //TODO: password and delete account if it matches
+                            ),
                           );
+
                           // ignore: empty_catches
                         } on FirebaseAuthException {}
                       },

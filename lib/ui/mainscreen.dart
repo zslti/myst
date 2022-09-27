@@ -10,7 +10,9 @@ import 'package:myst/data/userdata.dart';
 import 'package:myst/data/util.dart';
 import 'package:myst/ui/conversations.dart';
 import 'package:myst/ui/loading.dart';
+import 'package:myst/ui/login.dart';
 import 'package:myst/ui/messages.dart';
+import 'package:myst/ui/passwordreset.dart';
 
 import '../data/translation.dart';
 import '../main.dart';
@@ -100,7 +102,7 @@ class _MainViewState extends State<MainView> {
           !isScrolling) {
         scrollController.animateTo(
           0,
-          duration: const Duration(milliseconds: 300),
+          duration: const Duration(milliseconds: 200),
           curve: Curves.ease,
         );
       }
@@ -113,7 +115,7 @@ class _MainViewState extends State<MainView> {
           onTap: () {
             scrollController.animateTo(
               0,
-              duration: const Duration(milliseconds: 300),
+              duration: const Duration(milliseconds: 200),
               curve: Curves.ease,
             );
           },
@@ -275,11 +277,11 @@ class _MainViewState extends State<MainView> {
                       bottomSheetData = {};
                       scrollController.animateTo(
                         0.5,
-                        duration: const Duration(milliseconds: 400),
+                        duration: const Duration(milliseconds: 200),
                         curve: Curves.ease,
                       );
                       isScrolling = true;
-                      Timer(const Duration(milliseconds: 400), () {
+                      Timer(const Duration(milliseconds: 200), () {
                         isScrolling = false;
                       });
                     },
@@ -735,6 +737,97 @@ class _SettingsViewState extends State<SettingsView> {
                                 ChangeStatusButton(status: "invisible"),
                               ],
                             ),
+                            SettingButton(
+                              icon: Icon(
+                                Icons.person_outline,
+                                color: getColor("secondarytext"),
+                              ),
+                              padding: const EdgeInsets.only(
+                                left: 6.0,
+                                right: 8.0,
+                              ),
+                              text: translation[currentLanguage]
+                                  ["accountsettings"],
+                              isOpenable: true,
+                              openableWidgetId: 1,
+                              // ignore: prefer_const_literals_to_create_immutables
+                              openedWidgets: [
+                                SettingButton(
+                                  padding: EdgeInsets.only(left: 8),
+                                  icon: SizedBox(),
+                                  text: translation[currentLanguage]
+                                      ["username"],
+                                  showArrow: false,
+                                  rightText: myDisplayName,
+                                  onTap: () {},
+                                ),
+                                SettingButton(
+                                  padding: EdgeInsets.only(left: 8),
+                                  icon: SizedBox(),
+                                  text: translation[currentLanguage]["email"],
+                                  showArrow: false,
+                                  rightText: FirebaseAuth
+                                          .instance.currentUser?.email ??
+                                      "",
+                                  onTap: () {},
+                                ),
+                                SettingButton(
+                                  padding: EdgeInsets.only(left: 8),
+                                  icon: SizedBox(),
+                                  text: translation[currentLanguage]
+                                      ["resetpassword"],
+                                  onTap: () {
+                                    push(
+                                      context,
+                                      PasswordResetView(
+                                        textType: "2",
+                                      ),
+                                    );
+                                  },
+                                ),
+                                SettingButton(
+                                  padding: EdgeInsets.only(left: 8),
+                                  icon: SizedBox(),
+                                  text: translation[currentLanguage]["signout"],
+                                  onTap: () {
+                                    showCustomDialog(
+                                      context,
+                                      translation[currentLanguage]["signout"],
+                                      translation[currentLanguage]
+                                          ["signouttext"],
+                                      [
+                                        TextButton(
+                                          child: Text(
+                                            translation[currentLanguage]
+                                                ["signout"],
+                                            style: getFont("mainfont")(
+                                              fontSize: 14,
+                                              color: getColor("secondarytext"),
+                                            ),
+                                          ),
+                                          onPressed: () {
+                                            FirebaseAuth.instance.signOut();
+                                            prefs?.setString("user", "");
+                                            Navigator.pop(context);
+                                            pushReplacement(
+                                              context,
+                                              LoginView(),
+                                            );
+                                          },
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                ),
+                                SettingButton(
+                                  padding: EdgeInsets.only(left: 8),
+                                  icon: SizedBox(),
+                                  text: translation[currentLanguage]
+                                      ["deleteaccount"],
+                                  onTap: () {},
+                                ),
+                              ],
+                            ),
                             Padding(
                               padding: const EdgeInsets.only(
                                 left: 8,
@@ -861,6 +954,7 @@ class SettingButton extends StatefulWidget {
     this.openedWidgets = const [],
     this.openableWidgetId = -1,
     this.showArrow = true,
+    this.padding = const EdgeInsets.only(left: 8, right: 8),
   }) : super(key: key);
   final Widget icon;
   final String text;
@@ -870,6 +964,7 @@ class SettingButton extends StatefulWidget {
   final List<Widget> openedWidgets;
   final int openableWidgetId;
   final bool showArrow;
+  final EdgeInsets padding;
   @override
   State<SettingButton> createState() => _SettingButtonState();
 }
@@ -921,7 +1016,7 @@ class _SettingButtonState extends State<SettingButton> {
           child: Row(
             children: [
               Padding(
-                padding: const EdgeInsets.only(left: 8, right: 8),
+                padding: widget.padding,
                 child: widget.icon,
               ),
               Text(
@@ -930,14 +1025,23 @@ class _SettingButtonState extends State<SettingButton> {
                   color: getColor("maintext"),
                 ),
               ),
+              SizedBox(
+                width: 40,
+              ),
               Expanded(
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    Text(
-                      widget.rightText,
-                      style: getFont("mainfont")(
-                        color: getColor("secondarytext"),
+                    Expanded(
+                      child: Align(
+                        alignment: Alignment.centerRight,
+                        child: Text(
+                          widget.rightText,
+                          overflow: TextOverflow.ellipsis,
+                          style: getFont("mainfont")(
+                            color: getColor("secondarytext"),
+                          ),
+                        ),
                       ),
                     ),
                     Padding(

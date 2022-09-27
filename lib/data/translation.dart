@@ -33,6 +33,7 @@ Map translation = {
     "next": "Next",
     "resetpasswordtext":
         "After resetting your password you can go back to the login screen.",
+    "resetpasswordtext2": "After resetting your password you can go back.",
     "chooselanguage": "Choose language",
     "choosetheme": "Choose theme",
     "messages": "Messages",
@@ -91,6 +92,13 @@ Map translation = {
     "changetheme": "Theme",
     "apply": "Apply",
     "setstatus": "Set status",
+    "accountsettings": "Account settings",
+    "signout": "Sign out",
+    "signouttext": "Are you sure you want to sign out?",
+    "cancel": "Cancel",
+    "deleteaccount": "Delete account",
+    "deleteaccounttext":
+        "Are you sure you want to delete your account? This action cannot be undone.",
   },
   "hu": {
     "countrycode": "hu",
@@ -127,6 +135,7 @@ Map translation = {
     "next": "Tovább",
     "resetpasswordtext":
         "A jelszó visszaállítása után visszamehetsz a bejelentkezési képernyőre.",
+    "resetpasswordtext2": "A jelszó visszaállítása után visszaléphetsz",
     "chooselanguage": "Nyelv kiválasztása",
     "choosetheme": "Téma kiválasztása",
     "messages": "Üzenetek",
@@ -185,5 +194,12 @@ Map translation = {
     "changetheme": "Téma",
     "apply": "Alkalmazás",
     "setstatus": "Státusz beállítása",
+    "accountsettings": "Fiók beállítások",
+    "signout": "Kijelentkezés",
+    "signouttext": "Biztosan ki szeretnél jelentkezni?",
+    "cancel": "Mégse",
+    "deleteaccount": "Fiók törlése",
+    "deleteaccounttext":
+        "Biztosan törölni szeretnéd a fiókod? Ez a művelet nem visszavonható.",
   }
 };
