@@ -199,14 +199,14 @@ class _ConversationsViewState extends State<ConversationsView> {
                                                         duration:
                                                             const Duration(
                                                                 milliseconds:
-                                                                    200),
+                                                                    275),
                                                         curve: Curves.ease,
                                                       );
                                                       isScrolling = true;
                                                       Timer(
                                                           const Duration(
                                                               milliseconds:
-                                                                  400), () {
+                                                                  275), () {
                                                         isScrolling = false;
                                                       });
                                                     },
@@ -218,7 +218,7 @@ class _ConversationsViewState extends State<ConversationsView> {
                                                           0,
                                                           duration:
                                                               const Duration(
-                                                            milliseconds: 200,
+                                                            milliseconds: 275,
                                                           ),
                                                           curve: Curves.ease,
                                                         );

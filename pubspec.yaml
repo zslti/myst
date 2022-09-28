@@ -53,6 +53,7 @@ dependencies:
   flutter_local_notifications: ^9.9.1
   image_picker: ^0.8.5+3
   firebase_storage: ^10.3.8
+  device_info_plus: ^4.1.2
 
 dev_dependencies:
   flutter_test:

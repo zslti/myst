@@ -9,6 +9,7 @@ import 'package:myst/data/theme.dart';
 import 'package:myst/data/userdata.dart';
 import 'package:myst/data/util.dart';
 import 'package:myst/ui/conversations.dart';
+import 'package:myst/ui/deleteaccount.dart';
 import 'package:myst/ui/loading.dart';
 import 'package:myst/ui/login.dart';
 import 'package:myst/ui/messages.dart';
@@ -102,7 +103,7 @@ class _MainViewState extends State<MainView> {
           !isScrolling) {
         scrollController.animateTo(
           0,
-          duration: const Duration(milliseconds: 200),
+          duration: const Duration(milliseconds: 275),
           curve: Curves.ease,
         );
       }
@@ -115,7 +116,7 @@ class _MainViewState extends State<MainView> {
           onTap: () {
             scrollController.animateTo(
               0,
-              duration: const Duration(milliseconds: 200),
+              duration: const Duration(milliseconds: 275),
               curve: Curves.ease,
             );
           },
@@ -277,11 +278,11 @@ class _MainViewState extends State<MainView> {
                       bottomSheetData = {};
                       scrollController.animateTo(
                         0.5,
-                        duration: const Duration(milliseconds: 200),
+                        duration: const Duration(milliseconds: 275),
                         curve: Curves.ease,
                       );
                       isScrolling = true;
-                      Timer(const Duration(milliseconds: 200), () {
+                      Timer(const Duration(milliseconds: 275), () {
                         isScrolling = false;
                       });
                     },
@@ -824,7 +825,9 @@ class _SettingsViewState extends State<SettingsView> {
                                   icon: SizedBox(),
                                   text: translation[currentLanguage]
                                       ["deleteaccount"],
-                                  onTap: () {},
+                                  onTap: () {
+                                    push(context, DeleteAccountView());
+                                  },
                                 ),
                               ],
                             ),

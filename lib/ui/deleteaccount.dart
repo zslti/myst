@@ -4,15 +4,19 @@ import 'dart:math';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:myst/data/theme.dart';
+import 'package:myst/data/userdata.dart';
 import 'package:myst/data/util.dart';
 
 import '../data/translation.dart';
 import '../main.dart';
 import 'loading.dart';
+import 'login.dart';
 
 bool t = false;
 bool clicked = false;
+bool passwordObscured = true;
 TextEditingController emailController = TextEditingController();
+TextEditingController passwordController = TextEditingController();
 List<double> pos = [
   Random().nextDouble() * 1.5 - 0.5,
   Random().nextDouble() * 1.5 - 0.5,
@@ -135,7 +139,7 @@ class _DeleteAccountViewState extends State<DeleteAccountView> {
                   ),
                   Center(
                     child: Text(
-                      translation[currentLanguage]["resetpassword"],
+                      translation[currentLanguage]["deleteaccount"],
                       style: getFont("mainfont")(
                         color: getColor("maintext"),
                         fontSize: 22,
@@ -167,10 +171,60 @@ class _DeleteAccountViewState extends State<DeleteAccountView> {
                     ),
                   ),
                   Padding(
+                    padding: const EdgeInsets.only(left: 12, right: 12, top: 8),
+                    child: ClipRRect(
+                      borderRadius: const BorderRadius.all(Radius.circular(5)),
+                      child: Stack(
+                        children: [
+                          TextField(
+                            controller: passwordController,
+                            obscureText: passwordObscured,
+                            cursorColor: getColor("cursor"),
+                            style: getFont("mainfont")(
+                              color: getColor("secondarytext"),
+                            ),
+                            decoration: InputDecoration(
+                              fillColor: getColor("inputbackground"),
+                              filled: true,
+                              hintText: translation[currentLanguage]
+                                  ["password"],
+                              hintStyle: getFont("mainfont")(
+                                color: getColor("secondarytext"),
+                              ),
+                              border: InputBorder.none,
+                            ),
+                          ),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: SizedBox(
+                              width: 50,
+                              child: TextButton(
+                                onPressed: () {
+                                  setState(() {
+                                    passwordObscured = !passwordObscured;
+                                  });
+                                },
+                                style: const ButtonStyle(
+                                  splashFactory: NoSplash.splashFactory,
+                                ),
+                                child: Icon(
+                                  Icons.visibility,
+                                  color: getColor("secondarytext"),
+                                  size: 22,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Padding(
                     padding: const EdgeInsets.only(left: 12, right: 12, top: 4),
                     child: TextButton(
                       onPressed: () async {
-                        if (emailController.text.isEmpty) {
+                        if (emailController.text.isEmpty ||
+                            passwordController.text.isEmpty) {
                           displayError("emptyerror");
                           return;
                         }
@@ -184,17 +238,52 @@ class _DeleteAccountViewState extends State<DeleteAccountView> {
                           clicked = true;
                         });
                         try {
-                          final result = await FirebaseAuth.instance.currentUser
+                          String email =
+                              FirebaseAuth.instance.currentUser?.email ?? "";
+                          UserCredential? result = await FirebaseAuth
+                              .instance.currentUser
                               ?.reauthenticateWithCredential(
                             EmailAuthProvider.credential(
                               email: emailController.text,
-                              password:
-                                  "123456", //TODO: password and delete account if it matches
+                              password: passwordController.text,
                             ),
                           );
-
+                          if (email == result?.user?.email) {
+                            // ignore: use_build_context_synchronously
+                            showCustomDialog(
+                              context,
+                              translation[currentLanguage]["deleteaccount"],
+                              translation[currentLanguage]["deleteaccounttext"],
+                              [
+                                TextButton(
+                                  child: Text(
+                                    translation[currentLanguage]
+                                        ["deleteaccount"],
+                                    style: getFont("mainfont")(
+                                      fontSize: 14,
+                                      color: getColor("secondarytext"),
+                                    ),
+                                  ),
+                                  onPressed: () async {
+                                    await deleteAccount(result?.user);
+                                    FirebaseAuth.instance.signOut();
+                                    prefs?.setString("user", "");
+                                    // ignore: use_build_context_synchronously
+                                    Navigator.pop(context);
+                                    // ignore: use_build_context_synchronously
+                                    pushReplacement(
+                                      context,
+                                      const LoginView(),
+                                    );
+                                  },
+                                ),
+                              ],
+                            );
+                          }
                           // ignore: empty_catches
-                        } on FirebaseAuthException {}
+                        } on FirebaseAuthException catch (e) {
+                          displayError(e.code);
+                        }
                       },
                       style: TextButton.styleFrom(
                         splashFactory: NoSplash.splashFactory,
@@ -208,43 +297,18 @@ class _DeleteAccountViewState extends State<DeleteAccountView> {
                       ),
                     ),
                   ),
-                  Stack(
-                    children: [
-                      AnimatedOpacity(
-                        duration: const Duration(milliseconds: 250),
-                        opacity: errorVisible ? 1 : 0,
-                        child: Padding(
-                          padding: const EdgeInsets.only(left: 14, right: 14),
-                          child: Text(
-                            errorText,
-                            style: getFont("mainfont")(
-                              color: getColor("errortext"),
-                            ),
-                          ),
+                  AnimatedOpacity(
+                    duration: const Duration(milliseconds: 250),
+                    opacity: errorVisible ? 1 : 0,
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 14, right: 14),
+                      child: Text(
+                        errorText,
+                        style: getFont("mainfont")(
+                          color: getColor("errortext"),
                         ),
                       ),
-                      AnimatedOpacity(
-                        duration: const Duration(milliseconds: 150),
-                        opacity: !errorVisible && clicked ? 1 : 0,
-                        child: Padding(
-                          padding: const EdgeInsets.only(
-                            top: 4,
-                            bottom: 4,
-                            left: 13,
-                            right: 13,
-                          ),
-                          child: Text(
-                            translation[currentLanguage]
-                                ["resetpasswordtext${widget.textType}"],
-                            style: getFont("mainfont")(
-                              color: getColor("secondarytext"),
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ],
               ),

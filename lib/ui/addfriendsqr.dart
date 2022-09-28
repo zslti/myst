@@ -54,7 +54,7 @@ class _AddFriendsQRState extends State<AddFriendsQR> {
           !isScrolling) {
         scrollController.animateTo(
           0,
-          duration: const Duration(milliseconds: 200),
+          duration: const Duration(milliseconds: 275),
           curve: Curves.ease,
         );
       }
@@ -77,7 +77,7 @@ class _AddFriendsQRState extends State<AddFriendsQR> {
                     onTap: (() {
                       scrollController.animateTo(
                         0,
-                        duration: const Duration(milliseconds: 200),
+                        duration: const Duration(milliseconds: 275),
                         curve: Curves.ease,
                       );
                     }),
@@ -323,11 +323,11 @@ class _AddFriendsQRState extends State<AddFriendsQR> {
                       bottomSheetData = {};
                       scrollController.animateTo(
                         0.5,
-                        duration: const Duration(milliseconds: 200),
+                        duration: const Duration(milliseconds: 275),
                         curve: Curves.ease,
                       );
                       isScrolling = true;
-                      Timer(const Duration(milliseconds: 200), () {
+                      Timer(const Duration(milliseconds: 275), () {
                         isScrolling = false;
                       });
                     },

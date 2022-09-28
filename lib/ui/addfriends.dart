@@ -62,7 +62,7 @@ class _AddFriendsViewState extends State<AddFriendsView> {
           !isScrolling) {
         scrollController.animateTo(
           0,
-          duration: const Duration(milliseconds: 200),
+          duration: const Duration(milliseconds: 275),
           curve: Curves.ease,
         );
       }
@@ -194,11 +194,11 @@ class _AddFriendsViewState extends State<AddFriendsView> {
                                     scrollController.animateTo(
                                       0.5,
                                       duration:
-                                          const Duration(milliseconds: 200),
+                                          const Duration(milliseconds: 275),
                                       curve: Curves.ease,
                                     );
                                     isScrolling = true;
-                                    Timer(const Duration(milliseconds: 200),
+                                    Timer(const Duration(milliseconds: 275),
                                         () {
                                       isScrolling = false;
                                     });
@@ -452,11 +452,11 @@ class _AddFriendsViewState extends State<AddFriendsView> {
                           bottomSheetData = {};
                           scrollController.animateTo(
                             0.5,
-                            duration: const Duration(milliseconds: 200),
+                            duration: const Duration(milliseconds: 275),
                             curve: Curves.ease,
                           );
                           isScrolling = true;
-                          Timer(const Duration(milliseconds: 200), () {
+                          Timer(const Duration(milliseconds: 275), () {
                             isScrolling = false;
                           });
                         },

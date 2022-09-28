@@ -1,10 +1,13 @@
+import 'dart:convert';
 import 'dart:io';
 
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:http/http.dart' as http;
 
 import '../main.dart';
 import 'util.dart';
@@ -360,6 +363,110 @@ Future<void> changeUsername(String email, String name) async {
             )) {
       doc.reference.update({
         'username': name,
+      });
+    }
+  }
+}
+
+Future<void> deleteAccount(User? user) async {
+  if (user == null) {
+    return;
+  }
+  String email = user.email ?? "";
+  QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+      .collection('users')
+      .where("email", isEqualTo: email)
+      .get();
+  for (var doc in querySnapshot.docs) {
+    if (doc.data().toString().contains(
+          email,
+        )) {
+      doc.reference.delete();
+    }
+  }
+
+  final storageRef = FirebaseStorage.instance.ref();
+  try {
+    final imageRef = storageRef.child("profiles/$email");
+    await imageRef.delete();
+    // ignore: empty_catches
+  } catch (e) {}
+  try {
+    final bannerRef = storageRef.child("banners/$email");
+    await bannerRef.delete();
+    // ignore: empty_catches
+  } catch (e) {}
+  user.delete();
+}
+
+Future<void> updateSignedinDevices() async {
+  if (FirebaseAuth.instance.currentUser == null) {
+    return;
+  }
+  String platform = "Unknown";
+  try {
+    platform = Platform.isAndroid ? "Android" : "iOS";
+  } catch (e) {
+    platform = "Unknown";
+  }
+  String phoneName = "Unknown";
+  String phoneID = "Unknown";
+  try {
+    if (Platform.isAndroid) {
+      phoneName = await DeviceInfoPlugin()
+          .androidInfo
+          .then((value) => value.model ?? "Unknown");
+      phoneID = await DeviceInfoPlugin()
+          .androidInfo
+          .then((value) => value.id ?? "Unknown");
+    } else if (Platform.isIOS) {
+      phoneName = await DeviceInfoPlugin()
+          .iosInfo
+          .then((value) => value.model ?? "Unknown");
+      phoneID = await DeviceInfoPlugin()
+          .iosInfo
+          .then((value) => value.identifierForVendor ?? "Unknown");
+    }
+  } catch (e) {
+    phoneName = "Unknown";
+  }
+  Map details = {
+    "platform": platform,
+    "phonename": phoneName,
+    "phoneID": phoneID,
+    "lastlogin": DateTime.now().millisecondsSinceEpoch,
+  };
+
+  QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+      .collection('users')
+      .where("email", isEqualTo: FirebaseAuth.instance.currentUser?.email)
+      .get();
+  dynamic deviceData = querySnapshot.docs.map((doc) => doc.data()).toList()[0];
+  List currentDevices = deviceData["signedindevices"] ?? [];
+
+  try {
+    String response =
+        (await http.get(Uri.parse("http://ip-api.com/json"))).body;
+    dynamic data = json.decode(response);
+    details["location"] =
+        "${data['city']}, ${data['regionName']}, ${data['country']}";
+  } catch (e) {
+    details["location"] = "Unknown location";
+  }
+  for (int i = 0; i < currentDevices.length; i++) {
+    if (currentDevices[i]["phoneID"] == phoneID &&
+        currentDevices[i]["phonename"] == phoneName) {
+      currentDevices.remove(currentDevices[i]);
+    }
+  }
+  currentDevices.add(details);
+  for (var doc in querySnapshot.docs) {
+    if (FirebaseAuth.instance.currentUser?.email != null &&
+        doc.data().toString().contains(
+              FirebaseAuth.instance.currentUser?.email ?? "",
+            )) {
+      doc.reference.update({
+        'signedindevices': currentDevices,
       });
     }
   }

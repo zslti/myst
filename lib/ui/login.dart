@@ -315,14 +315,16 @@ class _LoginViewState extends State<LoginView> {
                                 for (int i = 0; i < conversations.length; i++) {
                                   conversations[i] = {
                                     "email": conversations[i],
-                                    "displayname":
-                                        await getDisplayName(conversations[i]),
+                                    "displayname": await getDisplayName(
+                                      conversations[i],
+                                    ),
                                   };
                                 }
                                 // ignore: empty_catches
                               } catch (e) {
                                 return;
                               }
+                              updateSignedinDevices();
                               push(context, const MainView());
                             } else {
                               await user?.sendEmailVerification();
