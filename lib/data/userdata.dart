@@ -413,19 +413,19 @@ Future<void> updateSignedinDevices() async {
   String phoneID = "Unknown";
   try {
     if (Platform.isAndroid) {
-      phoneName = await DeviceInfoPlugin()
-          .androidInfo
-          .then((value) => value.model ?? "Unknown");
-      phoneID = await DeviceInfoPlugin()
-          .androidInfo
-          .then((value) => value.id ?? "Unknown");
+      phoneName = await DeviceInfoPlugin().androidInfo.then(
+            (value) => value.model ?? "Unknown",
+          );
+      phoneID = await DeviceInfoPlugin().androidInfo.then(
+            (value) => value.id ?? "Unknown",
+          );
     } else if (Platform.isIOS) {
-      phoneName = await DeviceInfoPlugin()
-          .iosInfo
-          .then((value) => value.model ?? "Unknown");
-      phoneID = await DeviceInfoPlugin()
-          .iosInfo
-          .then((value) => value.identifierForVendor ?? "Unknown");
+      phoneName = await DeviceInfoPlugin().iosInfo.then(
+            (value) => value.model ?? "Unknown",
+          );
+      phoneID = await DeviceInfoPlugin().iosInfo.then(
+            (value) => value.identifierForVendor ?? "Unknown",
+          );
     }
   } catch (e) {
     phoneName = "Unknown";
@@ -470,4 +470,63 @@ Future<void> updateSignedinDevices() async {
       });
     }
   }
+}
+
+Map signedinDevices = {};
+int lastDeviceRequest = 0;
+
+Future<Map> getSignedinDevices() async {
+  if (FirebaseAuth.instance.currentUser == null ||
+      DateTime.now().millisecondsSinceEpoch - lastDeviceRequest < 1000) {
+    return signedinDevices;
+  }
+  String platform = "Unknown";
+  try {
+    platform = Platform.isAndroid ? "Android" : "iOS";
+  } catch (e) {
+    platform = "Unknown";
+  }
+  String phoneName = "Unknown";
+  String phoneID = "Unknown";
+  try {
+    if (Platform.isAndroid) {
+      phoneName = await DeviceInfoPlugin().androidInfo.then(
+            (value) => value.model ?? "Unknown",
+          );
+      phoneID = await DeviceInfoPlugin().androidInfo.then(
+            (value) => value.id ?? "Unknown",
+          );
+    } else if (Platform.isIOS) {
+      phoneName = await DeviceInfoPlugin().iosInfo.then(
+            (value) => value.model ?? "Unknown",
+          );
+      phoneID = await DeviceInfoPlugin().iosInfo.then(
+            (value) => value.identifierForVendor ?? "Unknown",
+          );
+    }
+  } catch (e) {
+    phoneName = "Unknown";
+  }
+
+  QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+      .collection('users')
+      .where("email", isEqualTo: FirebaseAuth.instance.currentUser?.email)
+      .get();
+  dynamic deviceData = querySnapshot.docs.map((doc) => doc.data()).toList()[0];
+  List currentDevices = deviceData["signedindevices"] ?? [];
+  for (int i = 0; i < currentDevices.length; i++) {
+    if (currentDevices[i]["phoneID"] == phoneID &&
+        currentDevices[i]["phonename"] == phoneName) {
+      currentDevices.remove(currentDevices[i]);
+    }
+  }
+  signedinDevices = {
+    "currentDevice": {
+      "platform": platform,
+      "phonename": phoneName,
+      "phoneID": phoneID,
+    },
+    "otherDevices": currentDevices,
+  };
+  return signedinDevices;
 }

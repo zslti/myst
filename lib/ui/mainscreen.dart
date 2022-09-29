@@ -831,6 +831,61 @@ class _SettingsViewState extends State<SettingsView> {
                                 ),
                               ],
                             ),
+                            SettingButton(
+                              icon: Icon(
+                                Icons.devices,
+                                color: getColor("secondarytext"),
+                                size: 20,
+                              ),
+                              text: translation[currentLanguage]["devices"],
+                              isOpenable: true,
+                              openableWidgetId: 2,
+                              // ignore: prefer_const_literals_to_create_immutables
+                              openedWidgets: [
+                                FutureBuilder(
+                                    future: getSignedinDevices(),
+                                    builder: (context, snapshot) {
+                                      if (signedinDevices.isEmpty) {
+                                        return const SizedBox();
+                                      }
+                                      return Column(
+                                        children: [
+                                          SettingButton(
+                                            icon: Image.asset(
+                                              "assets/phone.png",
+                                              width: 22,
+                                              height: 22,
+                                              color: getColor("secondarytext"),
+                                            ),
+                                            text:
+                                                '${signedinDevices["currentDevice"]["phonename"]} - ${signedinDevices["currentDevice"]["platform"]}',
+                                            secondaryText:
+                                                translation[currentLanguage]
+                                                    ["thisdevice"],
+                                            showArrow: false,
+                                          ),
+                                          for (final device in signedinDevices[
+                                                  "otherDevices"] ??
+                                              [])
+                                            SettingButton(
+                                              icon: Image.asset(
+                                                "assets/phone.png",
+                                                width: 22,
+                                                height: 22,
+                                                color:
+                                                    getColor("secondarytext"),
+                                              ),
+                                              text:
+                                                  '${device["phonename"]} - ${device["platform"]}',
+                                              secondaryText:
+                                                  '${translation[currentLanguage]["lastseen"]} ${timestampToDate(device["lastlogin"])}\n${device["location"]}',
+                                              showArrow: false,
+                                            ),
+                                        ],
+                                      );
+                                    }),
+                              ],
+                            ),
                             Padding(
                               padding: const EdgeInsets.only(
                                 left: 8,
@@ -951,6 +1006,7 @@ class SettingButton extends StatefulWidget {
     Key? key,
     required this.icon,
     required this.text,
+    this.secondaryText = "",
     this.rightText = "",
     this.onTap,
     this.isOpenable = false,
@@ -961,6 +1017,7 @@ class SettingButton extends StatefulWidget {
   }) : super(key: key);
   final Widget icon;
   final String text;
+  final String secondaryText;
   final String rightText;
   final Function? onTap;
   final bool isOpenable;
@@ -1022,11 +1079,36 @@ class _SettingButtonState extends State<SettingButton> {
                 padding: widget.padding,
                 child: widget.icon,
               ),
-              Text(
-                widget.text,
-                style: getFont("mainfont")(
-                  color: getColor("maintext"),
-                ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width - 160,
+                    child: Text(
+                      widget.text,
+                      overflow: TextOverflow.ellipsis,
+                      style: getFont("mainfont")(
+                        color: getColor("maintext"),
+                      ),
+                    ),
+                  ),
+                  Builder(builder: (context) {
+                    if (widget.secondaryText.isEmpty) {
+                      return const SizedBox();
+                    }
+                    return SizedBox(
+                      width: MediaQuery.of(context).size.width - 160,
+                      child: Text(
+                        widget.secondaryText,
+                        overflow: TextOverflow.ellipsis,
+                        style: getFont("mainfont")(
+                          color: getColor("secondarytext"),
+                          fontSize: 12,
+                        ),
+                      ),
+                    );
+                  }),
+                ],
               ),
               SizedBox(
                 width: 40,

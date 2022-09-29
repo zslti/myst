@@ -32,8 +32,9 @@ Map translation = {
     "resetpassword": "Reset password",
     "next": "Next",
     "resetpasswordtext":
-        "After resetting your password you can go back to the login screen.",
-    "resetpasswordtext2": "After resetting your password you can go back.",
+        "Check your emails to reset your password. After resetting your password you can go back to the login screen.",
+    "resetpasswordtext2":
+        "Check your emails to reset your password. After resetting your password you can go back.",
     "chooselanguage": "Choose language",
     "choosetheme": "Choose theme",
     "messages": "Messages",
@@ -99,6 +100,9 @@ Map translation = {
     "deleteaccount": "Delete account",
     "deleteaccounttext":
         "Are you sure you want to delete your account? This action cannot be undone.",
+    "devices": "Devices",
+    "thisdevice": "This device",
+    "lastseen": "Last seen",
   },
   "hu": {
     "countrycode": "hu",
@@ -134,8 +138,9 @@ Map translation = {
     "resetpassword": "Jelszó visszaállítása",
     "next": "Tovább",
     "resetpasswordtext":
-        "A jelszó visszaállítása után visszamehetsz a bejelentkezési képernyőre.",
-    "resetpasswordtext2": "A jelszó visszaállítása után visszaléphetsz",
+        "Nézd meg az emailjeidet a jelszó visszaállításához. A jelszó visszaállítása után visszamehetsz a bejelentkezési képernyőre.",
+    "resetpasswordtext2":
+        "Nézd meg az emailjeidet a jelszó visszaállításához. A jelszó visszaállítása után visszaléphetsz",
     "chooselanguage": "Nyelv kiválasztása",
     "choosetheme": "Téma kiválasztása",
     "messages": "Üzenetek",
@@ -201,5 +206,8 @@ Map translation = {
     "deleteaccount": "Fiók törlése",
     "deleteaccounttext":
         "Biztosan törölni szeretnéd a fiókod? Ez a művelet nem visszavonható.",
+    "devices": "Eszközök",
+    "thisdevice": "Ez az eszköz",
+    "lastseen": "Utoljára látva:",
   }
 };
