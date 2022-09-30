@@ -111,8 +111,7 @@ class _MyAppState extends State<MyApp> {
 
   Future<bool> initializeApp() async {
     prefs?.setString("theme", ""); //TODO: remove line when everything is done
-    //TODO: logged in devices, ability to sign them out
-    //TODO: every setting in bottom sheet in settings view and profile view
+    //TODO: every setting in bottom sheet in profile view
     //TODO: message actions like delete, copy, forward, reply
     //TODO: send image, video, audio, file, link(web, yt, fb..), location(if i can do it), emoji
     //TODO: search in conversation(in right card)
@@ -153,7 +152,7 @@ class _MyAppState extends State<MyApp> {
 
     final userData = prefs?.getString("user") ?? "";
 
-    await Future.delayed(const Duration(milliseconds: 3000));
+    //await Future.delayed(const Duration(milliseconds: 3000));
 
     if (userData.isNotEmpty) {
       final data = jsonDecode(userData);
@@ -175,11 +174,20 @@ class _MyAppState extends State<MyApp> {
           "displayname": await getDisplayName(conversations[i]),
         };
       }
-      // ignore: empty_catches
     } catch (e) {
       return false;
     }
-    updateSignedinDevices();
+    for (final conversation in conversations) {
+      getPicture(conversation["email"]);
+      getPicture(conversation["email"], folder: "banners");
+    }
+    await Future.delayed(const Duration(milliseconds: 3000));
+    bool forceLogout = await updateSignedinDevices();
+    if (forceLogout) {
+      await deleteCurrentDevice();
+      FirebaseAuth.instance.signOut();
+      return false;
+    }
 
     return FirebaseAuth.instance.currentUser?.email?.isNotEmpty ?? false;
   }

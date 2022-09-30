@@ -1,3 +1,5 @@
+// ignore_for_file: depend_on_referenced_packages
+
 import 'dart:convert';
 import 'dart:io';
 
@@ -399,9 +401,9 @@ Future<void> deleteAccount(User? user) async {
   user.delete();
 }
 
-Future<void> updateSignedinDevices() async {
+Future<bool> updateSignedinDevices() async {
   if (FirebaseAuth.instance.currentUser == null) {
-    return;
+    return false;
   }
   String platform = "Unknown";
   try {
@@ -453,9 +455,13 @@ Future<void> updateSignedinDevices() async {
   } catch (e) {
     details["location"] = "Unknown location";
   }
+  bool forceLogout = false;
   for (int i = 0; i < currentDevices.length; i++) {
     if (currentDevices[i]["phoneID"] == phoneID &&
         currentDevices[i]["phonename"] == phoneName) {
+      if (currentDevices[i]["forcelogout"] ?? false) {
+        forceLogout = true;
+      }
       currentDevices.remove(currentDevices[i]);
     }
   }
@@ -470,6 +476,7 @@ Future<void> updateSignedinDevices() async {
       });
     }
   }
+  return forceLogout;
 }
 
 Map signedinDevices = {};
@@ -529,4 +536,103 @@ Future<Map> getSignedinDevices() async {
     "otherDevices": currentDevices,
   };
   return signedinDevices;
+}
+
+Future<void> deleteCurrentDevice() async {
+  if (FirebaseAuth.instance.currentUser == null) {
+    return;
+  }
+  String phoneName = "Unknown";
+  String phoneID = "Unknown";
+  try {
+    if (Platform.isAndroid) {
+      phoneName = await DeviceInfoPlugin().androidInfo.then(
+            (value) => value.model ?? "Unknown",
+          );
+      phoneID = await DeviceInfoPlugin().androidInfo.then(
+            (value) => value.id ?? "Unknown",
+          );
+    } else if (Platform.isIOS) {
+      phoneName = await DeviceInfoPlugin().iosInfo.then(
+            (value) => value.model ?? "Unknown",
+          );
+      phoneID = await DeviceInfoPlugin().iosInfo.then(
+            (value) => value.identifierForVendor ?? "Unknown",
+          );
+    }
+  } catch (e) {
+    phoneName = "Unknown";
+  }
+
+  QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+      .collection('users')
+      .where("email", isEqualTo: FirebaseAuth.instance.currentUser?.email)
+      .get();
+  dynamic deviceData = querySnapshot.docs.map((doc) => doc.data()).toList()[0];
+  List currentDevices = deviceData["signedindevices"] ?? [];
+  for (int i = 0; i < currentDevices.length; i++) {
+    if (currentDevices[i]["phoneID"] == phoneID &&
+        currentDevices[i]["phonename"] == phoneName) {
+      currentDevices.remove(currentDevices[i]);
+    }
+  }
+  for (var doc in querySnapshot.docs) {
+    if (FirebaseAuth.instance.currentUser?.email != null &&
+        doc.data().toString().contains(
+              FirebaseAuth.instance.currentUser?.email ?? "",
+            )) {
+      doc.reference.update({
+        'signedindevices': currentDevices,
+      });
+    }
+  }
+}
+
+Future<void> logoutAllDevices() async {
+  if (FirebaseAuth.instance.currentUser == null) {
+    return;
+  }
+  String phoneName = "Unknown";
+  String phoneID = "Unknown";
+  try {
+    if (Platform.isAndroid) {
+      phoneName = await DeviceInfoPlugin().androidInfo.then(
+            (value) => value.model ?? "Unknown",
+          );
+      phoneID = await DeviceInfoPlugin().androidInfo.then(
+            (value) => value.id ?? "Unknown",
+          );
+    } else if (Platform.isIOS) {
+      phoneName = await DeviceInfoPlugin().iosInfo.then(
+            (value) => value.model ?? "Unknown",
+          );
+      phoneID = await DeviceInfoPlugin().iosInfo.then(
+            (value) => value.identifierForVendor ?? "Unknown",
+          );
+    }
+  } catch (e) {
+    phoneName = "Unknown";
+  }
+  QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+      .collection('users')
+      .where("email", isEqualTo: FirebaseAuth.instance.currentUser?.email)
+      .get();
+  dynamic deviceData = querySnapshot.docs.map((doc) => doc.data()).toList()[0];
+  List currentDevices = deviceData["signedindevices"] ?? [];
+  for (int i = 0; i < currentDevices.length; i++) {
+    if (currentDevices[i]["phoneID"] != phoneID ||
+        currentDevices[i]["phonename"] != phoneName) {
+      currentDevices[i]["forcelogout"] = true;
+    }
+  }
+  for (var doc in querySnapshot.docs) {
+    if (FirebaseAuth.instance.currentUser?.email != null &&
+        doc.data().toString().contains(
+              FirebaseAuth.instance.currentUser?.email ?? "",
+            )) {
+      doc.reference.update({
+        'signedindevices': currentDevices,
+      });
+    }
+  }
 }

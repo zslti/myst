@@ -103,6 +103,9 @@ Map translation = {
     "devices": "Devices",
     "thisdevice": "This device",
     "lastseen": "Last seen",
+    "signoutdevices": "Sign out from other devices",
+    "signoutdevicestext":
+        "Are you sure you want to sign out from all other devices?",
   },
   "hu": {
     "countrycode": "hu",
@@ -209,5 +212,8 @@ Map translation = {
     "devices": "Eszközök",
     "thisdevice": "Ez az eszköz",
     "lastseen": "Utoljára látva:",
+    "signoutdevices": "Kijelentkezés az összes eszközről",
+    "signoutdevicestext":
+        "Biztosan ki szeretnél jelentkezni az összes eszközről?",
   }
 };

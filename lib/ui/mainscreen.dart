@@ -867,20 +867,91 @@ class _SettingsViewState extends State<SettingsView> {
                                           for (final device in signedinDevices[
                                                   "otherDevices"] ??
                                               [])
-                                            SettingButton(
-                                              icon: Image.asset(
-                                                "assets/phone.png",
-                                                width: 22,
-                                                height: 22,
+                                            Builder(builder: (context) {
+                                              if (device["forcelogout"] ??
+                                                  false) {
+                                                return const SizedBox();
+                                              }
+                                              return SettingButton(
+                                                icon: Image.asset(
+                                                  "assets/phone.png",
+                                                  width: 22,
+                                                  height: 22,
+                                                  color:
+                                                      getColor("secondarytext"),
+                                                ),
+                                                text:
+                                                    '${device["phonename"]} - ${device["platform"]}',
+                                                secondaryText:
+                                                    '${translation[currentLanguage]["lastseen"]} ${timestampToDate(device["lastlogin"])}\n${device["location"]}',
+                                                showArrow: false,
+                                              );
+                                            }),
+                                          Builder(builder: (context) {
+                                            bool devicesAlreadyLoggedOut =
+                                                false;
+                                            for (int i = 0;
+                                                i <
+                                                    (signedinDevices[
+                                                                "otherDevices"] ??
+                                                            [])
+                                                        .length;
+                                                i++) {
+                                              if (signedinDevices[
+                                                          "otherDevices"][i]
+                                                      ["forcelogout"] ??
+                                                  false) {
+                                                devicesAlreadyLoggedOut = true;
+                                                break;
+                                              }
+                                            }
+                                            if (devicesAlreadyLoggedOut) {
+                                              return const SizedBox();
+                                            }
+                                            return SettingButton(
+                                              icon: Icon(
+                                                Icons.logout,
                                                 color:
                                                     getColor("secondarytext"),
+                                                size: 22,
                                               ),
-                                              text:
-                                                  '${device["phonename"]} - ${device["platform"]}',
-                                              secondaryText:
-                                                  '${translation[currentLanguage]["lastseen"]} ${timestampToDate(device["lastlogin"])}\n${device["location"]}',
-                                              showArrow: false,
-                                            ),
+                                              text: translation[currentLanguage]
+                                                  ["signoutdevices"],
+                                              padding: EdgeInsets.only(
+                                                left: 10,
+                                                right: 8,
+                                              ),
+                                              onTap: () {
+                                                showCustomDialog(
+                                                  context,
+                                                  translation[currentLanguage]
+                                                      ["signoutdevices"],
+                                                  translation[currentLanguage]
+                                                      ["signoutdevicestext"],
+                                                  [
+                                                    TextButton(
+                                                      child: Text(
+                                                        translation[
+                                                                currentLanguage]
+                                                            ["signout"],
+                                                        style:
+                                                            getFont("mainfont")(
+                                                          fontSize: 14,
+                                                          color: getColor(
+                                                            "secondarytext",
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      onPressed: () {
+                                                        logoutAllDevices();
+                                                        Navigator.pop(context);
+                                                      },
+                                                    ),
+                                                  ],
+                                                );
+                                              },
+                                            );
+                                          })
                                         ],
                                       );
                                     }),
@@ -1082,8 +1153,10 @@ class _SettingButtonState extends State<SettingButton> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width - 160,
+                  ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxWidth: MediaQuery.of(context).size.width - 160,
+                    ),
                     child: Text(
                       widget.text,
                       overflow: TextOverflow.ellipsis,
@@ -1096,8 +1169,10 @@ class _SettingButtonState extends State<SettingButton> {
                     if (widget.secondaryText.isEmpty) {
                       return const SizedBox();
                     }
-                    return SizedBox(
-                      width: MediaQuery.of(context).size.width - 160,
+                    return ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxWidth: MediaQuery.of(context).size.width - 160,
+                      ),
                       child: Text(
                         widget.secondaryText,
                         overflow: TextOverflow.ellipsis,
