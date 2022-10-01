@@ -17,14 +17,13 @@ import 'messages.dart';
 List outgoingRequests = [];
 List incomingRequests = [];
 Map displayNames = {};
+Map customStatuses = {};
 Map statuses = {};
 Map profilePictures = {};
 List friends = [];
 int unreadMessages = 0;
-DraggableScrollableController scrollController =
-    DraggableScrollableController();
-DraggableScrollableController scrollController2 =
-    DraggableScrollableController();
+DraggableScrollableController scrollController = DraggableScrollableController();
+DraggableScrollableController scrollController2 = DraggableScrollableController();
 double scrollSize = 0;
 bool isScrolling = false;
 
@@ -50,6 +49,7 @@ class _FriendsViewState extends State<FriendsView> {
       displayNames[friend] = await getDisplayName(friend);
       statuses[friend] = await getStatus(friend);
       profilePictures[friend] = await getPicture(friend);
+      customStatuses[friend] = await getCustomStatus(friend);
     }
 
     unreadMessages = await getUnreadMessages();
@@ -78,9 +78,7 @@ class _FriendsViewState extends State<FriendsView> {
     getData();
     if (scrollController.isAttached) {
       scrollSize = scrollController.size;
-      if (scrollController.size < 0.3 &&
-          scrollController.size > 0.01 &&
-          !isScrolling) {
+      if (scrollController.size < 0.3 && scrollController.size > 0.01 && !isScrolling) {
         scrollController.animateTo(
           0,
           duration: const Duration(milliseconds: 275),
@@ -94,22 +92,14 @@ class _FriendsViewState extends State<FriendsView> {
       body: Stack(
         children: [
           Padding(
-            padding: const EdgeInsets.only(
-              left: 12,
-              right: 12,
-              top: 80,
-              bottom: 50,
-            ),
+            padding: const EdgeInsets.only(left: 12, right: 12, top: 80, bottom: 50),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 FriendRequestButton(
                   text: translation[currentLanguage]["incomingrequests"],
                   requests: incomingRequests,
-                  options: const [
-                    FriendRequestOption.accept,
-                    FriendRequestOption.decline
-                  ],
+                  options: const [FriendRequestOption.accept, FriendRequestOption.decline],
                 ),
                 FriendRequestButton(
                   text: translation[currentLanguage]["outgoingrequests"],
@@ -203,10 +193,7 @@ class _FriendsViewState extends State<FriendsView> {
                   color: Colors.black.withOpacity(0.25),
                   spreadRadius: 5,
                   blurRadius: 7,
-                  offset: const Offset(
-                    0,
-                    3,
-                  ),
+                  offset: const Offset(0, 3),
                 ),
               ],
             ),
@@ -254,10 +241,7 @@ class _FriendsViewState extends State<FriendsView> {
                     color: Colors.black.withOpacity(0.25),
                     spreadRadius: 5,
                     blurRadius: 7,
-                    offset: const Offset(
-                      0,
-                      -3,
-                    ),
+                    offset: const Offset(0, -3),
                   ),
                 ],
               ),
@@ -427,12 +411,9 @@ class _FriendState extends State<Friend> {
           "displayname": displayNames[widget.friend],
           "status": statuses[widget.friend],
         };
-        Timer(
-          const Duration(milliseconds: 500),
-          () {
-            slideToCenter();
-          },
-        );
+        Timer(const Duration(milliseconds: 500), () {
+          slideToCenter();
+        });
         selectedIndex = 0;
         pushReplacement(
           context,
@@ -468,16 +449,37 @@ class _FriendState extends State<Friend> {
               ),
             ],
           ),
-          const SizedBox(
-            width: 10,
-          ),
+          const SizedBox(width: 10),
           Expanded(
-            child: Text(
-              displayNames[widget.friend] ?? "",
-              overflow: TextOverflow.ellipsis,
-              style: getFont("mainfont")(
-                color: getColor("secondarytext"),
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  displayNames[widget.friend] ?? "",
+                  overflow: TextOverflow.ellipsis,
+                  style: getFont("mainfont")(
+                    color: getColor("secondarytext"),
+                  ),
+                ),
+                Builder(builder: (context) {
+                  String customStatus = customStatuses[widget.friend] ?? "";
+                  if (customStatus.isEmpty) {
+                    return const SizedBox();
+                  }
+                  return Opacity(
+                    opacity: 0.75,
+                    child: Text(
+                      customStatus,
+                      overflow: TextOverflow.ellipsis,
+                      style: getFont("mainfont")(
+                        color: getColor("secondarytext"),
+                        fontSize: 11,
+                      ),
+                    ),
+                  );
+                }),
+              ],
             ),
           )
         ],
@@ -566,19 +568,14 @@ class _FriendRequestsViewState extends State<FriendRequestsView> {
   @override
   Widget build(BuildContext context) {
     Timer(const Duration(milliseconds: 100), () {
-      widget.requests =
-          widget.text == translation[currentLanguage]["incomingrequests"]
-              ? incomingRequests
-              : outgoingRequests;
+      widget.requests = widget.text == translation[currentLanguage]["incomingrequests"] ? incomingRequests : outgoingRequests;
       if (mounted) {
         setState(() {});
       }
     });
     if (scrollController2.isAttached) {
       scrollSize = scrollController2.size;
-      if (scrollController2.size < 0.3 &&
-          scrollController2.size > 0.01 &&
-          !isScrolling) {
+      if (scrollController2.size < 0.3 && scrollController2.size > 0.01 && !isScrolling) {
         scrollController2.animateTo(
           0,
           duration: const Duration(milliseconds: 275),
@@ -606,11 +603,9 @@ class _FriendRequestsViewState extends State<FriendRequestsView> {
                     child: Opacity(
                       opacity: 0.5,
                       child: Text(
-                        widget.text ==
-                                translation[currentLanguage]["incomingrequests"]
+                        widget.text == translation[currentLanguage]["incomingrequests"]
                             ? translation[currentLanguage]["noincomingrequests"]
-                            : translation[currentLanguage]
-                                ["nooutgoingrequests"],
+                            : translation[currentLanguage]["nooutgoingrequests"],
                         style: getFont("mainfont")(
                           color: getColor("secondarytext"),
                         ),
@@ -645,10 +640,7 @@ class _FriendRequestsViewState extends State<FriendRequestsView> {
                     color: Colors.black.withOpacity(0.25),
                     spreadRadius: 5,
                     blurRadius: 7,
-                    offset: const Offset(
-                      0,
-                      3,
-                    ),
+                    offset: const Offset(0, 3),
                   ),
                 ],
               ),
@@ -698,10 +690,7 @@ class _FriendRequestsViewState extends State<FriendRequestsView> {
                       color: Colors.black.withOpacity(0.25),
                       spreadRadius: 5,
                       blurRadius: 7,
-                      offset: const Offset(
-                        0,
-                        -3,
-                      ),
+                      offset: const Offset(0, -3),
                     ),
                   ],
                 ),
@@ -838,8 +827,7 @@ class _FriendRequestsViewState extends State<FriendRequestsView> {
 enum FriendRequestOption { accept, decline, cancel }
 
 class FriendRequest extends StatefulWidget {
-  const FriendRequest({Key? key, required this.request, required this.options})
-      : super(key: key);
+  const FriendRequest({Key? key, required this.request, required this.options}) : super(key: key);
   final Map request;
   final List<FriendRequestOption> options;
 
@@ -850,8 +838,7 @@ class FriendRequest extends StatefulWidget {
 class _FriendRequestState extends State<FriendRequest> {
   Future<String> getRequestDisplayName() async {
     List users = [widget.request["sender"], widget.request["receiver"]];
-    users.removeWhere(
-        (element) => element == FirebaseAuth.instance.currentUser?.email);
+    users.removeWhere((element) => element == FirebaseAuth.instance.currentUser?.email);
     String name = await getDisplayName(users[0]);
     displayNames[users[0]] = name;
     profilePictures[users[0]] = await getPicture(users[0]);
@@ -870,9 +857,7 @@ class _FriendRequestState extends State<FriendRequest> {
     return GestureDetector(
       onLongPress: () {
         bottomSheetData = {
-          "email": widget.options.contains(FriendRequestOption.accept)
-              ? widget.request['sender'] ?? ""
-              : widget.request['receiver'] ?? "",
+          "email": widget.options.contains(FriendRequestOption.accept) ? widget.request['sender'] ?? "" : widget.request['receiver'] ?? "",
           "displayname": widget.options.contains(FriendRequestOption.accept)
               ? displayNames[widget.request["sender"]] ?? ""
               : displayNames[widget.request["receiver"]] ?? "",
@@ -893,9 +878,7 @@ class _FriendRequestState extends State<FriendRequest> {
       child: Row(
         children: [
           ClipRRect(
-            borderRadius: BorderRadius.circular(
-              50,
-            ),
+            borderRadius: BorderRadius.circular(50),
             child: SizedBox(
               width: 32,
               height: 32,
@@ -906,9 +889,7 @@ class _FriendRequestState extends State<FriendRequest> {
               ),
             ),
           ),
-          const SizedBox(
-            width: 10,
-          ),
+          const SizedBox(width: 10),
           Expanded(
             child: Stack(
               children: [
@@ -951,27 +932,17 @@ class _FriendRequestState extends State<FriendRequest> {
                         borderRadius: BorderRadius.circular(50),
                         boxShadow: [
                           BoxShadow(
-                            color: (option == FriendRequestOption.accept
-                                    ? getColor("positive")
-                                    : getColor("negative"))
-                                .withOpacity(0.7),
+                            color: (option == FriendRequestOption.accept ? getColor("positive") : getColor("negative")).withOpacity(0.7),
                             spreadRadius: 1,
                             blurRadius: 5,
-                            offset: const Offset(
-                              0,
-                              0,
-                            ),
+                            offset: const Offset(0, 0),
                           ),
                         ],
                       ),
                       child: Center(
                         child: Icon(
-                          option == FriendRequestOption.accept
-                              ? Icons.check
-                              : Icons.close,
-                          color: option == FriendRequestOption.accept
-                              ? getColor("positive")
-                              : getColor("negative"),
+                          option == FriendRequestOption.accept ? Icons.check : Icons.close,
+                          color: option == FriendRequestOption.accept ? getColor("positive") : getColor("negative"),
                           size: 20,
                         ),
                       ),

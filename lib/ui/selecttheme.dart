@@ -44,17 +44,13 @@ class _SelectThemeViewState extends State<SelectThemeView> {
             children: [
               ListView(
                 children: [
-                  SizedBox(
-                    height: MediaQuery.of(context).size.height / 16,
-                  ),
+                  SizedBox(height: MediaQuery.of(context).size.height / 16),
                   // ignore: prefer_const_constructors
                   AnimatedLogo(
                     sizeMul: 1.1,
                     stopAfterFirstCycle: true,
                   ),
-                  const SizedBox(
-                    height: 20,
-                  ),
+                  const SizedBox(height: 20),
                   Center(
                     child: Builder(builder: (context) {
                       return Text(
@@ -81,10 +77,7 @@ class _SelectThemeViewState extends State<SelectThemeView> {
                                   duration: const Duration(milliseconds: 500),
                                   opacity: themes[i] == currentTheme ? 1 : 0,
                                   child: Padding(
-                                    padding: const EdgeInsets.only(
-                                      left: 4,
-                                      top: 4,
-                                    ),
+                                    padding: const EdgeInsets.only(left: 4, top: 4),
                                     child: ClipRRect(
                                       borderRadius: BorderRadius.circular(15),
                                       child: Container(
@@ -96,11 +89,7 @@ class _SelectThemeViewState extends State<SelectThemeView> {
                                   ),
                                 ),
                                 Padding(
-                                  padding: const EdgeInsets.only(
-                                    left: 8,
-                                    top: 8,
-                                    right: 4,
-                                  ),
+                                  padding: const EdgeInsets.only(left: 8, top: 8, right: 4),
                                   child: ThemeCard(theme: themes[i]),
                                 ),
                               ],
@@ -116,14 +105,9 @@ class _SelectThemeViewState extends State<SelectThemeView> {
                               children: [
                                 AnimatedOpacity(
                                   duration: const Duration(milliseconds: 500),
-                                  opacity:
-                                      themes[i + 1] == currentTheme ? 1 : 0,
+                                  opacity: themes[i + 1] == currentTheme ? 1 : 0,
                                   child: Padding(
-                                    padding: const EdgeInsets.only(
-                                      left: 4,
-                                      top: 4,
-                                      right: 4,
-                                    ),
+                                    padding: const EdgeInsets.only(left: 4, top: 4, right: 4),
                                     child: ClipRRect(
                                       borderRadius: BorderRadius.circular(15),
                                       child: Container(
@@ -135,11 +119,7 @@ class _SelectThemeViewState extends State<SelectThemeView> {
                                   ),
                                 ),
                                 Padding(
-                                  padding: const EdgeInsets.only(
-                                    left: 8,
-                                    top: 8,
-                                    right: 8,
-                                  ),
+                                  padding: const EdgeInsets.only(left: 8, top: 8, right: 8),
                                   child: ThemeCard(theme: themes[i + 1]),
                                 ),
                               ],
@@ -148,19 +128,13 @@ class _SelectThemeViewState extends State<SelectThemeView> {
                         }),
                       ],
                     ),
-                  const SizedBox(
-                    height: 70,
-                  ),
+                  const SizedBox(height: 70),
                 ],
               ),
               Align(
                 alignment: Alignment.bottomCenter,
                 child: Padding(
-                  padding: const EdgeInsets.only(
-                    left: 12,
-                    right: 12,
-                    bottom: 12,
-                  ),
+                  padding: const EdgeInsets.only(left: 12, right: 12, bottom: 12),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(10),
                     child: TextButton(
@@ -178,9 +152,7 @@ class _SelectThemeViewState extends State<SelectThemeView> {
                       child: SizedBox(
                         width: 1000,
                         child: Text(
-                          widget.shouldPop
-                              ? translation[currentLanguage]["apply"]
-                              : translation[currentLanguage]["next"],
+                          widget.shouldPop ? translation[currentLanguage]["apply"] : translation[currentLanguage]["next"],
                           textAlign: TextAlign.center,
                           style: getFont("mainfont")(
                             color: getColor("background"),
@@ -262,16 +234,11 @@ class _ThemeCardState extends State<ThemeCard> {
                                 child: Container(
                                   width: 30,
                                   height: 30,
-                                  color: getColor(
-                                    "button",
-                                    theme: widget.theme,
-                                  ),
+                                  color: getColor("button", theme: widget.theme),
                                 ),
                               ),
                             ),
-                            const SizedBox(
-                              width: 5,
-                            ),
+                            const SizedBox(width: 5),
                             Column(
                               children: [
                                 Text(
@@ -315,9 +282,7 @@ class _ThemeCardState extends State<ThemeCard> {
                                 ),
                               ),
                             ),
-                            const SizedBox(
-                              width: 5,
-                            ),
+                            const SizedBox(width: 5),
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -332,8 +297,7 @@ class _ThemeCardState extends State<ThemeCard> {
                                   ),
                                 ),
                                 SizedBox(
-                                  width: MediaQuery.of(context).size.width / 2 -
-                                      75,
+                                  width: MediaQuery.of(context).size.width / 2 - 75,
                                   height: 90,
                                   child: Text(
                                     "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
@@ -351,9 +315,7 @@ class _ThemeCardState extends State<ThemeCard> {
                             ),
                           ],
                         ),
-                        const SizedBox(
-                          height: 5,
-                        ),
+                        const SizedBox(height: 5),
                         Row(
                           children: [
                             Expanded(
@@ -382,9 +344,7 @@ class _ThemeCardState extends State<ThemeCard> {
                                 ),
                               ),
                             ),
-                            const SizedBox(
-                              width: 5,
-                            ),
+                            const SizedBox(width: 5),
                             Expanded(
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(30),
@@ -393,17 +353,11 @@ class _ThemeCardState extends State<ThemeCard> {
                                     "button2",
                                     theme: widget.theme,
                                   ),
-                                  padding: const EdgeInsets.only(
-                                    left: 2.0,
-                                    //right: 6.0,
-                                    top: 2.0,
-                                    bottom: 2.0,
-                                  ),
+                                  padding: const EdgeInsets.only(left: 2.0, top: 2.0, bottom: 2.0),
                                   child: Center(
                                     child: Icon(
                                       Icons.send_rounded,
-                                      color: getColor("maintext",
-                                          theme: widget.theme),
+                                      color: getColor("maintext", theme: widget.theme),
                                       size: 10,
                                     ),
                                   ),

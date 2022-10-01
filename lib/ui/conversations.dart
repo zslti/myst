@@ -46,9 +46,6 @@ class ConversationsView extends StatefulWidget {
 class _ConversationsViewState extends State<ConversationsView> {
   Future<void> getProfilePictures() async {
     for (int i = 0; i < conversations.length; i++) {
-      // conversations[i]["picture"] = await getProfilePicture(
-      //   conversations[i]["email"],
-      // );
       profilePictures[conversations[i]["email"]] = await getPicture(
         conversations[i]["email"],
       );
@@ -65,6 +62,7 @@ class _ConversationsViewState extends State<ConversationsView> {
         "email": c[i],
         "displayname": await getDisplayName(c[i]),
         "status": await getStatus(c[i]),
+        "customstatus": await getCustomStatus(c[i]),
       };
     }
     conversations = c;
@@ -102,9 +100,7 @@ class _ConversationsViewState extends State<ConversationsView> {
             ),
             child: KeyboardVisibilityBuilder(
               builder: (context, isKeyboardVisible) {
-                if (DateTime.now().millisecondsSinceEpoch - searchApplyTime >
-                        250 &&
-                    !searchApplied) {
+                if (DateTime.now().millisecondsSinceEpoch - searchApplyTime > 250 && !searchApplied) {
                   applySearchTerm(searchController.text);
                   searchApplied = true;
                 }
@@ -125,11 +121,7 @@ class _ConversationsViewState extends State<ConversationsView> {
                     height: double.infinity,
                     color: getColor("background2"),
                     child: Padding(
-                      padding: const EdgeInsets.only(
-                        top: 12,
-                        left: 16,
-                        right: 16,
-                      ),
+                      padding: const EdgeInsets.only(top: 12, left: 16, right: 16),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -141,9 +133,7 @@ class _ConversationsViewState extends State<ConversationsView> {
                               fontWeight: FontWeight.w500,
                             ),
                           ),
-                          const SizedBox(
-                            height: 10,
-                          ),
+                          const SizedBox(height: 10),
                           Stack(
                             children: [
                               ScrollConfiguration(
@@ -152,18 +142,13 @@ class _ConversationsViewState extends State<ConversationsView> {
                                   try {
                                     return ConstrainedBox(
                                       constraints: BoxConstraints(
-                                        maxHeight:
-                                            MediaQuery.of(context).size.height -
-                                                90,
+                                        maxHeight: MediaQuery.of(context).size.height - 90,
                                       ),
                                       child: ListView(
                                         shrinkWrap: true,
                                         children: [
-                                          const SizedBox(
-                                            height: 10,
-                                          ),
-                                          for (final conversation
-                                              in conversations)
+                                          const SizedBox(height: 10),
+                                          for (final conversation in conversations)
                                             Builder(builder: (context) {
                                               return AnimatedOpacity(
                                                 duration: const Duration(
@@ -171,11 +156,8 @@ class _ConversationsViewState extends State<ConversationsView> {
                                                 ),
                                                 opacity: isSearching ? 0 : 1,
                                                 child: SizedBox(
-                                                  height: 50 *
-                                                      (!conversation[
-                                                                  "displayname"]
-                                                              .toString()
-                                                              .contains(
+                                                  height: 53 *
+                                                      (!conversation["displayname"].toString().contains(
                                                                 searchText,
                                                               )
                                                           ? 0
@@ -183,152 +165,120 @@ class _ConversationsViewState extends State<ConversationsView> {
                                                   child: TextButton(
                                                     onLongPress: () {
                                                       bottomSheetData = {
-                                                        "email": conversation[
-                                                            "email"],
-                                                        "displayname":
-                                                            conversation[
-                                                                "displayname"],
-                                                        "image": profilePictures[
-                                                                conversation[
-                                                                    "email"]] ??
-                                                            "",
+                                                        "email": conversation["email"],
+                                                        "displayname": conversation["displayname"],
+                                                        "image": profilePictures[conversation["email"]] ?? "",
                                                         "currentpage": "main",
                                                       };
-                                                      scrollController
-                                                          .animateTo(
+                                                      scrollController.animateTo(
                                                         0.5,
-                                                        duration:
-                                                            const Duration(
-                                                                milliseconds:
-                                                                    275),
+                                                        duration: const Duration(milliseconds: 275),
                                                         curve: Curves.ease,
                                                       );
                                                       isScrolling = true;
-                                                      Timer(
-                                                          const Duration(
-                                                              milliseconds:
-                                                                  275), () {
+                                                      Timer(const Duration(milliseconds: 275), () {
                                                         isScrolling = false;
                                                       });
                                                     },
                                                     onPressed: () {
-                                                      if (scrollController
-                                                          .isAttached) {
-                                                        scrollController
-                                                            .animateTo(
+                                                      if (scrollController.isAttached) {
+                                                        scrollController.animateTo(
                                                           0,
-                                                          duration:
-                                                              const Duration(
+                                                          duration: const Duration(
                                                             milliseconds: 275,
                                                           ),
                                                           curve: Curves.ease,
                                                         );
                                                       }
-                                                      swipeDirection =
-                                                          RevealSide.right;
-                                                      gkey.currentState
-                                                          ?.onTranslate(
-                                                        -50 *
-                                                            MediaQuery.of(
-                                                                    context)
-                                                                .size
-                                                                .width /
-                                                            400,
-                                                        shouldApplyTransition:
-                                                            true,
+                                                      swipeDirection = RevealSide.right;
+                                                      gkey.currentState?.onTranslate(
+                                                        -50 * MediaQuery.of(context).size.width / 400,
+                                                        shouldApplyTransition: true,
                                                       );
-                                                      currentConversation =
-                                                          conversation;
+                                                      currentConversation = conversation;
                                                       built = false;
                                                       messageCount = 0;
                                                     },
                                                     style: const ButtonStyle(
-                                                      splashFactory: NoSplash
-                                                          .splashFactory,
+                                                      splashFactory: NoSplash.splashFactory,
                                                     ),
                                                     child: Row(
                                                       children: [
                                                         Stack(
                                                           children: [
                                                             ClipRRect(
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                50,
-                                                              ),
+                                                              borderRadius: BorderRadius.circular(50),
                                                               child: SizedBox(
                                                                 width: 32,
                                                                 height: 32,
-                                                                child:
-                                                                    ProfileImage(
-                                                                  url: profilePictures[
-                                                                          conversation[
-                                                                              "email"]] ??
-                                                                      "",
+                                                                child: ProfileImage(
+                                                                  url: profilePictures[conversation["email"]] ?? "",
                                                                 ),
                                                               ),
                                                             ),
                                                             Container(
                                                               width: 32,
                                                               height: 32,
-                                                              alignment: Alignment
-                                                                  .bottomRight,
-                                                              child:
-                                                                  StatusIndicator(
-                                                                status: conversation[
-                                                                        "status"] ??
-                                                                    "offline",
+                                                              alignment: Alignment.bottomRight,
+                                                              child: StatusIndicator(
+                                                                status: conversation["status"] ?? "offline",
                                                               ),
                                                             ),
                                                           ],
                                                         ),
-                                                        const SizedBox(
-                                                          width: 10,
-                                                        ),
+                                                        const SizedBox(width: 10),
                                                         Expanded(
-                                                          child: Stack(
+                                                          child: Column(
+                                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                                            mainAxisAlignment: MainAxisAlignment.center,
                                                             children: [
-                                                              Text(
-                                                                conversation[
-                                                                    "displayname"],
-                                                                overflow:
-                                                                    TextOverflow
-                                                                        .ellipsis,
-                                                                style: getFont(
-                                                                    "mainfont")(
-                                                                  color:
-                                                                      getColor(
-                                                                    "secondarytext",
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                              AnimatedOpacity(
-                                                                duration:
-                                                                    const Duration(
-                                                                  milliseconds:
-                                                                      200,
-                                                                ),
-                                                                opacity: currentConversation?[
-                                                                            "email"] ==
-                                                                        conversation[
-                                                                            "email"]
-                                                                    ? 1
-                                                                    : 0,
-                                                                child: Text(
-                                                                  conversation[
-                                                                      "displayname"],
-                                                                  overflow:
-                                                                      TextOverflow
-                                                                          .ellipsis,
-                                                                  style: getFont(
-                                                                      "mainfont")(
-                                                                    color:
-                                                                        getColor(
-                                                                      "maintext",
+                                                              Stack(
+                                                                children: [
+                                                                  Text(
+                                                                    conversation["displayname"],
+                                                                    overflow: TextOverflow.ellipsis,
+                                                                    style: getFont("mainfont")(
+                                                                      color: getColor(
+                                                                        "secondarytext",
+                                                                      ),
                                                                     ),
                                                                   ),
-                                                                ),
-                                                              )
+                                                                  AnimatedOpacity(
+                                                                    duration: const Duration(
+                                                                      milliseconds: 200,
+                                                                    ),
+                                                                    opacity: currentConversation?["email"] == conversation["email"] ? 1 : 0,
+                                                                    child: Text(
+                                                                      conversation["displayname"],
+                                                                      overflow: TextOverflow.ellipsis,
+                                                                      style: getFont("mainfont")(
+                                                                        color: getColor(
+                                                                          "maintext",
+                                                                        ),
+                                                                      ),
+                                                                    ),
+                                                                  )
+                                                                ],
+                                                              ),
+                                                              Builder(builder: (context) {
+                                                                String customStatus = conversation["customstatus"] ?? "";
+                                                                if (customStatus.isEmpty) {
+                                                                  return const SizedBox();
+                                                                }
+                                                                return Opacity(
+                                                                  opacity: 0.75,
+                                                                  child: Text(
+                                                                    customStatus,
+                                                                    overflow: TextOverflow.ellipsis,
+                                                                    style: getFont("mainfont")(
+                                                                      color: getColor(
+                                                                        "secondarytext",
+                                                                      ),
+                                                                      fontSize: 11,
+                                                                    ),
+                                                                  ),
+                                                                );
+                                                              }),
                                                             ],
                                                           ),
                                                         ),
@@ -343,15 +293,12 @@ class _ConversationsViewState extends State<ConversationsView> {
                                     );
                                   } catch (e) {
                                     return SizedBox(
-                                      height:
-                                          MediaQuery.of(context).size.height -
-                                              100,
+                                      height: MediaQuery.of(context).size.height - 100,
                                       child: Center(
                                         child: Opacity(
                                           opacity: 0.5,
                                           child: Text(
-                                            translation[currentLanguage]
-                                                ["noconversations"],
+                                            translation[currentLanguage]["noconversations"],
                                             style: getFont("mainfont")(
                                               color: getColor("secondarytext"),
                                             ),
@@ -363,23 +310,17 @@ class _ConversationsViewState extends State<ConversationsView> {
                                 }),
                               ),
                               ClipRRect(
-                                borderRadius: const BorderRadius.all(
-                                  Radius.circular(5),
-                                ),
+                                borderRadius: const BorderRadius.all(Radius.circular(5)),
                                 child: Container(
                                   height: 35,
                                   alignment: Alignment.center,
                                   child: TextField(
                                     onChanged: (str) {
                                       searchApplied = false;
-                                      searchApplyTime = DateTime.now()
-                                              .millisecondsSinceEpoch +
-                                          250;
+                                      searchApplyTime = DateTime.now().millisecondsSinceEpoch + 250;
                                     },
                                     keyboardType: TextInputType.visiblePassword,
-                                    textAlignVertical: const TextAlignVertical(
-                                      y: -1,
-                                    ),
+                                    textAlignVertical: const TextAlignVertical(y: -1),
                                     controller: searchController,
                                     cursorColor: getColor("cursor"),
                                     cursorRadius: const Radius.circular(4),
@@ -388,8 +329,7 @@ class _ConversationsViewState extends State<ConversationsView> {
                                       fontSize: 14,
                                     ),
                                     decoration: InputDecoration(
-                                      suffixIconConstraints:
-                                          const BoxConstraints(
+                                      suffixIconConstraints: const BoxConstraints(
                                         maxWidth: 35,
                                       ),
                                       suffixIcon: Padding(
@@ -403,8 +343,7 @@ class _ConversationsViewState extends State<ConversationsView> {
                                       isDense: true,
                                       fillColor: getColor("background"),
                                       filled: true,
-                                      hintText: translation[currentLanguage]
-                                          ["findconversation"],
+                                      hintText: translation[currentLanguage]["findconversation"],
                                       hintStyle: getFont("mainfont")(
                                         color: getColor("secondarytext"),
                                         fontSize: 14,

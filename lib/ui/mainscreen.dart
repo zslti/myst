@@ -3,6 +3,7 @@
 import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:myst/data/theme.dart';
@@ -29,12 +30,13 @@ bool shouldRebuild = true;
 int selectedIndex = 0;
 int lastNotificationAmountRequest = 0;
 int friendRequestAmount = 0;
-String myStatus = "online", myProfilePicture = "", myDisplayName = "";
+String myStatus = "online", myProfilePicture = "", myDisplayName = "", myCustomStatus = "";
 String bottomSheetProfileStatus = "online";
-DraggableScrollableController scrollController =
-    DraggableScrollableController();
+DraggableScrollableController scrollController = DraggableScrollableController();
 double scrollSize = 0;
 bool isScrolling = false;
+TextEditingController statusController = TextEditingController();
+int lastSnackbarTime = 0;
 
 void slideToCenter() {
   swipeDirection = RevealSide.right;
@@ -59,11 +61,9 @@ class _MainViewState extends State<MainView> {
   }
 
   void getData() async {
-    if (DateTime.now().millisecondsSinceEpoch - lastNotificationAmountRequest >
-        1000) {
+    if (DateTime.now().millisecondsSinceEpoch - lastNotificationAmountRequest > 1000) {
       lastNotificationAmountRequest = DateTime.now().millisecondsSinceEpoch;
-      friendRequestAmount = (await getSentFriendRequests()).length +
-          (await getFriendRequests()).length;
+      friendRequestAmount = (await getSentFriendRequests()).length + (await getFriendRequests()).length;
       myStatus = await getStatus(
         FirebaseAuth.instance.currentUser?.email ?? "",
       );
@@ -74,6 +74,10 @@ class _MainViewState extends State<MainView> {
       myDisplayName = await getDisplayName(
         FirebaseAuth.instance.currentUser?.email ?? "",
       );
+      myCustomStatus = await getCustomStatus(
+        FirebaseAuth.instance.currentUser?.email ?? "",
+      );
+      statusController.text = myCustomStatus;
       getMyProfilePicture();
     }
   }
@@ -98,9 +102,7 @@ class _MainViewState extends State<MainView> {
     }
     if (scrollController.isAttached) {
       scrollSize = scrollController.size;
-      if (scrollController.size < 0.3 &&
-          scrollController.size > 0.01 &&
-          !isScrolling) {
+      if (scrollController.size < 0.3 && scrollController.size > 0.01 && !isScrolling) {
         scrollController.animateTo(
           0,
           duration: const Duration(milliseconds: 275),
@@ -147,24 +149,19 @@ class _MainViewState extends State<MainView> {
                                   if (actualSide == RevealSide.left) {
                                     swipeDirection = RevealSide.right;
                                     gkey.currentState?.onTranslate(
-                                      -50 *
-                                          MediaQuery.of(context).size.width /
-                                          400,
+                                      -50 * MediaQuery.of(context).size.width / 400,
                                       shouldApplyTransition: true,
                                     );
                                   } else {
                                     swipeDirection = RevealSide.left;
                                     gkey.currentState?.onTranslate(
-                                      50 *
-                                          MediaQuery.of(context).size.width /
-                                          400,
+                                      50 * MediaQuery.of(context).size.width / 400,
                                       shouldApplyTransition: true,
                                     );
                                   }
                                 },
                                 child: const Scaffold(
-                                  backgroundColor:
-                                      Color.fromARGB(255, 78, 78, 78),
+                                  backgroundColor: Color.fromARGB(255, 78, 78, 78),
                                 ),
                               ),
                             ),
@@ -177,9 +174,7 @@ class _MainViewState extends State<MainView> {
               ],
             ),
             left: ConversationsView(),
-            right: Scaffold(
-              backgroundColor: getColor("background"),
-            ),
+            right: Scaffold(backgroundColor: getColor("background")),
           ),
         ),
         AnimatedAlign(
@@ -187,7 +182,10 @@ class _MainViewState extends State<MainView> {
           curve: Curves.easeInOut,
           alignment: actualSide == RevealSide.left && isSliding
               ? Alignment.bottomCenter
-              : Alignment(0, 1.1 * MediaQuery.of(context).size.width / 300),
+              : Alignment(
+                  0,
+                  1.1 * MediaQuery.of(context).size.width / 300,
+                ),
           child: Container(
             decoration: BoxDecoration(
               color: getColor("background"),
@@ -196,10 +194,7 @@ class _MainViewState extends State<MainView> {
                   color: Colors.black.withOpacity(0.25),
                   spreadRadius: 5,
                   blurRadius: 7,
-                  offset: const Offset(
-                    0,
-                    -3,
-                  ),
+                  offset: const Offset(0, -3),
                 ),
               ],
             ),
@@ -272,9 +267,6 @@ class _MainViewState extends State<MainView> {
                       splashFactory: NoSplash.splashFactory,
                     ),
                     onPressed: () {
-                      //if (selectedIndex == 2) return;
-                      //selectedIndex = 2;
-                      //push(context, const MainView());
                       bottomSheetData = {};
                       scrollController.animateTo(
                         0.5,
@@ -346,10 +338,7 @@ class SettingsView extends StatefulWidget {
 
 class _SettingsViewState extends State<SettingsView> {
   Future<void> getBanner(String email) async {
-    await getPicture(
-      email,
-      folder: "banners",
-    );
+    await getPicture(email, folder: "banners");
   }
 
   Future<void> getBottomSheetFriendType() async {
@@ -372,9 +361,7 @@ class _SettingsViewState extends State<SettingsView> {
   @override
   Widget build(BuildContext context) {
     bool isProfile = bottomSheetData["email"] != null;
-    getBanner(isProfile
-        ? bottomSheetData["email"]
-        : FirebaseAuth.instance.currentUser?.email ?? "");
+    getBanner(isProfile ? bottomSheetData["email"] : FirebaseAuth.instance.currentUser?.email ?? "");
     getBottomSheetFriendType();
     return Padding(
       padding: const EdgeInsets.only(top: 35),
@@ -388,10 +375,7 @@ class _SettingsViewState extends State<SettingsView> {
               color: Colors.black.withOpacity(0.45),
               spreadRadius: 5,
               blurRadius: 7,
-              offset: const Offset(
-                0,
-                3,
-              ),
+              offset: const Offset(0, 3),
             ),
           ],
         ),
@@ -417,10 +401,7 @@ class _SettingsViewState extends State<SettingsView> {
                               color: Colors.black.withOpacity(0.25),
                               spreadRadius: 3,
                               blurRadius: 10,
-                              offset: const Offset(
-                                0,
-                                -5,
-                              ),
+                              offset: const Offset(0, -5),
                             ),
                           ],
                         ),
@@ -433,15 +414,10 @@ class _SettingsViewState extends State<SettingsView> {
                                   child: Stack(
                                     children: [
                                       ProfileImage(
-                                        url: bannerDownloadURLs[isProfile
-                                                ? bottomSheetData["email"]
-                                                : FirebaseAuth.instance
-                                                    .currentUser?.email] ??
-                                            "",
+                                        url:
+                                            bannerDownloadURLs[isProfile ? bottomSheetData["email"] : FirebaseAuth.instance.currentUser?.email] ?? "",
                                         type: "banners",
-                                        username:
-                                            bottomSheetData["displayname"] ??
-                                                "",
+                                        username: bottomSheetData["displayname"] ?? "",
                                       ),
                                       Builder(builder: (context) {
                                         if (isProfile) return const SizedBox();
@@ -452,8 +428,7 @@ class _SettingsViewState extends State<SettingsView> {
                                             child: Opacity(
                                               opacity: 0.5,
                                               child: Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.end,
+                                                mainAxisAlignment: MainAxisAlignment.end,
                                                 children: [
                                                   GestureDetector(
                                                     onTap: () {
@@ -463,16 +438,13 @@ class _SettingsViewState extends State<SettingsView> {
                                                       );
                                                     },
                                                     child: Padding(
-                                                      padding:
-                                                          const EdgeInsets.only(
+                                                      padding: const EdgeInsets.only(
                                                         left: 4.0,
                                                         right: 4.0,
                                                       ),
                                                       child: Icon(
                                                         Icons.camera_outlined,
-                                                        color: getColor(
-                                                          "secondarytext",
-                                                        ),
+                                                        color: getColor("secondarytext"),
                                                         size: 24,
                                                       ),
                                                     ),
@@ -485,8 +457,7 @@ class _SettingsViewState extends State<SettingsView> {
                                                       );
                                                     },
                                                     child: Padding(
-                                                      padding:
-                                                          const EdgeInsets.only(
+                                                      padding: const EdgeInsets.only(
                                                         left: 4.0,
                                                         right: 4.0,
                                                       ),
@@ -517,10 +488,7 @@ class _SettingsViewState extends State<SettingsView> {
                               ],
                             ),
                             Padding(
-                              padding: const EdgeInsets.only(
-                                left: 16,
-                                right: 16,
-                              ),
+                              padding: const EdgeInsets.only(left: 16, right: 16),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 mainAxisAlignment: MainAxisAlignment.end,
@@ -534,21 +502,15 @@ class _SettingsViewState extends State<SettingsView> {
                                         child: Stack(
                                           children: [
                                             ClipRRect(
-                                              borderRadius:
-                                                  BorderRadius.circular(50),
+                                              borderRadius: BorderRadius.circular(50),
                                               child: ProfileImage(
-                                                url: isProfile
-                                                    ? bottomSheetData["image"]
-                                                    : myProfilePicture,
+                                                url: isProfile ? bottomSheetData["image"] : myProfilePicture,
                                               ),
                                             ),
                                             Align(
-                                              alignment:
-                                                  const Alignment(0.85, 0.85),
+                                              alignment: const Alignment(0.85, 0.85),
                                               child: StatusIndicator(
-                                                status: isProfile
-                                                    ? bottomSheetProfileStatus
-                                                    : myStatus,
+                                                status: isProfile ? bottomSheetProfileStatus : myStatus,
                                                 size: 15,
                                               ),
                                             ),
@@ -566,14 +528,10 @@ class _SettingsViewState extends State<SettingsView> {
                                                 );
                                               },
                                               child: Padding(
-                                                padding: const EdgeInsets.only(
-                                                  left: 4.0,
-                                                  right: 4.0,
-                                                ),
+                                                padding: const EdgeInsets.only(left: 4.0, right: 4.0),
                                                 child: Icon(
                                                   Icons.camera_outlined,
-                                                  color:
-                                                      getColor("secondarytext"),
+                                                  color: getColor("secondarytext"),
                                                   size: 24,
                                                 ),
                                               ),
@@ -585,14 +543,10 @@ class _SettingsViewState extends State<SettingsView> {
                                                 );
                                               },
                                               child: Padding(
-                                                padding: const EdgeInsets.only(
-                                                  left: 4.0,
-                                                  right: 4.0,
-                                                ),
+                                                padding: const EdgeInsets.only(left: 4.0, right: 4.0),
                                                 child: Icon(
                                                   Icons.image_outlined,
-                                                  color:
-                                                      getColor("secondarytext"),
+                                                  color: getColor("secondarytext"),
                                                   size: 24,
                                                 ),
                                               ),
@@ -603,56 +557,39 @@ class _SettingsViewState extends State<SettingsView> {
                                     ],
                                   ),
                                   Padding(
-                                    padding: const EdgeInsets.only(
-                                      top: 6.0,
-                                      bottom: 8.0,
-                                    ),
+                                    padding: const EdgeInsets.only(top: 6.0, bottom: 8.0),
                                     child: Builder(builder: (context) {
                                       if (isEditingUsername) {
                                         return TextField(
-                                          keyboardType:
-                                              TextInputType.visiblePassword,
-                                          textAlignVertical:
-                                              const TextAlignVertical(
-                                            y: -1,
-                                          ),
+                                          keyboardType: TextInputType.visiblePassword,
+                                          textAlignVertical: const TextAlignVertical(y: -1),
                                           controller: usernameController,
                                           cursorColor: getColor("cursor"),
-                                          cursorRadius:
-                                              const Radius.circular(4),
+                                          cursorRadius: const Radius.circular(4),
                                           style: getFont("mainfont")(
                                             color: getColor("secondarytext"),
                                             fontSize: 14,
                                           ),
                                           decoration: InputDecoration(
-                                            suffixIconConstraints:
-                                                const BoxConstraints(
+                                            suffixIconConstraints: const BoxConstraints(
                                               maxWidth: 35,
                                             ),
                                             suffixIcon: GestureDetector(
                                               onTap: () {
                                                 setState(() {
-                                                  myDisplayName =
-                                                      usernameController.text
-                                                          .trim();
+                                                  myDisplayName = usernameController.text.trim();
                                                   isEditingUsername = false;
                                                 });
                                                 changeUsername(
-                                                  FirebaseAuth.instance
-                                                          .currentUser?.email ??
-                                                      "",
+                                                  FirebaseAuth.instance.currentUser?.email ?? "",
                                                   myDisplayName,
                                                 );
                                               },
                                               child: Padding(
-                                                padding: const EdgeInsets.all(
-                                                  8.0,
-                                                ),
+                                                padding: const EdgeInsets.all(8.0),
                                                 child: Icon(
                                                   Icons.done,
-                                                  color: getColor(
-                                                    "secondarytext",
-                                                  ),
+                                                  color: getColor("secondarytext"),
                                                   size: 20,
                                                 ),
                                               ),
@@ -660,9 +597,7 @@ class _SettingsViewState extends State<SettingsView> {
                                             isDense: true,
                                             fillColor: getColor("background"),
                                             filled: true,
-                                            hintText:
-                                                translation[currentLanguage]
-                                                    ["username"],
+                                            hintText: translation[currentLanguage]["username"],
                                             hintStyle: getFont("mainfont")(
                                               color: getColor("secondarytext"),
                                               fontSize: 14,
@@ -672,19 +607,12 @@ class _SettingsViewState extends State<SettingsView> {
                                           ),
                                         );
                                       }
-                                      String displayName = isProfile
-                                          ? bottomSheetData["displayname"]
-                                          : myDisplayName;
+                                      String displayName = isProfile ? bottomSheetData["displayname"] : myDisplayName;
                                       return RichText(
                                         overflow: TextOverflow.ellipsis,
                                         text: TextSpan(children: [
                                           TextSpan(
-                                            text: displayName.length > 25
-                                                ? "${displayName.substring(
-                                                      0,
-                                                      25,
-                                                    ).trimRight()}..."
-                                                : displayName,
+                                            text: displayName.length > 25 ? "${displayName.substring(0, 25).trimRight()}..." : displayName,
                                             style: getFont("mainfont")(
                                               color: getColor("maintext"),
                                               fontSize: 20,
@@ -699,22 +627,16 @@ class _SettingsViewState extends State<SettingsView> {
                                               return GestureDetector(
                                                 onTap: () {
                                                   setState(() {
-                                                    usernameController.text =
-                                                        myDisplayName;
+                                                    usernameController.text = myDisplayName;
                                                     isEditingUsername = true;
                                                   });
                                                 },
                                                 child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.only(
-                                                    left: 4.0,
-                                                  ),
+                                                  padding: const EdgeInsets.only(left: 4.0),
                                                   child: Icon(
                                                     Icons.edit,
                                                     size: 20,
-                                                    color: getColor(
-                                                      "secondarytext",
-                                                    ),
+                                                    color: getColor("secondarytext"),
                                                   ),
                                                 ),
                                               );
@@ -733,8 +655,7 @@ class _SettingsViewState extends State<SettingsView> {
                       Builder(builder: (context) {
                         if (isProfile) {
                           return Builder(builder: (context) {
-                            if (bottomSheetData["email"] ==
-                                FirebaseAuth.instance.currentUser?.email) {
+                            if (bottomSheetData["email"] == FirebaseAuth.instance.currentUser?.email) {
                               return const SizedBox();
                             }
                             return Row(
@@ -744,40 +665,31 @@ class _SettingsViewState extends State<SettingsView> {
                                     onTap: () {
                                       currentConversation = {
                                         "email": bottomSheetData["email"],
-                                        "displayname":
-                                            bottomSheetData["displayname"],
+                                        "displayname": bottomSheetData["displayname"],
                                         "status": bottomSheetProfileStatus,
                                       };
                                       selectedIndex = 0;
                                       if (scrollController.isAttached) {
                                         scrollController.animateTo(
                                           0,
-                                          duration:
-                                              const Duration(milliseconds: 275),
+                                          duration: const Duration(milliseconds: 275),
                                           curve: Curves.ease,
                                         );
                                       }
                                       if (scrollController2.isAttached) {
                                         scrollController2.animateTo(
                                           0,
-                                          duration:
-                                              const Duration(milliseconds: 275),
+                                          duration: const Duration(milliseconds: 275),
                                           curve: Curves.ease,
                                         );
                                       }
-                                      if (!(bottomSheetData["needslide"] ??
-                                          true)) {
+                                      if (!(bottomSheetData["needslide"] ?? true)) {
                                         return;
                                       }
-                                      Timer(
-                                        const Duration(milliseconds: 500),
-                                        () {
-                                          slideToCenter();
-                                        },
-                                      );
-                                      if ((bottomSheetData["currentpage"] ??
-                                              "") ==
-                                          "main") {
+                                      Timer(const Duration(milliseconds: 500), () {
+                                        slideToCenter();
+                                      });
+                                      if ((bottomSheetData["currentpage"] ?? "") == "main") {
                                         return;
                                       }
                                       pushReplacement(
@@ -790,19 +702,15 @@ class _SettingsViewState extends State<SettingsView> {
                                       height: 70,
                                       color: getColor("background3"),
                                       child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
+                                        mainAxisAlignment: MainAxisAlignment.center,
                                         children: [
                                           Icon(
                                             Icons.messenger_outline,
                                             color: getColor("secondarytext"),
                                           ),
-                                          SizedBox(
-                                            height: 2,
-                                          ),
+                                          SizedBox(height: 2),
                                           Text(
-                                            translation[currentLanguage]
-                                                ["sendmessage"],
+                                            translation[currentLanguage]["sendmessage"],
                                             style: getFont("mainfont")(
                                               color: getColor("secondarytext"),
                                               fontSize: 12,
@@ -827,23 +735,17 @@ class _SettingsViewState extends State<SettingsView> {
                                           height: 70,
                                           color: getColor("background3"),
                                           child: Column(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
+                                            mainAxisAlignment: MainAxisAlignment.center,
                                             children: [
                                               Icon(
                                                 Icons.person_add_alt_1_outlined,
-                                                color:
-                                                    getColor("secondarytext"),
+                                                color: getColor("secondarytext"),
                                               ),
-                                              SizedBox(
-                                                height: 2,
-                                              ),
+                                              SizedBox(height: 2),
                                               Text(
-                                                translation[currentLanguage]
-                                                    ["sendfriendrequest"],
+                                                translation[currentLanguage]["sendfriendrequest"],
                                                 style: getFont("mainfont")(
-                                                  color:
-                                                      getColor("secondarytext"),
+                                                  color: getColor("secondarytext"),
                                                   fontSize: 12,
                                                 ),
                                               ),
@@ -854,33 +756,24 @@ class _SettingsViewState extends State<SettingsView> {
                                     } else if (bottomSheetFriendType == 1) {
                                       return GestureDetector(
                                         onTap: () {
-                                          removeFriend(
-                                            bottomSheetData["email"],
-                                          );
+                                          removeFriend(bottomSheetData["email"]);
                                         },
                                         child: Container(
                                           width: double.infinity,
                                           height: 70,
                                           color: getColor("background3"),
                                           child: Column(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
+                                            mainAxisAlignment: MainAxisAlignment.center,
                                             children: [
                                               Icon(
-                                                Icons
-                                                    .person_remove_alt_1_outlined,
-                                                color:
-                                                    getColor("secondarytext"),
+                                                Icons.person_remove_alt_1_outlined,
+                                                color: getColor("secondarytext"),
                                               ),
-                                              SizedBox(
-                                                height: 2,
-                                              ),
+                                              SizedBox(height: 2),
                                               Text(
-                                                translation[currentLanguage]
-                                                    ["removefriend"],
+                                                translation[currentLanguage]["removefriend"],
                                                 style: getFont("mainfont")(
-                                                  color:
-                                                      getColor("secondarytext"),
+                                                  color: getColor("secondarytext"),
                                                   fontSize: 12,
                                                 ),
                                               ),
@@ -894,23 +787,17 @@ class _SettingsViewState extends State<SettingsView> {
                                       height: 70,
                                       color: getColor("background3"),
                                       child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
+                                        mainAxisAlignment: MainAxisAlignment.center,
                                         children: [
                                           Image.asset(
                                             "assets/friendadded.png",
-                                            width: 20,
-                                            height: 20,
-                                            color: getColor(
-                                              "secondarytext",
-                                            ),
+                                            width: 21,
+                                            height: 21,
+                                            color: getColor("secondarytext"),
                                           ),
-                                          SizedBox(
-                                            height: 2,
-                                          ),
+                                          SizedBox(height: 4),
                                           Text(
-                                            translation[currentLanguage]
-                                                ["friendrequestsent"],
+                                            translation[currentLanguage]["friendrequestsent"],
                                             style: getFont("mainfont")(
                                               color: getColor("secondarytext"),
                                               fontSize: 12,
@@ -936,8 +823,7 @@ class _SettingsViewState extends State<SettingsView> {
                                 color: getColor("secondarytext"),
                               ),
                               text: translation[currentLanguage]["setstatus"],
-                              rightText: translation[currentLanguage]
-                                  [prefs?.getString("status") ?? "online"],
+                              rightText: translation[currentLanguage][prefs?.getString("status") ?? "online"],
                               isOpenable: true,
                               openableWidgetId: 0,
                               // ignore: prefer_const_literals_to_create_immutables
@@ -946,6 +832,84 @@ class _SettingsViewState extends State<SettingsView> {
                                 ChangeStatusButton(status: "away"),
                                 ChangeStatusButton(status: "busy"),
                                 ChangeStatusButton(status: "invisible"),
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 6.0),
+                                  child: TextField(
+                                    onChanged: (value) {
+                                      setCustomStatus(value);
+                                    },
+                                    textAlignVertical: const TextAlignVertical(y: -1),
+                                    controller: statusController,
+                                    cursorColor: getColor("cursor"),
+                                    cursorRadius: const Radius.circular(4),
+                                    style: getFont("mainfont")(
+                                      color: getColor("secondarytext"),
+                                      fontSize: 14,
+                                    ),
+                                    decoration: InputDecoration(
+                                      suffixIconConstraints: const BoxConstraints(
+                                        maxWidth: 35,
+                                      ),
+                                      isDense: true,
+                                      fillColor: getColor("background"),
+                                      filled: true,
+                                      hintText: translation[currentLanguage]["setcustomstatus"],
+                                      hintStyle: getFont("mainfont")(
+                                        color: getColor("secondarytext"),
+                                        fontSize: 14,
+                                        height: 1.3,
+                                      ),
+                                      border: InputBorder.none,
+                                    ),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 18.0),
+                                  child: RichText(
+                                    text: TextSpan(children: [
+                                      TextSpan(
+                                        text: translation[currentLanguage]["setcustomstatustext"],
+                                        style: getFont("mainfont")(
+                                          color: getColor("secondarytext"),
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                      TextSpan(
+                                        text: ' ${translation[currentLanguage]["setcustomstatustext2"]}',
+                                        style: getFont("mainfont")(
+                                          color: getColor("maintext"),
+                                          fontSize: 12,
+                                          //fontWeight: FontWeight.w600,
+                                        ),
+                                        recognizer: TapGestureRecognizer()
+                                          ..onTap = () async {
+                                            String quote = (await getRandomQuote())[0];
+                                            if (quote.isEmpty) {
+                                              if (DateTime.now().millisecondsSinceEpoch - lastSnackbarTime < 5000) {
+                                                return;
+                                              }
+                                              lastSnackbarTime = DateTime.now().millisecondsSinceEpoch;
+                                              // ignore: use_build_context_synchronously
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                SnackBar(
+                                                  backgroundColor: getColor("background"),
+                                                  content: Text(
+                                                    translation[currentLanguage]["toomanyrequests"],
+                                                    style: getFont("mainfont")(
+                                                      color: getColor("maintext"),
+                                                    ),
+                                                  ),
+                                                ),
+                                              );
+                                            } else {
+                                              statusController.text = quote;
+                                              setCustomStatus(quote);
+                                            }
+                                          },
+                                      ),
+                                    ]),
+                                  ),
+                                ),
                               ],
                             ),
                             SettingButton(
@@ -953,12 +917,8 @@ class _SettingsViewState extends State<SettingsView> {
                                 Icons.person_outline,
                                 color: getColor("secondarytext"),
                               ),
-                              padding: const EdgeInsets.only(
-                                left: 6.0,
-                                right: 8.0,
-                              ),
-                              text: translation[currentLanguage]
-                                  ["accountsettings"],
+                              padding: const EdgeInsets.only(left: 6.0, right: 8.0),
+                              text: translation[currentLanguage]["accountsettings"],
                               isOpenable: true,
                               openableWidgetId: 1,
                               // ignore: prefer_const_literals_to_create_immutables
@@ -966,34 +926,23 @@ class _SettingsViewState extends State<SettingsView> {
                                 SettingButton(
                                   padding: EdgeInsets.only(left: 8),
                                   icon: SizedBox(),
-                                  text: translation[currentLanguage]
-                                      ["username"],
+                                  text: translation[currentLanguage]["username"],
                                   showArrow: false,
                                   rightText: myDisplayName,
-                                  onTap: () {},
                                 ),
                                 SettingButton(
                                   padding: EdgeInsets.only(left: 8),
                                   icon: SizedBox(),
                                   text: translation[currentLanguage]["email"],
                                   showArrow: false,
-                                  rightText: FirebaseAuth
-                                          .instance.currentUser?.email ??
-                                      "",
-                                  onTap: () {},
+                                  rightText: FirebaseAuth.instance.currentUser?.email ?? "",
                                 ),
                                 SettingButton(
                                   padding: EdgeInsets.only(left: 8),
                                   icon: SizedBox(),
-                                  text: translation[currentLanguage]
-                                      ["resetpassword"],
+                                  text: translation[currentLanguage]["resetpassword"],
                                   onTap: () {
-                                    push(
-                                      context,
-                                      PasswordResetView(
-                                        textType: "2",
-                                      ),
-                                    );
+                                    push(context, PasswordResetView(textType: "2"));
                                   },
                                 ),
                                 SettingButton(
@@ -1004,13 +953,11 @@ class _SettingsViewState extends State<SettingsView> {
                                     showCustomDialog(
                                       context,
                                       translation[currentLanguage]["signout"],
-                                      translation[currentLanguage]
-                                          ["signouttext"],
+                                      translation[currentLanguage]["signouttext"],
                                       [
                                         TextButton(
                                           child: Text(
-                                            translation[currentLanguage]
-                                                ["signout"],
+                                            translation[currentLanguage]["signout"],
                                             style: getFont("mainfont")(
                                               fontSize: 14,
                                               color: getColor("secondarytext"),
@@ -1033,8 +980,7 @@ class _SettingsViewState extends State<SettingsView> {
                                 SettingButton(
                                   padding: EdgeInsets.only(left: 8),
                                   icon: SizedBox(),
-                                  text: translation[currentLanguage]
-                                      ["deleteaccount"],
+                                  text: translation[currentLanguage]["deleteaccount"],
                                   onTap: () {
                                     push(context, DeleteAccountView());
                                   },
@@ -1069,17 +1015,12 @@ class _SettingsViewState extends State<SettingsView> {
                                             ),
                                             text:
                                                 '${signedinDevices["currentDevice"]["phonename"]} - ${signedinDevices["currentDevice"]["platform"]}',
-                                            secondaryText:
-                                                translation[currentLanguage]
-                                                    ["thisdevice"],
+                                            secondaryText: translation[currentLanguage]["thisdevice"],
                                             showArrow: false,
                                           ),
-                                          for (final device in signedinDevices[
-                                                  "otherDevices"] ??
-                                              [])
+                                          for (final device in signedinDevices["otherDevices"] ?? [])
                                             Builder(builder: (context) {
-                                              if (device["forcelogout"] ??
-                                                  false) {
+                                              if (device["forcelogout"] ?? false) {
                                                 return const SizedBox();
                                               }
                                               return SettingButton(
@@ -1087,30 +1028,18 @@ class _SettingsViewState extends State<SettingsView> {
                                                   "assets/phone.png",
                                                   width: 22,
                                                   height: 22,
-                                                  color:
-                                                      getColor("secondarytext"),
+                                                  color: getColor("secondarytext"),
                                                 ),
-                                                text:
-                                                    '${device["phonename"]} - ${device["platform"]}',
+                                                text: '${device["phonename"]} - ${device["platform"]}',
                                                 secondaryText:
                                                     '${translation[currentLanguage]["lastseen"]} ${timestampToDate(device["lastlogin"])}\n${device["location"]}',
                                                 showArrow: false,
                                               );
                                             }),
                                           Builder(builder: (context) {
-                                            bool devicesAlreadyLoggedOut =
-                                                false;
-                                            for (int i = 0;
-                                                i <
-                                                    (signedinDevices[
-                                                                "otherDevices"] ??
-                                                            [])
-                                                        .length;
-                                                i++) {
-                                              if (signedinDevices[
-                                                          "otherDevices"][i]
-                                                      ["forcelogout"] ??
-                                                  false) {
+                                            bool devicesAlreadyLoggedOut = false;
+                                            for (int i = 0; i < (signedinDevices["otherDevices"] ?? []).length; i++) {
+                                              if (signedinDevices["otherDevices"][i]["forcelogout"] ?? false) {
                                                 devicesAlreadyLoggedOut = true;
                                                 break;
                                               }
@@ -1121,35 +1050,23 @@ class _SettingsViewState extends State<SettingsView> {
                                             return SettingButton(
                                               icon: Icon(
                                                 Icons.logout,
-                                                color:
-                                                    getColor("secondarytext"),
+                                                color: getColor("secondarytext"),
                                                 size: 22,
                                               ),
-                                              text: translation[currentLanguage]
-                                                  ["signoutdevices"],
-                                              padding: EdgeInsets.only(
-                                                left: 10,
-                                                right: 8,
-                                              ),
+                                              text: translation[currentLanguage]["signoutdevices"],
+                                              padding: EdgeInsets.only(left: 10, right: 8),
                                               onTap: () {
                                                 showCustomDialog(
                                                   context,
-                                                  translation[currentLanguage]
-                                                      ["signoutdevices"],
-                                                  translation[currentLanguage]
-                                                      ["signoutdevicestext"],
+                                                  translation[currentLanguage]["signoutdevices"],
+                                                  translation[currentLanguage]["signoutdevicestext"],
                                                   [
                                                     TextButton(
                                                       child: Text(
-                                                        translation[
-                                                                currentLanguage]
-                                                            ["signout"],
-                                                        style:
-                                                            getFont("mainfont")(
+                                                        translation[currentLanguage]["signout"],
+                                                        style: getFont("mainfont")(
                                                           fontSize: 14,
-                                                          color: getColor(
-                                                            "secondarytext",
-                                                          ),
+                                                          color: getColor("secondarytext"),
                                                         ),
                                                       ),
                                                       onPressed: () {
@@ -1168,11 +1085,7 @@ class _SettingsViewState extends State<SettingsView> {
                               ],
                             ),
                             Padding(
-                              padding: const EdgeInsets.only(
-                                left: 8,
-                                right: 8,
-                                top: 4,
-                              ),
+                              padding: const EdgeInsets.only(left: 8, right: 8, top: 4),
                               child: Text(
                                 translation[currentLanguage]["appsettings"],
                                 style: getFont("mainfont")(
@@ -1189,17 +1102,10 @@ class _SettingsViewState extends State<SettingsView> {
                                 height: 20,
                                 color: getColor("secondarytext"),
                               ),
-                              text: translation[currentLanguage]
-                                  ["changelanguage"],
-                              rightText: translation[currentLanguage]
-                                  ["languagename"],
+                              text: translation[currentLanguage]["changelanguage"],
+                              rightText: translation[currentLanguage]["languagename"],
                               onTap: () {
-                                push(
-                                  context,
-                                  const SelectLanguageView(
-                                    shouldPop: true,
-                                  ),
-                                );
+                                push(context, const SelectLanguageView(shouldPop: true));
                               },
                             ),
                             SettingButton(
@@ -1212,12 +1118,7 @@ class _SettingsViewState extends State<SettingsView> {
                               text: translation[currentLanguage]["changetheme"],
                               rightText: currentTheme?["name"] ?? "",
                               onTap: () {
-                                push(
-                                  context,
-                                  const SelectThemeView(
-                                    shouldPop: true,
-                                  ),
-                                );
+                                push(context, const SelectThemeView(shouldPop: true));
                               },
                             ),
                           ],
@@ -1320,17 +1221,9 @@ class _SettingButtonState extends State<SettingButton> {
         }
       });
     }
-    openableWidgetStates[widget.openableWidgetId] ??= {
-      "state": false,
-      "progress": 0
-    };
-    double progressModifier = 0.05 *
-        (openableWidgetStates[widget.openableWidgetId]?["state"] ?? false
-            ? 1
-            : -1);
-    openableWidgetStates[widget.openableWidgetId]["progress"] =
-        (openableWidgetStates[widget.openableWidgetId]["progress"] ?? 0) +
-            progressModifier;
+    openableWidgetStates[widget.openableWidgetId] ??= {"state": false, "progress": 0};
+    double progressModifier = 0.05 * (openableWidgetStates[widget.openableWidgetId]?["state"] ?? false ? 1 : -1);
+    openableWidgetStates[widget.openableWidgetId]["progress"] = (openableWidgetStates[widget.openableWidgetId]["progress"] ?? 0) + progressModifier;
     if (openableWidgetStates[widget.openableWidgetId]["progress"] >= 1) {
       openableWidgetStates[widget.openableWidgetId]["progress"] = 1;
     } else if (openableWidgetStates[widget.openableWidgetId]["progress"] <= 0) {
@@ -1345,10 +1238,7 @@ class _SettingButtonState extends State<SettingButton> {
           onPressed: widget.onTap != null && !widget.isOpenable
               ? widget.onTap as void Function()
               : () {
-                  openableWidgetStates[widget.openableWidgetId]["state"] =
-                      !(openableWidgetStates[widget.openableWidgetId]
-                              ["state"] ??
-                          false);
+                  openableWidgetStates[widget.openableWidgetId]["state"] = !(openableWidgetStates[widget.openableWidgetId]["state"] ?? false);
                 },
           style: const ButtonStyle(
             splashFactory: NoSplash.splashFactory,
@@ -1395,9 +1285,7 @@ class _SettingButtonState extends State<SettingButton> {
                   }),
                 ],
               ),
-              SizedBox(
-                width: 40,
-              ),
+              SizedBox(width: 40),
               Expanded(
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
@@ -1421,9 +1309,7 @@ class _SettingButtonState extends State<SettingButton> {
                           return const SizedBox();
                         }
                         return RotationTransition(
-                          turns: widget.isOpenable
-                              ? AlwaysStoppedAnimation(90 * progress / 360)
-                              : const AlwaysStoppedAnimation(0),
+                          turns: widget.isOpenable ? AlwaysStoppedAnimation(90 * progress / 360) : const AlwaysStoppedAnimation(0),
                           child: RotatedBox(
                             quarterTurns: 2,
                             child: Icon(
@@ -1511,9 +1397,7 @@ class _NotificationBubbleState extends State<NotificationBubble> {
           height: widget.size ?? 13,
           alignment: Alignment.center,
           child: Text(
-            widget.amount.toString().length > 2
-                ? "99+"
-                : widget.amount.toString(),
+            widget.amount.toString().length > 2 ? "99+" : widget.amount.toString(),
             textAlign: TextAlign.center,
             style: getFont("mainfont")(
               color: getColor("secondarytext"),

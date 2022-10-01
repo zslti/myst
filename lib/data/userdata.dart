@@ -80,10 +80,8 @@ Future<List> getMessages(String user) async {
 }
 
 Future<String> getDisplayName(String email) async {
-  CollectionReference users = FirebaseFirestore.instance.collection('users');
-  QuerySnapshot querySnapshot = await users.get();
+  QuerySnapshot querySnapshot = await FirebaseFirestore.instance.collection('users').where("email", isEqualTo: email).get();
   List allData = querySnapshot.docs.map((doc) => doc.data()).toList();
-  allData.removeWhere((element) => element['email'] != email);
   if (allData.isEmpty) {
     return "";
   }
@@ -93,7 +91,10 @@ Future<String> getDisplayName(String email) async {
 Future<List> getUsersNamed(String name) async {
   QuerySnapshot querySnapshot = await FirebaseFirestore.instance
       .collection('users')
-      .where('username', isEqualTo: name)
+      .where(
+        'username',
+        isEqualTo: name,
+      )
       .get();
   List data = querySnapshot.docs.map((doc) => doc.data()).toList();
 
@@ -101,8 +102,7 @@ Future<List> getUsersNamed(String name) async {
 }
 
 Future<void> sendFriendRequest(String to) async {
-  if (to == FirebaseAuth.instance.currentUser?.email ||
-      FirebaseAuth.instance.currentUser?.email == null) {
+  if (to == FirebaseAuth.instance.currentUser?.email || FirebaseAuth.instance.currentUser?.email == null) {
     return;
   }
   List friends = await getFriends(
@@ -116,8 +116,7 @@ Future<void> sendFriendRequest(String to) async {
   if (friends.contains(to)) {
     return;
   }
-  CollectionReference friendRequests =
-      FirebaseFirestore.instance.collection('friendrequests');
+  CollectionReference friendRequests = FirebaseFirestore.instance.collection('friendrequests');
   await friendRequests.add({
     'sender': FirebaseAuth.instance.currentUser?.email,
     'receiver': to,
@@ -127,7 +126,10 @@ Future<void> sendFriendRequest(String to) async {
 Future<List> getFriendRequests() async {
   QuerySnapshot querySnapshot = await FirebaseFirestore.instance
       .collection('friendrequests')
-      .where("receiver", isEqualTo: FirebaseAuth.instance.currentUser?.email)
+      .where(
+        "receiver",
+        isEqualTo: FirebaseAuth.instance.currentUser?.email,
+      )
       .get();
   return querySnapshot.docs.map((doc) => doc.data()).toList();
 }
@@ -135,7 +137,10 @@ Future<List> getFriendRequests() async {
 Future<List> getSentFriendRequests() async {
   QuerySnapshot querySnapshot = await FirebaseFirestore.instance
       .collection('friendrequests')
-      .where("sender", isEqualTo: FirebaseAuth.instance.currentUser?.email)
+      .where(
+        "sender",
+        isEqualTo: FirebaseAuth.instance.currentUser?.email,
+      )
       .get();
 
   return querySnapshot.docs.map((doc) => doc.data()).toList();
@@ -153,13 +158,15 @@ Future<void> acceptFriendRequest(Map request) async {
 
   QuerySnapshot querySnapshot2 = await FirebaseFirestore.instance
       .collection('friends')
-      .where("user", isEqualTo: FirebaseAuth.instance.currentUser?.email)
+      .where(
+        "user",
+        isEqualTo: FirebaseAuth.instance.currentUser?.email,
+      )
       .get();
   List friends = querySnapshot2.docs.map((doc) => doc.data()).toList();
 
   if (friends.isEmpty) {
-    CollectionReference friends =
-        FirebaseFirestore.instance.collection('friends');
+    CollectionReference friends = FirebaseFirestore.instance.collection('friends');
     await friends.add({
       'user': FirebaseAuth.instance.currentUser?.email,
       'friends': [request['sender']],
@@ -168,7 +175,10 @@ Future<void> acceptFriendRequest(Map request) async {
     friends[0]['friends'].add(request['sender']);
     QuerySnapshot querySnapshot3 = await FirebaseFirestore.instance
         .collection('friends')
-        .where("user", isEqualTo: FirebaseAuth.instance.currentUser?.email)
+        .where(
+          "user",
+          isEqualTo: FirebaseAuth.instance.currentUser?.email,
+        )
         .get();
     querySnapshot3.docs[0].reference.update(friends[0]);
   }
@@ -182,15 +192,11 @@ Future<void> acceptFriendRequest(Map request) async {
     doc.reference.delete();
   }
 
-  QuerySnapshot querySnapshot2_ = await FirebaseFirestore.instance
-      .collection('friends')
-      .where("user", isEqualTo: request['sender'])
-      .get();
+  QuerySnapshot querySnapshot2_ = await FirebaseFirestore.instance.collection('friends').where("user", isEqualTo: request['sender']).get();
   List friends_ = querySnapshot2_.docs.map((doc) => doc.data()).toList();
 
   if (friends_.isEmpty) {
-    CollectionReference friends_ =
-        FirebaseFirestore.instance.collection('friends');
+    CollectionReference friends_ = FirebaseFirestore.instance.collection('friends');
     await friends_.add({
       'user': request['sender'],
       'friends': [request['receiver']],
@@ -199,7 +205,10 @@ Future<void> acceptFriendRequest(Map request) async {
     friends_[0]['friends'].add(request['receiver']);
     QuerySnapshot querySnapshot3 = await FirebaseFirestore.instance
         .collection('friends')
-        .where("user", isEqualTo: request['sender'])
+        .where(
+          "user",
+          isEqualTo: request['sender'],
+        )
         .get();
     querySnapshot3.docs[0].reference.update(friends_[0]);
   }
@@ -217,10 +226,7 @@ Future<void> rejectFriendRequest(Map request) async {
 }
 
 Future<List> getFriends(String email) async {
-  QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-      .collection('friends')
-      .where("user", isEqualTo: email)
-      .get();
+  QuerySnapshot querySnapshot = await FirebaseFirestore.instance.collection('friends').where("user", isEqualTo: email).get();
   List friends = querySnapshot.docs.map((doc) => doc.data()).toList();
   if (friends.isEmpty) {
     return [];
@@ -233,7 +239,6 @@ Future<void> setMessageRead(String user, String message, int timestamp) async {
   QuerySnapshot querySnapshot = await FirebaseFirestore.instance
       .collection('messages')
       .where("timestamp", isEqualTo: timestamp)
-      //.where("users", isEqualTo: "{{${FirebaseAuth.instance.currentUser?.email}}, {$user}}")
       .where("message", isEqualTo: encryptText(message))
       .get();
   for (var doc in querySnapshot.docs) {
@@ -250,8 +255,7 @@ Future<int> getUnreadMessages() async {
     List messages = await getMessages(conversation);
     messages.sort((a, b) => a['timestamp'].compareTo(b['timestamp']));
     if (messages.isNotEmpty) {
-      if (messages.last['sender'] != FirebaseAuth.instance.currentUser?.email &&
-          !(messages.last['read'] ?? false)) {
+      if (messages.last['sender'] != FirebaseAuth.instance.currentUser?.email && !(messages.last['read'] ?? false)) {
         unread++;
       }
     }
@@ -266,13 +270,13 @@ Future<void> updateStatus() async {
   }
   QuerySnapshot querySnapshot = await FirebaseFirestore.instance
       .collection('users')
-      .where("email", isEqualTo: FirebaseAuth.instance.currentUser?.email)
+      .where(
+        "email",
+        isEqualTo: FirebaseAuth.instance.currentUser?.email,
+      )
       .get();
   for (var doc in querySnapshot.docs) {
-    if (FirebaseAuth.instance.currentUser?.email != null &&
-        doc.data().toString().contains(
-              FirebaseAuth.instance.currentUser?.email ?? "",
-            )) {
+    if (FirebaseAuth.instance.currentUser?.email != null && doc.data().toString().contains(FirebaseAuth.instance.currentUser?.email ?? "")) {
       doc.reference.update({
         'status': {
           "state": status,
@@ -287,13 +291,14 @@ Future<String> getStatus(String email) async {
   try {
     Map? status = await FirebaseFirestore.instance
         .collection('users')
-        .where("email", isEqualTo: email)
+        .where(
+          "email",
+          isEqualTo: email,
+        )
         .get()
         .then((value) => value.docs[0].data()['status']);
 
-    if (status == null ||
-        DateTime.now().millisecondsSinceEpoch - status['last_changed'] >
-            10000) {
+    if (status == null || DateTime.now().millisecondsSinceEpoch - status['last_changed'] > 10000) {
       return "offline";
     }
     return status['state'] ?? "offline";
@@ -302,8 +307,7 @@ Future<String> getStatus(String email) async {
   }
 }
 
-Future<void> updatePicture(ImageSource source,
-    {String folder = "profiles"}) async {
+Future<void> updatePicture(ImageSource source, {String folder = "profiles"}) async {
   XFile? image = await ImagePicker().pickImage(source: source);
   if (image == null) {
     return;
@@ -354,15 +358,9 @@ Future<void> changeUsername(String email, String name) async {
   if (name.isEmpty) {
     return;
   }
-  QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-      .collection('users')
-      .where("email", isEqualTo: email)
-      .get();
+  QuerySnapshot querySnapshot = await FirebaseFirestore.instance.collection('users').where("email", isEqualTo: email).get();
   for (var doc in querySnapshot.docs) {
-    if (FirebaseAuth.instance.currentUser?.email != null &&
-        doc.data().toString().contains(
-              FirebaseAuth.instance.currentUser?.email ?? "",
-            )) {
+    if (FirebaseAuth.instance.currentUser?.email != null && doc.data().toString().contains(FirebaseAuth.instance.currentUser?.email ?? "")) {
       doc.reference.update({
         'username': name,
       });
@@ -377,12 +375,13 @@ Future<void> deleteAccount(User? user) async {
   String email = user.email ?? "";
   QuerySnapshot querySnapshot = await FirebaseFirestore.instance
       .collection('users')
-      .where("email", isEqualTo: email)
+      .where(
+        "email",
+        isEqualTo: email,
+      )
       .get();
   for (var doc in querySnapshot.docs) {
-    if (doc.data().toString().contains(
-          email,
-        )) {
+    if (doc.data().toString().contains(email)) {
       doc.reference.delete();
     }
   }
@@ -415,19 +414,11 @@ Future<bool> updateSignedinDevices() async {
   String phoneID = "Unknown";
   try {
     if (Platform.isAndroid) {
-      phoneName = await DeviceInfoPlugin().androidInfo.then(
-            (value) => value.model ?? "Unknown",
-          );
-      phoneID = await DeviceInfoPlugin().androidInfo.then(
-            (value) => value.id ?? "Unknown",
-          );
+      phoneName = await DeviceInfoPlugin().androidInfo.then((value) => value.model ?? "Unknown");
+      phoneID = await DeviceInfoPlugin().androidInfo.then((value) => value.id ?? "Unknown");
     } else if (Platform.isIOS) {
-      phoneName = await DeviceInfoPlugin().iosInfo.then(
-            (value) => value.model ?? "Unknown",
-          );
-      phoneID = await DeviceInfoPlugin().iosInfo.then(
-            (value) => value.identifierForVendor ?? "Unknown",
-          );
+      phoneName = await DeviceInfoPlugin().iosInfo.then((value) => value.model ?? "Unknown");
+      phoneID = await DeviceInfoPlugin().iosInfo.then((value) => value.identifierForVendor ?? "Unknown");
     }
   } catch (e) {
     phoneName = "Unknown";
@@ -441,24 +432,24 @@ Future<bool> updateSignedinDevices() async {
 
   QuerySnapshot querySnapshot = await FirebaseFirestore.instance
       .collection('users')
-      .where("email", isEqualTo: FirebaseAuth.instance.currentUser?.email)
+      .where(
+        "email",
+        isEqualTo: FirebaseAuth.instance.currentUser?.email,
+      )
       .get();
   dynamic deviceData = querySnapshot.docs.map((doc) => doc.data()).toList()[0];
   List currentDevices = deviceData["signedindevices"] ?? [];
 
   try {
-    String response =
-        (await http.get(Uri.parse("http://ip-api.com/json"))).body;
+    String response = (await http.get(Uri.parse("http://ip-api.com/json"))).body;
     dynamic data = json.decode(response);
-    details["location"] =
-        "${data['city']}, ${data['regionName']}, ${data['country']}";
+    details["location"] = "${data['city']}, ${data['regionName']}, ${data['country']}";
   } catch (e) {
     details["location"] = "Unknown location";
   }
   bool forceLogout = false;
   for (int i = 0; i < currentDevices.length; i++) {
-    if (currentDevices[i]["phoneID"] == phoneID &&
-        currentDevices[i]["phonename"] == phoneName) {
+    if (currentDevices[i]["phoneID"] == phoneID && currentDevices[i]["phonename"] == phoneName) {
       if (currentDevices[i]["forcelogout"] ?? false) {
         forceLogout = true;
       }
@@ -467,10 +458,7 @@ Future<bool> updateSignedinDevices() async {
   }
   currentDevices.add(details);
   for (var doc in querySnapshot.docs) {
-    if (FirebaseAuth.instance.currentUser?.email != null &&
-        doc.data().toString().contains(
-              FirebaseAuth.instance.currentUser?.email ?? "",
-            )) {
+    if (FirebaseAuth.instance.currentUser?.email != null && doc.data().toString().contains(FirebaseAuth.instance.currentUser?.email ?? "")) {
       doc.reference.update({
         'signedindevices': currentDevices,
       });
@@ -483,8 +471,7 @@ Map signedinDevices = {};
 int lastDeviceRequest = 0;
 
 Future<Map> getSignedinDevices() async {
-  if (FirebaseAuth.instance.currentUser == null ||
-      DateTime.now().millisecondsSinceEpoch - lastDeviceRequest < 1000) {
+  if (FirebaseAuth.instance.currentUser == null || DateTime.now().millisecondsSinceEpoch - lastDeviceRequest < 1000) {
     return signedinDevices;
   }
   String platform = "Unknown";
@@ -497,19 +484,11 @@ Future<Map> getSignedinDevices() async {
   String phoneID = "Unknown";
   try {
     if (Platform.isAndroid) {
-      phoneName = await DeviceInfoPlugin().androidInfo.then(
-            (value) => value.model ?? "Unknown",
-          );
-      phoneID = await DeviceInfoPlugin().androidInfo.then(
-            (value) => value.id ?? "Unknown",
-          );
+      phoneName = await DeviceInfoPlugin().androidInfo.then((value) => value.model ?? "Unknown");
+      phoneID = await DeviceInfoPlugin().androidInfo.then((value) => value.id ?? "Unknown");
     } else if (Platform.isIOS) {
-      phoneName = await DeviceInfoPlugin().iosInfo.then(
-            (value) => value.model ?? "Unknown",
-          );
-      phoneID = await DeviceInfoPlugin().iosInfo.then(
-            (value) => value.identifierForVendor ?? "Unknown",
-          );
+      phoneName = await DeviceInfoPlugin().iosInfo.then((value) => value.model ?? "Unknown");
+      phoneID = await DeviceInfoPlugin().iosInfo.then((value) => value.identifierForVendor ?? "Unknown");
     }
   } catch (e) {
     phoneName = "Unknown";
@@ -517,13 +496,15 @@ Future<Map> getSignedinDevices() async {
 
   QuerySnapshot querySnapshot = await FirebaseFirestore.instance
       .collection('users')
-      .where("email", isEqualTo: FirebaseAuth.instance.currentUser?.email)
+      .where(
+        "email",
+        isEqualTo: FirebaseAuth.instance.currentUser?.email,
+      )
       .get();
   dynamic deviceData = querySnapshot.docs.map((doc) => doc.data()).toList()[0];
   List currentDevices = deviceData["signedindevices"] ?? [];
   for (int i = 0; i < currentDevices.length; i++) {
-    if (currentDevices[i]["phoneID"] == phoneID &&
-        currentDevices[i]["phonename"] == phoneName) {
+    if (currentDevices[i]["phoneID"] == phoneID && currentDevices[i]["phonename"] == phoneName) {
       currentDevices.remove(currentDevices[i]);
     }
   }
@@ -546,19 +527,11 @@ Future<void> deleteCurrentDevice() async {
   String phoneID = "Unknown";
   try {
     if (Platform.isAndroid) {
-      phoneName = await DeviceInfoPlugin().androidInfo.then(
-            (value) => value.model ?? "Unknown",
-          );
-      phoneID = await DeviceInfoPlugin().androidInfo.then(
-            (value) => value.id ?? "Unknown",
-          );
+      phoneName = await DeviceInfoPlugin().androidInfo.then((value) => value.model ?? "Unknown");
+      phoneID = await DeviceInfoPlugin().androidInfo.then((value) => value.id ?? "Unknown");
     } else if (Platform.isIOS) {
-      phoneName = await DeviceInfoPlugin().iosInfo.then(
-            (value) => value.model ?? "Unknown",
-          );
-      phoneID = await DeviceInfoPlugin().iosInfo.then(
-            (value) => value.identifierForVendor ?? "Unknown",
-          );
+      phoneName = await DeviceInfoPlugin().iosInfo.then((value) => value.model ?? "Unknown");
+      phoneID = await DeviceInfoPlugin().iosInfo.then((value) => value.identifierForVendor ?? "Unknown");
     }
   } catch (e) {
     phoneName = "Unknown";
@@ -566,21 +539,20 @@ Future<void> deleteCurrentDevice() async {
 
   QuerySnapshot querySnapshot = await FirebaseFirestore.instance
       .collection('users')
-      .where("email", isEqualTo: FirebaseAuth.instance.currentUser?.email)
+      .where(
+        "email",
+        isEqualTo: FirebaseAuth.instance.currentUser?.email,
+      )
       .get();
   dynamic deviceData = querySnapshot.docs.map((doc) => doc.data()).toList()[0];
   List currentDevices = deviceData["signedindevices"] ?? [];
   for (int i = 0; i < currentDevices.length; i++) {
-    if (currentDevices[i]["phoneID"] == phoneID &&
-        currentDevices[i]["phonename"] == phoneName) {
+    if (currentDevices[i]["phoneID"] == phoneID && currentDevices[i]["phonename"] == phoneName) {
       currentDevices.remove(currentDevices[i]);
     }
   }
   for (var doc in querySnapshot.docs) {
-    if (FirebaseAuth.instance.currentUser?.email != null &&
-        doc.data().toString().contains(
-              FirebaseAuth.instance.currentUser?.email ?? "",
-            )) {
+    if (FirebaseAuth.instance.currentUser?.email != null && doc.data().toString().contains(FirebaseAuth.instance.currentUser?.email ?? "")) {
       doc.reference.update({
         'signedindevices': currentDevices,
       });
@@ -596,40 +568,31 @@ Future<void> logoutAllDevices() async {
   String phoneID = "Unknown";
   try {
     if (Platform.isAndroid) {
-      phoneName = await DeviceInfoPlugin().androidInfo.then(
-            (value) => value.model ?? "Unknown",
-          );
-      phoneID = await DeviceInfoPlugin().androidInfo.then(
-            (value) => value.id ?? "Unknown",
-          );
+      phoneName = await DeviceInfoPlugin().androidInfo.then((value) => value.model ?? "Unknown");
+      phoneID = await DeviceInfoPlugin().androidInfo.then((value) => value.id ?? "Unknown");
     } else if (Platform.isIOS) {
-      phoneName = await DeviceInfoPlugin().iosInfo.then(
-            (value) => value.model ?? "Unknown",
-          );
-      phoneID = await DeviceInfoPlugin().iosInfo.then(
-            (value) => value.identifierForVendor ?? "Unknown",
-          );
+      phoneName = await DeviceInfoPlugin().iosInfo.then((value) => value.model ?? "Unknown");
+      phoneID = await DeviceInfoPlugin().iosInfo.then((value) => value.identifierForVendor ?? "Unknown");
     }
   } catch (e) {
     phoneName = "Unknown";
   }
   QuerySnapshot querySnapshot = await FirebaseFirestore.instance
       .collection('users')
-      .where("email", isEqualTo: FirebaseAuth.instance.currentUser?.email)
+      .where(
+        "email",
+        isEqualTo: FirebaseAuth.instance.currentUser?.email,
+      )
       .get();
   dynamic deviceData = querySnapshot.docs.map((doc) => doc.data()).toList()[0];
   List currentDevices = deviceData["signedindevices"] ?? [];
   for (int i = 0; i < currentDevices.length; i++) {
-    if (currentDevices[i]["phoneID"] != phoneID ||
-        currentDevices[i]["phonename"] != phoneName) {
+    if (currentDevices[i]["phoneID"] != phoneID || currentDevices[i]["phonename"] != phoneName) {
       currentDevices[i]["forcelogout"] = true;
     }
   }
   for (var doc in querySnapshot.docs) {
-    if (FirebaseAuth.instance.currentUser?.email != null &&
-        doc.data().toString().contains(
-              FirebaseAuth.instance.currentUser?.email ?? "",
-            )) {
+    if (FirebaseAuth.instance.currentUser?.email != null && doc.data().toString().contains(FirebaseAuth.instance.currentUser?.email ?? "")) {
       doc.reference.update({
         'signedindevices': currentDevices,
       });
@@ -640,16 +603,39 @@ Future<void> logoutAllDevices() async {
 Future<void> removeFriend(String email) async {
   QuerySnapshot querySnapshot = await FirebaseFirestore.instance
       .collection('friends')
-      .where("user", isEqualTo: FirebaseAuth.instance.currentUser?.email)
+      .where(
+        "user",
+        isEqualTo: FirebaseAuth.instance.currentUser?.email,
+      )
       .get();
   for (var doc in querySnapshot.docs) {
-    if (FirebaseAuth.instance.currentUser?.email != null &&
-        doc.data().toString().contains(
-              FirebaseAuth.instance.currentUser?.email ?? "",
-            )) {
+    if (FirebaseAuth.instance.currentUser?.email != null && doc.data().toString().contains(FirebaseAuth.instance.currentUser?.email ?? "")) {
       doc.reference.update({
         'friends': FieldValue.arrayRemove([email]),
       });
     }
   }
+}
+
+Future<void> setCustomStatus(String status) async {
+  QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+      .collection('users')
+      .where(
+        "email",
+        isEqualTo: FirebaseAuth.instance.currentUser?.email,
+      )
+      .get();
+  for (var doc in querySnapshot.docs) {
+    if (FirebaseAuth.instance.currentUser?.email != null && doc.data().toString().contains(FirebaseAuth.instance.currentUser?.email ?? "")) {
+      doc.reference.update({
+        'customstatus': status,
+      });
+    }
+  }
+}
+
+Future<String> getCustomStatus(String email) async {
+  QuerySnapshot querySnapshot = await FirebaseFirestore.instance.collection('users').where("email", isEqualTo: email).get();
+  List allData = querySnapshot.docs.map((doc) => doc.data()).toList();
+  return allData[0]["customstatus"] ?? "";
 }

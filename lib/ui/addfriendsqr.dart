@@ -15,8 +15,7 @@ import 'loading.dart';
 import 'mainscreen.dart';
 
 int unreadMessages = 0;
-DraggableScrollableController scrollController =
-    DraggableScrollableController();
+DraggableScrollableController scrollController = DraggableScrollableController();
 double scrollSize = 0;
 bool isScrolling = false;
 
@@ -49,9 +48,7 @@ class _AddFriendsQRState extends State<AddFriendsQR> {
     });
     if (scrollController.isAttached) {
       scrollSize = scrollController.size;
-      if (scrollController.size < 0.3 &&
-          scrollController.size > 0.01 &&
-          !isScrolling) {
+      if (scrollController.size < 0.3 && scrollController.size > 0.01 && !isScrolling) {
         scrollController.animateTo(
           0,
           duration: const Duration(milliseconds: 275),
@@ -68,11 +65,7 @@ class _AddFriendsQRState extends State<AddFriendsQR> {
             child: Column(
               children: [
                 Padding(
-                  padding: const EdgeInsets.only(
-                    top: 90,
-                    left: 16,
-                    right: 16,
-                  ),
+                  padding: const EdgeInsets.only(top: 90, left: 16, right: 16),
                   child: GestureDetector(
                     onTap: (() {
                       scrollController.animateTo(
@@ -91,10 +84,7 @@ class _AddFriendsQRState extends State<AddFriendsQR> {
                             color: Colors.black.withOpacity(0.45),
                             spreadRadius: 5,
                             blurRadius: 7,
-                            offset: const Offset(
-                              0,
-                              3,
-                            ),
+                            offset: const Offset(0, 3),
                           ),
                         ],
                       ),
@@ -120,16 +110,13 @@ class _AddFriendsQRState extends State<AddFriendsQR> {
                                 ),
                               ),
                             ),
-                            const SizedBox(
-                              height: 18,
-                            ),
+                            const SizedBox(height: 18),
                             Center(
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(10),
                                 child: QrImage(
                                   data: encryptText(
-                                    FirebaseAuth.instance.currentUser?.email ??
-                                        "",
+                                    FirebaseAuth.instance.currentUser?.email ?? "",
                                   ),
                                   version: QrVersions.auto,
                                   size: 275.0,
@@ -138,9 +125,7 @@ class _AddFriendsQRState extends State<AddFriendsQR> {
                                 ),
                               ),
                             ),
-                            const SizedBox(
-                              height: 24,
-                            ),
+                            const SizedBox(height: 24),
                             GestureDetector(
                               onTap: () {
                                 push(context, const ScanQRView());
@@ -152,9 +137,7 @@ class _AddFriendsQRState extends State<AddFriendsQR> {
                                     color: getColor("secondarytext"),
                                     size: 26,
                                   ),
-                                  const SizedBox(
-                                    width: 8,
-                                  ),
+                                  const SizedBox(width: 8),
                                   Text(
                                     translation[currentLanguage]["scanqr"],
                                     style: getFont("mainfont")(
@@ -170,9 +153,7 @@ class _AddFriendsQRState extends State<AddFriendsQR> {
                     ),
                   ),
                 ),
-                const SizedBox(
-                  height: 100,
-                ),
+                const SizedBox(height: 100),
               ],
             ),
           ),
@@ -187,10 +168,7 @@ class _AddFriendsQRState extends State<AddFriendsQR> {
                 color: Colors.black.withOpacity(0.25),
                 spreadRadius: 5,
                 blurRadius: 7,
-                offset: const Offset(
-                  0,
-                  3,
-                ),
+                offset: const Offset(0, 3),
               ),
             ],
           ),
@@ -240,10 +218,7 @@ class _AddFriendsQRState extends State<AddFriendsQR> {
                   color: Colors.black.withOpacity(0.25),
                   spreadRadius: 5,
                   blurRadius: 7,
-                  offset: const Offset(
-                    0,
-                    -3,
-                  ),
+                  offset: const Offset(0, -3),
                 ),
               ],
             ),
@@ -317,9 +292,6 @@ class _AddFriendsQRState extends State<AddFriendsQR> {
                       splashFactory: NoSplash.splashFactory,
                     ),
                     onPressed: () {
-                      //if (selectedIndex == 2) return;
-                      //selectedIndex = 2;
-                      //push(context, const MainView());
                       bottomSheetData = {};
                       scrollController.animateTo(
                         0.5,

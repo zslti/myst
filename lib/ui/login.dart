@@ -103,14 +103,14 @@ class _LoginViewState extends State<LoginView> {
                     child: ClipPath(
                       clipper: CustomClipPath(
                         interpolateBetween(
-                                (pos[i] * 1000).round(),
-                                0,
-                                0,
-                                (nextPos[i] * 1000).round(),
-                                0,
-                                0,
-                                Curves.ease
-                                    .transform(min(curveProgress, 1)))[0] /
+                              (pos[i] * 1000).round(),
+                              0,
+                              0,
+                              (nextPos[i] * 1000).round(),
+                              0,
+                              0,
+                              Curves.ease.transform(min(curveProgress, 1)),
+                            )[0] /
                             1000,
                       ),
                       child: Builder(
@@ -122,8 +122,7 @@ class _LoginViewState extends State<LoginView> {
                             opacity: 0.1,
                             child: Container(
                               width: 1000,
-                              height:
-                                  MediaQuery.of(context).size.height / (4 + i),
+                              height: MediaQuery.of(context).size.height / (4 + i),
                               color: getColor("curves"),
                             ),
                           );
@@ -134,16 +133,12 @@ class _LoginViewState extends State<LoginView> {
                 ),
               ListView(
                 children: [
-                  SizedBox(
-                    height: MediaQuery.of(context).size.height / 16,
-                  ),
+                  SizedBox(height: MediaQuery.of(context).size.height / 16),
                   const AnimatedLogo(
                     sizeMul: 1.1,
                     stopAfterFirstCycle: true,
                   ),
-                  const SizedBox(
-                    height: 20,
-                  ),
+                  const SizedBox(height: 20),
                   Center(
                     child: Text(
                       translation[currentLanguage]["login"],
@@ -178,12 +173,7 @@ class _LoginViewState extends State<LoginView> {
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.only(
-                      left: 12,
-                      right: 12,
-                      top: 8,
-                      bottom: 6,
-                    ),
+                    padding: const EdgeInsets.only(left: 12, right: 12, top: 8, bottom: 6),
                     child: ClipRRect(
                       borderRadius: const BorderRadius.all(Radius.circular(5)),
                       child: Stack(
@@ -198,8 +188,7 @@ class _LoginViewState extends State<LoginView> {
                             decoration: InputDecoration(
                               fillColor: getColor("inputbackground"),
                               filled: true,
-                              hintText: translation[currentLanguage]
-                                  ["password"],
+                              hintText: translation[currentLanguage]["password"],
                               hintStyle: getFont("mainfont")(
                                 color: getColor("secondarytext"),
                               ),
@@ -247,8 +236,7 @@ class _LoginViewState extends State<LoginView> {
                                 activeColor: getColor("secondarytext"),
                                 checkColor: getColor("background"),
                                 value: rememberMe,
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(3)),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
                                 onChanged: (value) {
                                   setState(() {
                                     rememberMe = value ?? false;
@@ -280,8 +268,7 @@ class _LoginViewState extends State<LoginView> {
                       borderRadius: const BorderRadius.all(Radius.circular(5)),
                       child: TextButton(
                         onPressed: () async {
-                          if (emailController.text.isEmpty ||
-                              passwordController.text.isEmpty) {
+                          if (emailController.text.isEmpty || passwordController.text.isEmpty) {
                             displayError("emptyerror");
                             return;
                           }
@@ -292,18 +279,14 @@ class _LoginViewState extends State<LoginView> {
                             return;
                           }
                           try {
-                            await FirebaseAuth.instance
-                                .signInWithEmailAndPassword(
+                            await FirebaseAuth.instance.signInWithEmailAndPassword(
                               email: emailController.text,
                               password: passwordController.text,
                             );
                             if (rememberMe) {
                               prefs?.setString(
                                 "user",
-                                jsonEncode([
-                                  emailController.text,
-                                  passwordController.text
-                                ]),
+                                jsonEncode([emailController.text, passwordController.text]),
                               );
                             } else {
                               prefs?.setString("user", "");
@@ -372,15 +355,13 @@ class _LoginViewState extends State<LoginView> {
                               opacity: errorVisible ? 0 : 1,
                               child: RichText(
                                 text: TextSpan(
-                                  text: translation[currentLanguage]
-                                      ["noaccount"],
+                                  text: translation[currentLanguage]["noaccount"],
                                   style: getFont("mainfont")(
                                     color: getColor("secondarytext"),
                                   ),
                                   children: [
                                     TextSpan(
-                                      text: translation[currentLanguage]
-                                          ["createnew"],
+                                      text: translation[currentLanguage]["createnew"],
                                       style: getFont("mainfont")(
                                         color: getColor("maintext"),
                                       ),
@@ -395,9 +376,7 @@ class _LoginViewState extends State<LoginView> {
                               ),
                             ),
                           ),
-                          const SizedBox(
-                            height: 5,
-                          ),
+                          const SizedBox(height: 5),
                           Center(
                             child: AnimatedOpacity(
                               duration: const Duration(milliseconds: 150),
@@ -407,8 +386,7 @@ class _LoginViewState extends State<LoginView> {
                                   push(context, const PasswordResetView());
                                 },
                                 child: Text(
-                                  translation[currentLanguage]
-                                      ["forgotpassword"],
+                                  translation[currentLanguage]["forgotpassword"],
                                   style: getFont("mainfont")(
                                     color: getColor("maintext"),
                                   ),
@@ -420,9 +398,7 @@ class _LoginViewState extends State<LoginView> {
                       )
                     ],
                   ),
-                  const SizedBox(
-                    height: 200,
-                  ),
+                  const SizedBox(height: 200),
                 ],
               ),
             ],

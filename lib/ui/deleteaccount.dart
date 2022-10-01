@@ -96,14 +96,14 @@ class _DeleteAccountViewState extends State<DeleteAccountView> {
                     child: ClipPath(
                       clipper: CustomClipPath(
                         interpolateBetween(
-                                (pos[i] * 1000).round(),
-                                0,
-                                0,
-                                (nextPos[i] * 1000).round(),
-                                0,
-                                0,
-                                Curves.ease
-                                    .transform(min(curveProgress, 1)))[0] /
+                              (pos[i] * 1000).round(),
+                              0,
+                              0,
+                              (nextPos[i] * 1000).round(),
+                              0,
+                              0,
+                              Curves.ease.transform(min(curveProgress, 1)),
+                            )[0] /
                             1000,
                       ),
                       child: Builder(
@@ -115,8 +115,7 @@ class _DeleteAccountViewState extends State<DeleteAccountView> {
                             opacity: 0.1,
                             child: Container(
                               width: 1000,
-                              height:
-                                  MediaQuery.of(context).size.height / (4 + i),
+                              height: MediaQuery.of(context).size.height / (4 + i),
                               color: getColor("curves"),
                             ),
                           );
@@ -127,16 +126,12 @@ class _DeleteAccountViewState extends State<DeleteAccountView> {
                 ),
               ListView(
                 children: [
-                  SizedBox(
-                    height: MediaQuery.of(context).size.height / 16,
-                  ),
+                  SizedBox(height: MediaQuery.of(context).size.height / 16),
                   const AnimatedLogo(
                     sizeMul: 1.1,
                     stopAfterFirstCycle: true,
                   ),
-                  const SizedBox(
-                    height: 20,
-                  ),
+                  const SizedBox(height: 20),
                   Center(
                     child: Text(
                       translation[currentLanguage]["deleteaccount"],
@@ -186,8 +181,7 @@ class _DeleteAccountViewState extends State<DeleteAccountView> {
                             decoration: InputDecoration(
                               fillColor: getColor("inputbackground"),
                               filled: true,
-                              hintText: translation[currentLanguage]
-                                  ["password"],
+                              hintText: translation[currentLanguage]["password"],
                               hintStyle: getFont("mainfont")(
                                 color: getColor("secondarytext"),
                               ),
@@ -223,8 +217,7 @@ class _DeleteAccountViewState extends State<DeleteAccountView> {
                     padding: const EdgeInsets.only(left: 12, right: 12, top: 4),
                     child: TextButton(
                       onPressed: () async {
-                        if (emailController.text.isEmpty ||
-                            passwordController.text.isEmpty) {
+                        if (emailController.text.isEmpty || passwordController.text.isEmpty) {
                           displayError("emptyerror");
                           return;
                         }
@@ -238,11 +231,8 @@ class _DeleteAccountViewState extends State<DeleteAccountView> {
                           clicked = true;
                         });
                         try {
-                          String email =
-                              FirebaseAuth.instance.currentUser?.email ?? "";
-                          UserCredential? result = await FirebaseAuth
-                              .instance.currentUser
-                              ?.reauthenticateWithCredential(
+                          String email = FirebaseAuth.instance.currentUser?.email ?? "";
+                          UserCredential? result = await FirebaseAuth.instance.currentUser?.reauthenticateWithCredential(
                             EmailAuthProvider.credential(
                               email: emailController.text,
                               password: passwordController.text,
@@ -257,8 +247,7 @@ class _DeleteAccountViewState extends State<DeleteAccountView> {
                               [
                                 TextButton(
                                   child: Text(
-                                    translation[currentLanguage]
-                                        ["deleteaccount"],
+                                    translation[currentLanguage]["deleteaccount"],
                                     style: getFont("mainfont")(
                                       fontSize: 14,
                                       color: getColor("secondarytext"),

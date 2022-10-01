@@ -18,8 +18,7 @@ TextEditingController nameController = TextEditingController();
 List users = [];
 List friends = [];
 int unreadMessages = 0;
-DraggableScrollableController scrollController =
-    DraggableScrollableController();
+DraggableScrollableController scrollController = DraggableScrollableController();
 double scrollSize = 0;
 bool isScrolling = false;
 
@@ -57,9 +56,7 @@ class _AddFriendsViewState extends State<AddFriendsView> {
   Widget build(BuildContext context) {
     if (scrollController.isAttached) {
       scrollSize = scrollController.size;
-      if (scrollController.size < 0.3 &&
-          scrollController.size > 0.01 &&
-          !isScrolling) {
+      if (scrollController.size < 0.3 && scrollController.size > 0.01 && !isScrolling) {
         scrollController.animateTo(
           0,
           duration: const Duration(milliseconds: 275),
@@ -75,18 +72,11 @@ class _AddFriendsViewState extends State<AddFriendsView> {
         body: Stack(
           children: [
             Padding(
-              padding: const EdgeInsets.only(
-                top: 90,
-                left: 16,
-                right: 16,
-                bottom: 50,
-              ),
+              padding: const EdgeInsets.only(top: 90, left: 16, right: 16, bottom: 50),
               child: Stack(
                 children: [
                   ClipRRect(
-                    borderRadius: const BorderRadius.all(
-                      Radius.circular(5),
-                    ),
+                    borderRadius: const BorderRadius.all(Radius.circular(5)),
                     child: Container(
                       height: 35,
                       alignment: Alignment.center,
@@ -95,10 +85,7 @@ class _AddFriendsViewState extends State<AddFriendsView> {
                           users = await getUsersNamed(str);
                           getProfilePictures();
                           users.removeWhere(
-                            (element) =>
-                                element["email"] ==
-                                (FirebaseAuth.instance.currentUser?.email ??
-                                    ""),
+                            (element) => element["email"] == (FirebaseAuth.instance.currentUser?.email ?? ""),
                           );
                           setState(() {});
                         },
@@ -164,9 +151,7 @@ class _AddFriendsViewState extends State<AddFriendsView> {
                                     color: getColor("secondarytext"),
                                     size: 26,
                                   ),
-                                  const SizedBox(
-                                    width: 8,
-                                  ),
+                                  const SizedBox(width: 8),
                                   Text(
                                     translation[currentLanguage]["addfriendqr"],
                                     style: getFont("mainfont")(
@@ -193,13 +178,11 @@ class _AddFriendsViewState extends State<AddFriendsView> {
                                     };
                                     scrollController.animateTo(
                                       0.5,
-                                      duration:
-                                          const Duration(milliseconds: 275),
+                                      duration: const Duration(milliseconds: 275),
                                       curve: Curves.ease,
                                     );
                                     isScrolling = true;
-                                    Timer(const Duration(milliseconds: 275),
-                                        () {
+                                    Timer(const Duration(milliseconds: 275), () {
                                       isScrolling = false;
                                     });
                                   },
@@ -230,25 +213,19 @@ class _AddFriendsViewState extends State<AddFriendsView> {
                                         ),
                                       ),
                                       Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.end,
+                                        mainAxisAlignment: MainAxisAlignment.end,
                                         children: [
                                           GestureDetector(
                                             onTap: () {
                                               if (!friends.contains(
                                                 user["email"],
                                               )) {
-                                                sendFriendRequest(
-                                                    user["email"]);
+                                                sendFriendRequest(user["email"]);
                                               }
                                             },
                                             child: Padding(
-                                              padding: const EdgeInsets.only(
-                                                left: 8,
-                                                right: 8,
-                                              ),
-                                              child: friends
-                                                      .contains(user["email"])
+                                              padding: const EdgeInsets.only(left: 8, right: 8),
+                                              child: friends.contains(user["email"])
                                                   ? Image.asset(
                                                       "assets/friendadded.png",
                                                       width: 20,
@@ -258,8 +235,7 @@ class _AddFriendsViewState extends State<AddFriendsView> {
                                                       ),
                                                     )
                                                   : Icon(
-                                                      Icons
-                                                          .person_add_alt_1_outlined,
+                                                      Icons.person_add_alt_1_outlined,
                                                       color: getColor(
                                                         "secondarytext",
                                                       ),
@@ -269,17 +245,12 @@ class _AddFriendsViewState extends State<AddFriendsView> {
                                           ),
                                           GestureDetector(
                                             onTap: () {
-                                              user["displayname"] =
-                                                  user["username"];
+                                              user["displayname"] = user["username"];
                                               conversations.add(user);
                                               currentConversation = user;
-                                              Timer(
-                                                const Duration(
-                                                    milliseconds: 500),
-                                                () {
-                                                  slideToCenter();
-                                                },
-                                              );
+                                              Timer(const Duration(milliseconds: 500), () {
+                                                slideToCenter();
+                                              });
                                               selectedIndex = 0;
                                               pushReplacement(
                                                 context,
@@ -316,10 +287,7 @@ class _AddFriendsViewState extends State<AddFriendsView> {
                     color: Colors.black.withOpacity(0.25),
                     spreadRadius: 5,
                     blurRadius: 7,
-                    offset: const Offset(
-                      0,
-                      3,
-                    ),
+                    offset: const Offset(0, 3),
                   ),
                 ],
               ),
@@ -446,9 +414,6 @@ class _AddFriendsViewState extends State<AddFriendsView> {
                           splashFactory: NoSplash.splashFactory,
                         ),
                         onPressed: () {
-                          //if (selectedIndex == 2) return;
-                          //selectedIndex = 2;
-                          //push(context, const MainView());
                           bottomSheetData = {};
                           scrollController.animateTo(
                             0.5,

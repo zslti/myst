@@ -92,14 +92,14 @@ class _PasswordResetViewState extends State<PasswordResetView> {
                     child: ClipPath(
                       clipper: CustomClipPath(
                         interpolateBetween(
-                                (pos[i] * 1000).round(),
-                                0,
-                                0,
-                                (nextPos[i] * 1000).round(),
-                                0,
-                                0,
-                                Curves.ease
-                                    .transform(min(curveProgress, 1)))[0] /
+                              (pos[i] * 1000).round(),
+                              0,
+                              0,
+                              (nextPos[i] * 1000).round(),
+                              0,
+                              0,
+                              Curves.ease.transform(min(curveProgress, 1)),
+                            )[0] /
                             1000,
                       ),
                       child: Builder(
@@ -111,8 +111,7 @@ class _PasswordResetViewState extends State<PasswordResetView> {
                             opacity: 0.1,
                             child: Container(
                               width: 1000,
-                              height:
-                                  MediaQuery.of(context).size.height / (4 + i),
+                              height: MediaQuery.of(context).size.height / (4 + i),
                               color: getColor("curves"),
                             ),
                           );
@@ -123,16 +122,12 @@ class _PasswordResetViewState extends State<PasswordResetView> {
                 ),
               ListView(
                 children: [
-                  SizedBox(
-                    height: MediaQuery.of(context).size.height / 16,
-                  ),
+                  SizedBox(height: MediaQuery.of(context).size.height / 16),
                   const AnimatedLogo(
                     sizeMul: 1.1,
                     stopAfterFirstCycle: true,
                   ),
-                  const SizedBox(
-                    height: 20,
-                  ),
+                  const SizedBox(height: 20),
                   Center(
                     child: Text(
                       translation[currentLanguage]["resetpassword"],
@@ -221,15 +216,9 @@ class _PasswordResetViewState extends State<PasswordResetView> {
                         duration: const Duration(milliseconds: 150),
                         opacity: !errorVisible && clicked ? 1 : 0,
                         child: Padding(
-                          padding: const EdgeInsets.only(
-                            top: 4,
-                            bottom: 4,
-                            left: 13,
-                            right: 13,
-                          ),
+                          padding: const EdgeInsets.only(top: 4, bottom: 4, left: 13, right: 13),
                           child: Text(
-                            translation[currentLanguage]
-                                ["resetpasswordtext${widget.textType}"],
+                            translation[currentLanguage]["resetpasswordtext${widget.textType}"],
                             style: getFont("mainfont")(
                               color: getColor("secondarytext"),
                               fontSize: 14,

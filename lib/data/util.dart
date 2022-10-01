@@ -1,8 +1,12 @@
+// ignore_for_file: depend_on_referenced_packages
+
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
 import 'package:encrypt/encrypt.dart' as encrypt;
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 
 import '../main.dart';
@@ -10,8 +14,7 @@ import '../ui/mainscreen.dart';
 import 'theme.dart';
 import 'translation.dart';
 
-List<double> interpolateBetween(
-    int r1, int g1, int b1, int r2, int g2, int b2, double progress) {
+List<double> interpolateBetween(int r1, int g1, int b1, int r2, int g2, int b2, double progress) {
   double r, g, b;
   progress = min(progress, 1);
   r = r1 + (r2 - r1) * progress;
@@ -145,8 +148,7 @@ class OverlappingPanels extends StatefulWidget {
   }
 }
 
-class OverlappingPanelsState extends State<OverlappingPanels>
-    with TickerProviderStateMixin {
+class OverlappingPanelsState extends State<OverlappingPanels> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
@@ -175,18 +177,14 @@ class OverlappingPanelsState extends State<OverlappingPanels>
       if (status == AnimationStatus.completed) {
         if (widget.onSideChange != null) {
           widget.onSideChange!(
-            translate == 0
-                ? RevealSide.main
-                : (translate > 0 ? RevealSide.left : RevealSide.right),
+            translate == 0 ? RevealSide.main : (translate > 0 ? RevealSide.left : RevealSide.right),
           );
         }
         animationController.dispose();
       }
     });
 
-    final currentSide = translate == 0
-        ? RevealSide.main
-        : (translate > 0 ? RevealSide.left : RevealSide.right);
+    final currentSide = translate == 0 ? RevealSide.main : (translate > 0 ? RevealSide.left : RevealSide.right);
     bool currentlyOnMain = currentSide == swipeDirection;
     final divider = currentlyOnMain ? 16 : 1.2;
     isSliding = currentlyOnMain;
@@ -257,8 +255,7 @@ class OverlappingPanelsState extends State<OverlappingPanels>
   void onTranslate(double delta, {bool shouldApplyTransition = false}) {
     setState(() {
       final translate = this.translate + delta;
-      if (translate < 0 && widget.right != null ||
-          translate > 0 && widget.left != null) {
+      if (translate < 0 && widget.right != null || translate > 0 && widget.left != null) {
         this.translate = translate;
       }
       if (shouldApplyTransition) {
@@ -390,9 +387,7 @@ String timestampToDate(int timestamp, {bool showOnlyDate = false}) {
   if (date.day == now.day && date.month == now.month && date.year == now.year) {
     return "${translation[currentLanguage]['todayat']} ${hourMinuteFormat(date.hour, date.minute)}${translation[currentLanguage]['todayat2']}";
   }
-  if (date.day == now.day - 1 &&
-      date.month == now.month &&
-      date.year == now.year) {
+  if (date.day == now.day - 1 && date.month == now.month && date.year == now.year) {
     return "${translation[currentLanguage]['yesterdayat']} ${hourMinuteFormat(date.hour, date.minute)}${translation[currentLanguage]['yesterdayat2']}";
   }
 
@@ -437,9 +432,7 @@ class _ProfileImageState extends State<ProfileImage> {
     if (widget.url == "empty") {
       return Container();
     }
-    if (widget.url.isEmpty ||
-        widget.url.contains(" ") ||
-        !widget.url.contains("https://")) {
+    if (widget.url.isEmpty || widget.url.contains(" ") || !widget.url.contains("https://")) {
       if (widget.type == "profile") {
         return Image(
           image: downloadedImages["default"],
@@ -471,8 +464,7 @@ class _ProfileImageState extends State<ProfileImage> {
         aspectRatio: 1,
         child: Image(
           fit: BoxFit.cover,
-          errorBuilder:
-              (BuildContext context, Object exception, StackTrace? stackTrace) {
+          errorBuilder: (BuildContext context, Object exception, StackTrace? stackTrace) {
             return Image(
               image: downloadedImages["default"],
             );
@@ -484,8 +476,7 @@ class _ProfileImageState extends State<ProfileImage> {
       return Image(
         fit: BoxFit.fitWidth,
         width: double.infinity,
-        errorBuilder:
-            (BuildContext context, Object exception, StackTrace? stackTrace) {
+        errorBuilder: (BuildContext context, Object exception, StackTrace? stackTrace) {
           return Image(
             image: downloadedImages["default"],
           );
@@ -509,12 +500,8 @@ Future<bool> hasNetwork() async {
 }
 
 extension StringCasingExtension on String {
-  String toCapitalized() =>
-      length > 0 ? '${this[0].toUpperCase()}${substring(1).toLowerCase()}' : '';
-  String toTitleCase() => replaceAll(RegExp(' +'), ' ')
-      .split(' ')
-      .map((str) => str.toCapitalized())
-      .join(' ');
+  String toCapitalized() => length > 0 ? '${this[0].toUpperCase()}${substring(1).toLowerCase()}' : '';
+  String toTitleCase() => replaceAll(RegExp(' +'), ' ').split(' ').map((str) => str.toCapitalized()).join(' ');
 }
 
 void showCustomDialog(
@@ -545,7 +532,10 @@ void showCustomDialog(
         backgroundColor: getColor("background"),
         title: Text(
           title,
-          style: getFont("mainfont")(fontSize: 20, color: getColor("maintext")),
+          style: getFont("mainfont")(
+            fontSize: 20,
+            color: getColor("maintext"),
+          ),
         ),
         content: Text(
           content,
@@ -558,4 +548,12 @@ void showCustomDialog(
       );
     },
   );
+}
+
+Future<List<String>> getRandomQuote() async {
+  String response = (await http.get(Uri.parse("https://zenquotes.io/api/random"))).body;
+  if (jsonDecode(response)[0]["q"].contains("Too many requests")) {
+    return ["", ""];
+  }
+  return [jsonDecode(response)[0]["q"], jsonDecode(response)[0]["a"]];
 }

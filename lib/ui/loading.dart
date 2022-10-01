@@ -101,9 +101,7 @@ class AnimatedLogoState extends State<AnimatedLogo> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        SizedBox(
-          width: 10 * sizeMul,
-        ),
+        SizedBox(width: 10 * sizeMul),
         Stack(
           children: [
             Padding(
@@ -216,9 +214,7 @@ class _LoadingViewState extends State<LoadingView> {
     return Scaffold(
       backgroundColor: getColor("background"),
       body: const Center(
-        child: AnimatedLogo(
-          sizeMul: 1.1,
-        ),
+        child: AnimatedLogo(sizeMul: 1.1),
       ),
     );
   }

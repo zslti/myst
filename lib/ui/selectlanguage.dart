@@ -30,8 +30,7 @@ int clang = 0;
 bool alreadySet = false, textVisible = true;
 
 class SelectLanguageView extends StatefulWidget {
-  const SelectLanguageView({Key? key, this.shouldPop = false})
-      : super(key: key);
+  const SelectLanguageView({Key? key, this.shouldPop = false}) : super(key: key);
   final bool shouldPop;
   @override
   State<SelectLanguageView> createState() => _SelectLanguageViewState();
@@ -94,14 +93,14 @@ class _SelectLanguageViewState extends State<SelectLanguageView> {
                     child: ClipPath(
                       clipper: CustomClipPath(
                         interpolateBetween(
-                                (pos[i] * 1000).round(),
-                                0,
-                                0,
-                                (nextPos[i] * 1000).round(),
-                                0,
-                                0,
-                                Curves.ease
-                                    .transform(min(curveProgress, 1)))[0] /
+                              (pos[i] * 1000).round(),
+                              0,
+                              0,
+                              (nextPos[i] * 1000).round(),
+                              0,
+                              0,
+                              Curves.ease.transform(min(curveProgress, 1)),
+                            )[0] /
                             1000,
                       ),
                       child: Builder(
@@ -113,8 +112,7 @@ class _SelectLanguageViewState extends State<SelectLanguageView> {
                             opacity: 0.1,
                             child: Container(
                               width: 1000,
-                              height:
-                                  MediaQuery.of(context).size.height / (4 + i),
+                              height: MediaQuery.of(context).size.height / (4 + i),
                               color: getColor("curves"),
                             ),
                           );
@@ -125,16 +123,12 @@ class _SelectLanguageViewState extends State<SelectLanguageView> {
                 ),
               ListView(
                 children: [
-                  SizedBox(
-                    height: MediaQuery.of(context).size.height / 16,
-                  ),
+                  SizedBox(height: MediaQuery.of(context).size.height / 16),
                   const AnimatedLogo(
                     sizeMul: 1.1,
                     stopAfterFirstCycle: true,
                   ),
-                  const SizedBox(
-                    height: 20,
-                  ),
+                  const SizedBox(height: 20),
                   Center(
                     child: Builder(builder: (context) {
                       return AnimatedOpacity(
@@ -170,16 +164,11 @@ class _SelectLanguageViewState extends State<SelectLanguageView> {
                                 if (widget.shouldPop) {
                                   Navigator.pop(context);
                                 } else {
-                                  pushReplacement(
-                                    context,
-                                    const SelectThemeView(),
-                                  );
+                                  pushReplacement(context, const SelectThemeView());
                                 }
                               },
                               style: TextButton.styleFrom(
-                                backgroundColor: getColor(
-                                  "inputbackground",
-                                ),
+                                backgroundColor: getColor("inputbackground"),
                               ),
                               child: Row(
                                 children: [

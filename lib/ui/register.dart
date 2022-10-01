@@ -101,14 +101,14 @@ class _RegisterViewState extends State<RegisterView> {
                     child: ClipPath(
                       clipper: CustomClipPath(
                         interpolateBetween(
-                                (pos[i] * 1000).round(),
-                                0,
-                                0,
-                                (nextPos[i] * 1000).round(),
-                                0,
-                                0,
-                                Curves.ease
-                                    .transform(min(curveProgress, 1)))[0] /
+                              (pos[i] * 1000).round(),
+                              0,
+                              0,
+                              (nextPos[i] * 1000).round(),
+                              0,
+                              0,
+                              Curves.ease.transform(min(curveProgress, 1)),
+                            )[0] /
                             1000,
                       ),
                       child: Builder(
@@ -120,8 +120,7 @@ class _RegisterViewState extends State<RegisterView> {
                             opacity: 0.1,
                             child: Container(
                               width: 1000,
-                              height:
-                                  MediaQuery.of(context).size.height / (4 + i),
+                              height: MediaQuery.of(context).size.height / (4 + i),
                               color: getColor("curves"),
                             ),
                           );
@@ -132,16 +131,12 @@ class _RegisterViewState extends State<RegisterView> {
                 ),
               ListView(
                 children: [
-                  SizedBox(
-                    height: MediaQuery.of(context).size.height / 16,
-                  ),
+                  SizedBox(height: MediaQuery.of(context).size.height / 16),
                   const AnimatedLogo(
                     sizeMul: 1.1,
                     stopAfterFirstCycle: true,
                   ),
-                  const SizedBox(
-                    height: 20,
-                  ),
+                  const SizedBox(height: 20),
                   Center(
                     child: Text(
                       translation[currentLanguage]["register"],
@@ -153,12 +148,7 @@ class _RegisterViewState extends State<RegisterView> {
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.only(
-                      top: 18,
-                      bottom: 4,
-                      left: 13,
-                      right: 13,
-                    ),
+                    padding: const EdgeInsets.only(top: 18, bottom: 4, left: 13, right: 13),
                     child: Text(
                       translation[currentLanguage]["usernametext"],
                       style: getFont("mainfont")(
@@ -229,8 +219,7 @@ class _RegisterViewState extends State<RegisterView> {
                             decoration: InputDecoration(
                               fillColor: getColor("inputbackground"),
                               filled: true,
-                              hintText: translation[currentLanguage]
-                                  ["password"],
+                              hintText: translation[currentLanguage]["password"],
                               hintStyle: getFont("mainfont")(
                                 color: getColor("secondarytext"),
                               ),
@@ -239,16 +228,13 @@ class _RegisterViewState extends State<RegisterView> {
                           ),
                           Column(
                             children: [
-                              const SizedBox(
-                                height: 45,
-                              ),
+                              const SizedBox(height: 45),
                               FlutterPasswordStrength(
                                 password: passwordController.text,
                                 backgroundColor: getColor("passwordstrength"),
-                                strengthColors: RainbowColorTween([
-                                  getColor("passwordgradientstart"),
-                                  getColor("passwordgradientend")
-                                ]),
+                                strengthColors: RainbowColorTween(
+                                  [getColor("passwordgradientstart"), getColor("passwordgradientend")],
+                                ),
                               ),
                             ],
                           ),
@@ -293,8 +279,7 @@ class _RegisterViewState extends State<RegisterView> {
                             decoration: InputDecoration(
                               fillColor: getColor("inputbackground"),
                               filled: true,
-                              hintText: translation[currentLanguage]
-                                  ["confirmpassword"],
+                              hintText: translation[currentLanguage]["confirmpassword"],
                               hintStyle: getFont("mainfont")(
                                 color: getColor("secondarytext"),
                               ),
@@ -343,8 +328,7 @@ class _RegisterViewState extends State<RegisterView> {
                             displayError("shortpassworderror");
                             return;
                           }
-                          if (passwordController.text !=
-                              password2Controller.text) {
+                          if (passwordController.text != password2Controller.text) {
                             displayError("passwordmismatcherror");
                             return;
                           }
@@ -355,16 +339,14 @@ class _RegisterViewState extends State<RegisterView> {
                             return;
                           }
                           try {
-                            await FirebaseAuth.instance
-                                .createUserWithEmailAndPassword(
+                            await FirebaseAuth.instance.createUserWithEmailAndPassword(
                               email: emailController.text,
                               password: passwordController.text,
                             );
-                            CollectionReference users =
-                                FirebaseFirestore.instance.collection('users');
+                            CollectionReference users = FirebaseFirestore.instance.collection('users');
                             users.add({
                               'username': nameController.text,
-                              'email': emailController.text
+                              'email': emailController.text,
                             });
 
                             // ignore: use_build_context_synchronously
@@ -411,15 +393,13 @@ class _RegisterViewState extends State<RegisterView> {
                               opacity: errorVisible ? 0 : 1,
                               child: RichText(
                                 text: TextSpan(
-                                  text: translation[currentLanguage]
-                                      ["alreadyregistered"],
+                                  text: translation[currentLanguage]["alreadyregistered"],
                                   style: getFont("mainfont")(
                                     color: getColor("secondarytext"),
                                   ),
                                   children: [
                                     TextSpan(
-                                      text: translation[currentLanguage]
-                                          ["signin"],
+                                      text: translation[currentLanguage]["signin"],
                                       style: getFont("mainfont")(
                                         color: getColor("maintext"),
                                       ),
@@ -438,9 +418,7 @@ class _RegisterViewState extends State<RegisterView> {
                       )
                     ],
                   ),
-                  const SizedBox(
-                    height: 200,
-                  )
+                  const SizedBox(height: 200)
                 ],
               ),
             ],
