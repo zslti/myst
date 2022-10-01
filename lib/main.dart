@@ -118,6 +118,8 @@ class _MyAppState extends State<MyApp> {
     //TODO: delete conversation
     //TODO: when deleting account delete all conversations
     //TODO: calls
+    //TODO: custom themes
+    //TODO: games
 
     //TODO: change push animation
     final themeData = prefs?.getString("theme") ?? "";

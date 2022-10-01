@@ -106,6 +106,10 @@ Map translation = {
     "signoutdevices": "Sign out from other devices",
     "signoutdevicestext":
         "Are you sure you want to sign out from all other devices?",
+    "sendmessage": "Send message",
+    "sendfriendrequest": "Send friend request",
+    "removefriend": "Remove friend",
+    "friendrequestsent": "Friend request sent",
   },
   "hu": {
     "countrycode": "hu",
@@ -215,5 +219,9 @@ Map translation = {
     "signoutdevices": "Kijelentkezés az összes eszközről",
     "signoutdevicestext":
         "Biztosan ki szeretnél jelentkezni az összes eszközről?",
+    "sendmessage": "Üzenet küldése",
+    "sendfriendrequest": "Barátkérelem küldése",
+    "removefriend": "Barát eltávolítása",
+    "friendrequestsent": "Barátkérelem elküldve",
   }
 };

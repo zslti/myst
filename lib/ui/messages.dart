@@ -76,6 +76,8 @@ class _MessageState extends State<Message> {
               "email": widget.message["sender"],
               "displayname": displayNames[widget.message["sender"]],
               "image": profilePictures[widget.message["sender"]],
+              "currentpage": "main",
+              "needslide": false,
             };
             scrollController.animateTo(
               0.5,
@@ -115,6 +117,8 @@ class _MessageState extends State<Message> {
                       "email": widget.message["sender"],
                       "displayname": displayNames[widget.message["sender"]],
                       "image": profilePictures[widget.message["sender"]],
+                      "currentpage": "main",
+                      "needslide": false,
                     };
                     scrollController.animateTo(
                       0.5,
@@ -721,7 +725,9 @@ class _MessagesViewState extends State<MessagesView> {
                             connectionIndicatorProgress += 0.025;
                             WidgetsBinding.instance.addPostFrameCallback((_) {
                               Timer(const Duration(milliseconds: 10), () {
-                                setState(() {});
+                                if (mounted) {
+                                  setState(() {});
+                                }
                               });
                             });
                           } else {

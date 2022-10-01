@@ -636,3 +636,20 @@ Future<void> logoutAllDevices() async {
     }
   }
 }
+
+Future<void> removeFriend(String email) async {
+  QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+      .collection('friends')
+      .where("user", isEqualTo: FirebaseAuth.instance.currentUser?.email)
+      .get();
+  for (var doc in querySnapshot.docs) {
+    if (FirebaseAuth.instance.currentUser?.email != null &&
+        doc.data().toString().contains(
+              FirebaseAuth.instance.currentUser?.email ?? "",
+            )) {
+      doc.reference.update({
+        'friends': FieldValue.arrayRemove([email]),
+      });
+    }
+  }
+}

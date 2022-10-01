@@ -332,6 +332,7 @@ class _MainViewState extends State<MainView> {
 bool isEditingUsername = false;
 TextEditingController usernameController = TextEditingController();
 Map bottomSheetData = {};
+int bottomSheetFriendType = 0;
 
 class SettingsView extends StatefulWidget {
   const SettingsView({
@@ -351,13 +352,30 @@ class _SettingsViewState extends State<SettingsView> {
     );
   }
 
+  Future<void> getBottomSheetFriendType() async {
+    if (bottomSheetData.isEmpty) return;
+    List f = await getFriends(
+      FirebaseAuth.instance.currentUser?.email ?? "",
+    );
+    if (f.contains(bottomSheetData["email"])) {
+      bottomSheetFriendType = 1;
+      return;
+    }
+    List requests = await getSentFriendRequests();
+    if (requests.toString().contains(bottomSheetData["email"])) {
+      bottomSheetFriendType = 2;
+      return;
+    }
+    bottomSheetFriendType = 0;
+  }
+
   @override
   Widget build(BuildContext context) {
     bool isProfile = bottomSheetData["email"] != null;
     getBanner(isProfile
         ? bottomSheetData["email"]
         : FirebaseAuth.instance.currentUser?.email ?? "");
-
+    getBottomSheetFriendType();
     return Padding(
       padding: const EdgeInsets.only(top: 35),
       child: Container(
@@ -695,7 +713,8 @@ class _SettingsViewState extends State<SettingsView> {
                                                     Icons.edit,
                                                     size: 20,
                                                     color: getColor(
-                                                        "secondarytext"),
+                                                      "secondarytext",
+                                                    ),
                                                   ),
                                                 ),
                                               );
@@ -713,7 +732,198 @@ class _SettingsViewState extends State<SettingsView> {
                       ),
                       Builder(builder: (context) {
                         if (isProfile) {
-                          return const SizedBox();
+                          return Builder(builder: (context) {
+                            if (bottomSheetData["email"] ==
+                                FirebaseAuth.instance.currentUser?.email) {
+                              return const SizedBox();
+                            }
+                            return Row(
+                              children: [
+                                Expanded(
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      currentConversation = {
+                                        "email": bottomSheetData["email"],
+                                        "displayname":
+                                            bottomSheetData["displayname"],
+                                        "status": bottomSheetProfileStatus,
+                                      };
+                                      selectedIndex = 0;
+                                      if (scrollController.isAttached) {
+                                        scrollController.animateTo(
+                                          0,
+                                          duration:
+                                              const Duration(milliseconds: 275),
+                                          curve: Curves.ease,
+                                        );
+                                      }
+                                      if (scrollController2.isAttached) {
+                                        scrollController2.animateTo(
+                                          0,
+                                          duration:
+                                              const Duration(milliseconds: 275),
+                                          curve: Curves.ease,
+                                        );
+                                      }
+                                      if (!(bottomSheetData["needslide"] ??
+                                          true)) {
+                                        return;
+                                      }
+                                      Timer(
+                                        const Duration(milliseconds: 500),
+                                        () {
+                                          slideToCenter();
+                                        },
+                                      );
+                                      if ((bottomSheetData["currentpage"] ??
+                                              "") ==
+                                          "main") {
+                                        return;
+                                      }
+                                      pushReplacement(
+                                        context,
+                                        const MainView(),
+                                      );
+                                    },
+                                    child: Container(
+                                      width: double.infinity,
+                                      height: 70,
+                                      color: getColor("background3"),
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Icon(
+                                            Icons.messenger_outline,
+                                            color: getColor("secondarytext"),
+                                          ),
+                                          SizedBox(
+                                            height: 2,
+                                          ),
+                                          Text(
+                                            translation[currentLanguage]
+                                                ["sendmessage"],
+                                            style: getFont("mainfont")(
+                                              color: getColor("secondarytext"),
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Builder(builder: (context) {
+                                    if (bottomSheetFriendType == 0) {
+                                      return GestureDetector(
+                                        onTap: () {
+                                          sendFriendRequest(
+                                            bottomSheetData["email"],
+                                          );
+                                        },
+                                        child: Container(
+                                          width: double.infinity,
+                                          height: 70,
+                                          color: getColor("background3"),
+                                          child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Icon(
+                                                Icons.person_add_alt_1_outlined,
+                                                color:
+                                                    getColor("secondarytext"),
+                                              ),
+                                              SizedBox(
+                                                height: 2,
+                                              ),
+                                              Text(
+                                                translation[currentLanguage]
+                                                    ["sendfriendrequest"],
+                                                style: getFont("mainfont")(
+                                                  color:
+                                                      getColor("secondarytext"),
+                                                  fontSize: 12,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                    } else if (bottomSheetFriendType == 1) {
+                                      return GestureDetector(
+                                        onTap: () {
+                                          removeFriend(
+                                            bottomSheetData["email"],
+                                          );
+                                        },
+                                        child: Container(
+                                          width: double.infinity,
+                                          height: 70,
+                                          color: getColor("background3"),
+                                          child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Icon(
+                                                Icons
+                                                    .person_remove_alt_1_outlined,
+                                                color:
+                                                    getColor("secondarytext"),
+                                              ),
+                                              SizedBox(
+                                                height: 2,
+                                              ),
+                                              Text(
+                                                translation[currentLanguage]
+                                                    ["removefriend"],
+                                                style: getFont("mainfont")(
+                                                  color:
+                                                      getColor("secondarytext"),
+                                                  fontSize: 12,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                    return Container(
+                                      width: double.infinity,
+                                      height: 70,
+                                      color: getColor("background3"),
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Image.asset(
+                                            "assets/friendadded.png",
+                                            width: 20,
+                                            height: 20,
+                                            color: getColor(
+                                              "secondarytext",
+                                            ),
+                                          ),
+                                          SizedBox(
+                                            height: 2,
+                                          ),
+                                          Text(
+                                            translation[currentLanguage]
+                                                ["friendrequestsent"],
+                                            style: getFont("mainfont")(
+                                              color: getColor("secondarytext"),
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  }),
+                                ),
+                              ],
+                            );
+                          });
                         }
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,

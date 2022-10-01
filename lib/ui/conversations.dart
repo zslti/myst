@@ -192,6 +192,7 @@ class _ConversationsViewState extends State<ConversationsView> {
                                                                 conversation[
                                                                     "email"]] ??
                                                             "",
+                                                        "currentpage": "main",
                                                       };
                                                       scrollController
                                                           .animateTo(
