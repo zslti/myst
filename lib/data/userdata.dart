@@ -637,5 +637,8 @@ Future<void> setCustomStatus(String status) async {
 Future<String> getCustomStatus(String email) async {
   QuerySnapshot querySnapshot = await FirebaseFirestore.instance.collection('users').where("email", isEqualTo: email).get();
   List allData = querySnapshot.docs.map((doc) => doc.data()).toList();
+  if (allData.isEmpty) {
+    return "";
+  }
   return allData[0]["customstatus"] ?? "";
 }

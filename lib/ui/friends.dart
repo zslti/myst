@@ -395,6 +395,7 @@ class _FriendState extends State<Friend> {
           "displayname": displayNames[widget.friend],
           "image": profilePictures[widget.friend] ?? "",
         };
+        bottomSheetProfileCustomStatus = "";
         scrollController.animateTo(
           0.5,
           duration: const Duration(milliseconds: 275),
@@ -865,6 +866,7 @@ class _FriendRequestState extends State<FriendRequest> {
               ? profilePictures[widget.request['sender']] ?? ""
               : profilePictures[widget.request['receiver']] ?? "",
         };
+        bottomSheetProfileCustomStatus = "";
         scrollController2.animateTo(
           0.5,
           duration: const Duration(milliseconds: 275),

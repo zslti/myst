@@ -110,7 +110,6 @@ class _MyAppState extends State<MyApp> {
 
   Future<bool> initializeApp() async {
     prefs?.setString("theme", ""); //TODO: remove line when everything is done
-    //TODO: custom status in bottom card
     //TODO: every setting in bottom sheet in profile view
     //TODO: message actions like delete, copy, forward, reply
     //TODO: send image, video, audio, file, link(web, yt, fb..), location(if i can do it), emoji
@@ -119,6 +118,7 @@ class _MyAppState extends State<MyApp> {
     //TODO: when deleting account delete all conversations
     //TODO: calls
     //TODO: custom themes
+    //TODO: watch together
     //TODO: games
 
     //TODO: change push animation

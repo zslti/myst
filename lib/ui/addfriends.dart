@@ -176,6 +176,7 @@ class _AddFriendsViewState extends State<AddFriendsView> {
                                       "displayname": user["username"],
                                       "image": user["picture"],
                                     };
+                                    bottomSheetProfileCustomStatus = "";
                                     scrollController.animateTo(
                                       0.5,
                                       duration: const Duration(milliseconds: 275),

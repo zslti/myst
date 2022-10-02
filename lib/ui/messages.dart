@@ -31,6 +31,7 @@ bool done = false;
 bool built = false;
 bool readMessageShown = false;
 double connectionIndicatorProgress = 0;
+double sendTransition = 0;
 
 void startTransition() {
   if (transitionProgress != 0 || targetBarHeight > 134 || targetFieldHeight > 119) return;
@@ -71,6 +72,7 @@ class _MessageState extends State<Message> {
               "currentpage": "main",
               "needslide": false,
             };
+            bottomSheetProfileCustomStatus = "";
             scrollController.animateTo(
               0.5,
               duration: const Duration(milliseconds: 275),
@@ -110,6 +112,7 @@ class _MessageState extends State<Message> {
                       "currentpage": "main",
                       "needslide": false,
                     };
+                    bottomSheetProfileCustomStatus = "";
                     scrollController.animateTo(
                       0.5,
                       duration: const Duration(milliseconds: 275),
@@ -276,6 +279,7 @@ class _MessagesViewState extends State<MessagesView> {
         );
       }
     }
+
     if (currentConversation == null) {
       return Scaffold(
         backgroundColor: getColor("background2"),
@@ -546,6 +550,18 @@ class _MessagesViewState extends State<MessagesView> {
                                             maxLines: 5,
                                             //keyboardType: TextInputType.multiline,
                                             onChanged: (str) {
+                                              Timer.periodic(const Duration(milliseconds: 10), (timer) {
+                                                if (messageController.text.isEmpty) {
+                                                  sendTransition -= 0.075;
+                                                } else {
+                                                  sendTransition += 0.075;
+                                                }
+                                                double transition = sendTransition;
+                                                sendTransition = min(1, max(0, sendTransition));
+                                                if (transition != sendTransition) {
+                                                  timer.cancel();
+                                                }
+                                              });
                                               targetFieldHeight = max(
                                                 35,
                                                 14 +
@@ -596,33 +612,51 @@ class _MessagesViewState extends State<MessagesView> {
                                         ),
                                       ),
                                     ),
-                                    GestureDetector(
-                                      onTap: () {
-                                        if (messageController.text.isEmpty) {
-                                          return;
-                                        }
-                                        sendMessage(
-                                          messageController.text,
-                                          currentConversation["email"],
-                                        );
-                                        messageController.clear();
-                                        targetFieldHeight = 35;
-                                        targetBarHeight = 50;
-                                        startTransition();
-                                      },
-                                      child: Padding(
-                                        padding: const EdgeInsets.only(left: 6.0),
-                                        child: ClipRRect(
-                                          borderRadius: BorderRadius.circular(30),
-                                          child: Container(
-                                            color: getColor("button2"),
-                                            width: 35,
-                                            height: 35,
-                                            padding: const EdgeInsets.only(left: 8.0, right: 6.0, top: 2.0, bottom: 2.0),
-                                            child: Icon(
-                                              Icons.send_rounded,
-                                              color: getColor("maintext"),
-                                              size: 20,
+                                    SizedBox(
+                                      width: 40 * Curves.easeInOut.transform(sendTransition),
+                                      child: Opacity(
+                                        opacity: Curves.easeInOut.transform(sendTransition),
+                                        child: GestureDetector(
+                                          onTap: () {
+                                            if (messageController.text.isEmpty) {
+                                              return;
+                                            }
+                                            sendMessage(
+                                              messageController.text,
+                                              currentConversation["email"],
+                                            );
+                                            messageController.clear();
+                                            Timer.periodic(const Duration(milliseconds: 10), (timer) {
+                                              if (messageController.text.isEmpty) {
+                                                sendTransition -= 0.075;
+                                              } else {
+                                                sendTransition += 0.075;
+                                              }
+                                              double transition = sendTransition;
+                                              sendTransition = min(1, max(0, sendTransition));
+                                              if (transition != sendTransition) {
+                                                timer.cancel();
+                                              }
+                                            });
+                                            targetFieldHeight = 35;
+                                            targetBarHeight = 50;
+                                            startTransition();
+                                          },
+                                          child: Padding(
+                                            padding: const EdgeInsets.only(left: 6.0),
+                                            child: ClipRRect(
+                                              borderRadius: BorderRadius.circular(30),
+                                              child: Container(
+                                                color: getColor("button2"),
+                                                width: 35,
+                                                height: 35,
+                                                padding: const EdgeInsets.only(left: 8.0, right: 6.0, top: 2.0, bottom: 2.0),
+                                                child: Icon(
+                                                  Icons.send_rounded,
+                                                  color: getColor("maintext"),
+                                                  size: 20,
+                                                ),
+                                              ),
                                             ),
                                           ),
                                         ),

@@ -32,6 +32,7 @@ int lastNotificationAmountRequest = 0;
 int friendRequestAmount = 0;
 String myStatus = "online", myProfilePicture = "", myDisplayName = "", myCustomStatus = "";
 String bottomSheetProfileStatus = "online";
+String bottomSheetProfileCustomStatus = "";
 DraggableScrollableController scrollController = DraggableScrollableController();
 double scrollSize = 0;
 bool isScrolling = false;
@@ -69,6 +70,7 @@ class _MainViewState extends State<MainView> {
       );
       if (bottomSheetData["email"] != null && scrollSize != 0) {
         bottomSheetProfileStatus = await getStatus(bottomSheetData["email"]!);
+        bottomSheetProfileCustomStatus = await getCustomStatus(bottomSheetData["email"]!);
       }
 
       myDisplayName = await getDisplayName(
@@ -77,7 +79,10 @@ class _MainViewState extends State<MainView> {
       myCustomStatus = await getCustomStatus(
         FirebaseAuth.instance.currentUser?.email ?? "",
       );
-      statusController.text = myCustomStatus;
+      if (statusController.text.isEmpty) {
+        statusController.text = myCustomStatus;
+      }
+      //statusController.text = myCustomStatus;
       getMyProfilePicture();
     }
   }
@@ -351,7 +356,7 @@ class _SettingsViewState extends State<SettingsView> {
       return;
     }
     List requests = await getSentFriendRequests();
-    if (requests.toString().contains(bottomSheetData["email"])) {
+    if (requests.toString().contains(bottomSheetData["email"] ?? "")) {
       bottomSheetFriendType = 2;
       return;
     }
@@ -392,265 +397,295 @@ class _SettingsViewState extends State<SettingsView> {
                     //shrinkWrap: true,
                     controller: widget.scrollController,
                     children: [
-                      Container(
-                        height: 200,
-                        decoration: BoxDecoration(
-                          //color: getColor("background2"),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.25),
-                              spreadRadius: 3,
-                              blurRadius: 10,
-                              offset: const Offset(0, -5),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            height: 200,
+                            decoration: BoxDecoration(
+                              //color: getColor("background2"),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.25),
+                                  spreadRadius: 3,
+                                  blurRadius: 10,
+                                  offset: const Offset(0, -5),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                        child: Stack(
-                          children: [
-                            Column(
+                            child: Stack(
                               children: [
-                                Expanded(
-                                  flex: 3,
-                                  child: Stack(
-                                    children: [
-                                      ProfileImage(
-                                        url:
-                                            bannerDownloadURLs[isProfile ? bottomSheetData["email"] : FirebaseAuth.instance.currentUser?.email] ?? "",
-                                        type: "banners",
-                                        username: bottomSheetData["displayname"] ?? "",
-                                      ),
-                                      Builder(builder: (context) {
-                                        if (isProfile) return const SizedBox();
-                                        return Align(
-                                          alignment: Alignment.bottomRight,
-                                          child: Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Opacity(
-                                              opacity: 0.5,
-                                              child: Row(
-                                                mainAxisAlignment: MainAxisAlignment.end,
-                                                children: [
-                                                  GestureDetector(
-                                                    onTap: () {
-                                                      updatePicture(
-                                                        ImageSource.camera,
-                                                        folder: "banners",
-                                                      );
-                                                    },
-                                                    child: Padding(
-                                                      padding: const EdgeInsets.only(
-                                                        left: 4.0,
-                                                        right: 4.0,
-                                                      ),
-                                                      child: Icon(
-                                                        Icons.camera_outlined,
-                                                        color: getColor("secondarytext"),
-                                                        size: 24,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  GestureDetector(
-                                                    onTap: () {
-                                                      updatePicture(
-                                                        ImageSource.gallery,
-                                                        folder: "banners",
-                                                      );
-                                                    },
-                                                    child: Padding(
-                                                      padding: const EdgeInsets.only(
-                                                        left: 4.0,
-                                                        right: 4.0,
-                                                      ),
-                                                      child: Icon(
-                                                        Icons.image_outlined,
-                                                        color: getColor(
-                                                          "secondarytext",
+                                Column(
+                                  children: [
+                                    Expanded(
+                                      flex: 3,
+                                      child: Stack(
+                                        children: [
+                                          ProfileImage(
+                                            url:
+                                                bannerDownloadURLs[isProfile ? bottomSheetData["email"] : FirebaseAuth.instance.currentUser?.email] ??
+                                                    "",
+                                            type: "banners",
+                                            username: bottomSheetData["displayname"] ?? "",
+                                          ),
+                                          Builder(builder: (context) {
+                                            if (isProfile) return const SizedBox();
+                                            return Align(
+                                              alignment: Alignment.bottomRight,
+                                              child: Padding(
+                                                padding: const EdgeInsets.all(8.0),
+                                                child: Opacity(
+                                                  opacity: 0.5,
+                                                  child: Row(
+                                                    mainAxisAlignment: MainAxisAlignment.end,
+                                                    children: [
+                                                      GestureDetector(
+                                                        onTap: () {
+                                                          updatePicture(
+                                                            ImageSource.camera,
+                                                            folder: "banners",
+                                                          );
+                                                        },
+                                                        child: Padding(
+                                                          padding: const EdgeInsets.only(
+                                                            left: 4.0,
+                                                            right: 4.0,
+                                                          ),
+                                                          child: Icon(
+                                                            Icons.camera_outlined,
+                                                            color: getColor("secondarytext"),
+                                                            size: 24,
+                                                          ),
                                                         ),
-                                                        size: 24,
                                                       ),
-                                                    ),
+                                                      GestureDetector(
+                                                        onTap: () {
+                                                          updatePicture(
+                                                            ImageSource.gallery,
+                                                            folder: "banners",
+                                                          );
+                                                        },
+                                                        child: Padding(
+                                                          padding: const EdgeInsets.only(
+                                                            left: 4.0,
+                                                            right: 4.0,
+                                                          ),
+                                                          child: Icon(
+                                                            Icons.image_outlined,
+                                                            color: getColor(
+                                                              "secondarytext",
+                                                            ),
+                                                            size: 24,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
                                                   ),
-                                                ],
+                                                ),
                                               ),
+                                            );
+                                          })
+                                        ],
+                                      ),
+                                    ),
+                                    Expanded(
+                                      flex: 2,
+                                      child: Container(
+                                        color: getColor("background2"),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 16, right: 16),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      Row(
+                                        crossAxisAlignment: CrossAxisAlignment.end,
+                                        children: [
+                                          SizedBox(
+                                            height: 90,
+                                            width: 90,
+                                            child: Stack(
+                                              children: [
+                                                ClipRRect(
+                                                  borderRadius: BorderRadius.circular(50),
+                                                  child: ProfileImage(
+                                                    url: isProfile ? bottomSheetData["image"] : myProfilePicture,
+                                                  ),
+                                                ),
+                                                Align(
+                                                  alignment: const Alignment(0.85, 0.85),
+                                                  child: StatusIndicator(
+                                                    status: isProfile ? bottomSheetProfileStatus : myStatus,
+                                                    size: 15,
+                                                  ),
+                                                ),
+                                              ],
                                             ),
                                           ),
-                                        );
-                                      })
+                                          Builder(builder: (context) {
+                                            if (isProfile) return const SizedBox();
+                                            return Row(
+                                              children: [
+                                                GestureDetector(
+                                                  onTap: () {
+                                                    updatePicture(
+                                                      ImageSource.camera,
+                                                    );
+                                                  },
+                                                  child: Padding(
+                                                    padding: const EdgeInsets.only(left: 4.0, right: 4.0),
+                                                    child: Icon(
+                                                      Icons.camera_outlined,
+                                                      color: getColor("secondarytext"),
+                                                      size: 24,
+                                                    ),
+                                                  ),
+                                                ),
+                                                GestureDetector(
+                                                  onTap: () {
+                                                    updatePicture(
+                                                      ImageSource.gallery,
+                                                    );
+                                                  },
+                                                  child: Padding(
+                                                    padding: const EdgeInsets.only(left: 4.0, right: 4.0),
+                                                    child: Icon(
+                                                      Icons.image_outlined,
+                                                      color: getColor("secondarytext"),
+                                                      size: 24,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            );
+                                          }),
+                                        ],
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.only(top: 6.0, bottom: 8.0),
+                                        child: Builder(builder: (context) {
+                                          if (isEditingUsername) {
+                                            return TextField(
+                                              keyboardType: TextInputType.visiblePassword,
+                                              textAlignVertical: const TextAlignVertical(y: -1),
+                                              controller: usernameController,
+                                              cursorColor: getColor("cursor"),
+                                              cursorRadius: const Radius.circular(4),
+                                              style: getFont("mainfont")(
+                                                color: getColor("secondarytext"),
+                                                fontSize: 14,
+                                              ),
+                                              decoration: InputDecoration(
+                                                suffixIconConstraints: const BoxConstraints(
+                                                  maxWidth: 35,
+                                                ),
+                                                suffixIcon: GestureDetector(
+                                                  onTap: () {
+                                                    setState(() {
+                                                      myDisplayName = usernameController.text.trim();
+                                                      isEditingUsername = false;
+                                                    });
+                                                    changeUsername(
+                                                      FirebaseAuth.instance.currentUser?.email ?? "",
+                                                      myDisplayName,
+                                                    );
+                                                  },
+                                                  child: Padding(
+                                                    padding: const EdgeInsets.all(8.0),
+                                                    child: Icon(
+                                                      Icons.done,
+                                                      color: getColor("secondarytext"),
+                                                      size: 20,
+                                                    ),
+                                                  ),
+                                                ),
+                                                isDense: true,
+                                                fillColor: getColor("background"),
+                                                filled: true,
+                                                hintText: translation[currentLanguage]["username"],
+                                                hintStyle: getFont("mainfont")(
+                                                  color: getColor("secondarytext"),
+                                                  fontSize: 14,
+                                                  height: 1.3,
+                                                ),
+                                                border: InputBorder.none,
+                                              ),
+                                            );
+                                          }
+                                          String displayName = isProfile ? bottomSheetData["displayname"] : myDisplayName;
+                                          return RichText(
+                                            overflow: TextOverflow.ellipsis,
+                                            text: TextSpan(children: [
+                                              TextSpan(
+                                                text: displayName.length > 25 ? "${displayName.substring(0, 25).trimRight()}..." : displayName,
+                                                style: getFont("mainfont")(
+                                                  color: getColor("maintext"),
+                                                  fontSize: 20,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                              WidgetSpan(
+                                                child: Builder(builder: (context) {
+                                                  if (isProfile) {
+                                                    return const SizedBox();
+                                                  }
+                                                  return GestureDetector(
+                                                    onTap: () {
+                                                      setState(() {
+                                                        usernameController.text = myDisplayName;
+                                                        isEditingUsername = true;
+                                                      });
+                                                    },
+                                                    child: Padding(
+                                                      padding: const EdgeInsets.only(left: 4.0),
+                                                      child: Icon(
+                                                        Icons.edit,
+                                                        size: 20,
+                                                        color: getColor("secondarytext"),
+                                                      ),
+                                                    ),
+                                                  );
+                                                }),
+                                              ),
+                                            ]),
+                                          );
+                                        }),
+                                      )
                                     ],
-                                  ),
-                                ),
-                                Expanded(
-                                  flex: 2,
-                                  child: Container(
-                                    color: getColor("background2"),
                                   ),
                                 ),
                               ],
                             ),
-                            Padding(
-                              padding: const EdgeInsets.only(left: 16, right: 16),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: [
-                                  Row(
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    children: [
-                                      SizedBox(
-                                        height: 90,
-                                        width: 90,
-                                        child: Stack(
-                                          children: [
-                                            ClipRRect(
-                                              borderRadius: BorderRadius.circular(50),
-                                              child: ProfileImage(
-                                                url: isProfile ? bottomSheetData["image"] : myProfilePicture,
-                                              ),
-                                            ),
-                                            Align(
-                                              alignment: const Alignment(0.85, 0.85),
-                                              child: StatusIndicator(
-                                                status: isProfile ? bottomSheetProfileStatus : myStatus,
-                                                size: 15,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      Builder(builder: (context) {
-                                        if (isProfile) return const SizedBox();
-                                        return Row(
-                                          children: [
-                                            GestureDetector(
-                                              onTap: () {
-                                                updatePicture(
-                                                  ImageSource.camera,
-                                                );
-                                              },
-                                              child: Padding(
-                                                padding: const EdgeInsets.only(left: 4.0, right: 4.0),
-                                                child: Icon(
-                                                  Icons.camera_outlined,
-                                                  color: getColor("secondarytext"),
-                                                  size: 24,
-                                                ),
-                                              ),
-                                            ),
-                                            GestureDetector(
-                                              onTap: () {
-                                                updatePicture(
-                                                  ImageSource.gallery,
-                                                );
-                                              },
-                                              child: Padding(
-                                                padding: const EdgeInsets.only(left: 4.0, right: 4.0),
-                                                child: Icon(
-                                                  Icons.image_outlined,
-                                                  color: getColor("secondarytext"),
-                                                  size: 24,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        );
-                                      }),
-                                    ],
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 6.0, bottom: 8.0),
-                                    child: Builder(builder: (context) {
-                                      if (isEditingUsername) {
-                                        return TextField(
-                                          keyboardType: TextInputType.visiblePassword,
-                                          textAlignVertical: const TextAlignVertical(y: -1),
-                                          controller: usernameController,
-                                          cursorColor: getColor("cursor"),
-                                          cursorRadius: const Radius.circular(4),
-                                          style: getFont("mainfont")(
-                                            color: getColor("secondarytext"),
-                                            fontSize: 14,
-                                          ),
-                                          decoration: InputDecoration(
-                                            suffixIconConstraints: const BoxConstraints(
-                                              maxWidth: 35,
-                                            ),
-                                            suffixIcon: GestureDetector(
-                                              onTap: () {
-                                                setState(() {
-                                                  myDisplayName = usernameController.text.trim();
-                                                  isEditingUsername = false;
-                                                });
-                                                changeUsername(
-                                                  FirebaseAuth.instance.currentUser?.email ?? "",
-                                                  myDisplayName,
-                                                );
-                                              },
-                                              child: Padding(
-                                                padding: const EdgeInsets.all(8.0),
-                                                child: Icon(
-                                                  Icons.done,
-                                                  color: getColor("secondarytext"),
-                                                  size: 20,
-                                                ),
-                                              ),
-                                            ),
-                                            isDense: true,
-                                            fillColor: getColor("background"),
-                                            filled: true,
-                                            hintText: translation[currentLanguage]["username"],
-                                            hintStyle: getFont("mainfont")(
-                                              color: getColor("secondarytext"),
-                                              fontSize: 14,
-                                              height: 1.3,
-                                            ),
-                                            border: InputBorder.none,
-                                          ),
-                                        );
-                                      }
-                                      String displayName = isProfile ? bottomSheetData["displayname"] : myDisplayName;
-                                      return RichText(
-                                        overflow: TextOverflow.ellipsis,
-                                        text: TextSpan(children: [
-                                          TextSpan(
-                                            text: displayName.length > 25 ? "${displayName.substring(0, 25).trimRight()}..." : displayName,
-                                            style: getFont("mainfont")(
-                                              color: getColor("maintext"),
-                                              fontSize: 20,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                          WidgetSpan(
-                                            child: Builder(builder: (context) {
-                                              if (isProfile) {
-                                                return const SizedBox();
-                                              }
-                                              return GestureDetector(
-                                                onTap: () {
-                                                  setState(() {
-                                                    usernameController.text = myDisplayName;
-                                                    isEditingUsername = true;
-                                                  });
-                                                },
-                                                child: Padding(
-                                                  padding: const EdgeInsets.only(left: 4.0),
-                                                  child: Icon(
-                                                    Icons.edit,
-                                                    size: 20,
-                                                    color: getColor("secondarytext"),
-                                                  ),
-                                                ),
-                                              );
-                                            }),
-                                          ),
-                                        ]),
-                                      );
-                                    }),
-                                  )
-                                ],
+                          ),
+                          Builder(builder: (context) {
+                            if (bottomSheetProfileCustomStatus.isEmpty || !isProfile) {
+                              return const SizedBox();
+                            }
+                            return Container(
+                              width: double.infinity,
+                              decoration: BoxDecoration(
+                                color: getColor("background2"),
                               ),
-                            ),
-                          ],
-                        ),
+                              child: Padding(
+                                padding: const EdgeInsets.only(left: 16, right: 8, bottom: 8),
+                                child: Text(
+                                  //bottomSheetProfileCustomStatus.substring(0, min(bottomSheetProfileCustomStatus.length, 200)),
+                                  bottomSheetProfileCustomStatus.length > 200
+                                      ? "${bottomSheetProfileCustomStatus.substring(0, 200).trim()}..."
+                                      : bottomSheetProfileCustomStatus,
+                                  style: getFont("mainfont")(
+                                    color: getColor("secondarytext"),
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                            );
+                          })
+                        ],
                       ),
                       Builder(builder: (context) {
                         if (isProfile) {
@@ -658,157 +693,170 @@ class _SettingsViewState extends State<SettingsView> {
                             if (bottomSheetData["email"] == FirebaseAuth.instance.currentUser?.email) {
                               return const SizedBox();
                             }
-                            return Row(
-                              children: [
-                                Expanded(
-                                  child: GestureDetector(
-                                    onTap: () {
-                                      currentConversation = {
-                                        "email": bottomSheetData["email"],
-                                        "displayname": bottomSheetData["displayname"],
-                                        "status": bottomSheetProfileStatus,
-                                      };
-                                      selectedIndex = 0;
-                                      if (scrollController.isAttached) {
-                                        scrollController.animateTo(
-                                          0,
-                                          duration: const Duration(milliseconds: 275),
-                                          curve: Curves.ease,
+                            return Container(
+                              decoration: BoxDecoration(
+                                //color: getColor("background"),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.25),
+                                    spreadRadius: 5,
+                                    blurRadius: 7,
+                                    offset: const Offset(0, 1),
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: GestureDetector(
+                                      onTap: () {
+                                        currentConversation = {
+                                          "email": bottomSheetData["email"],
+                                          "displayname": bottomSheetData["displayname"],
+                                          "status": bottomSheetProfileStatus,
+                                        };
+                                        selectedIndex = 0;
+                                        if (scrollController.isAttached) {
+                                          scrollController.animateTo(
+                                            0,
+                                            duration: const Duration(milliseconds: 275),
+                                            curve: Curves.ease,
+                                          );
+                                        }
+                                        if (scrollController2.isAttached) {
+                                          scrollController2.animateTo(
+                                            0,
+                                            duration: const Duration(milliseconds: 275),
+                                            curve: Curves.ease,
+                                          );
+                                        }
+                                        if (!(bottomSheetData["needslide"] ?? true)) {
+                                          return;
+                                        }
+                                        Timer(const Duration(milliseconds: 500), () {
+                                          slideToCenter();
+                                        });
+                                        if ((bottomSheetData["currentpage"] ?? "") == "main") {
+                                          return;
+                                        }
+                                        pushReplacement(
+                                          context,
+                                          const MainView(),
                                         );
-                                      }
-                                      if (scrollController2.isAttached) {
-                                        scrollController2.animateTo(
-                                          0,
-                                          duration: const Duration(milliseconds: 275),
-                                          curve: Curves.ease,
-                                        );
-                                      }
-                                      if (!(bottomSheetData["needslide"] ?? true)) {
-                                        return;
-                                      }
-                                      Timer(const Duration(milliseconds: 500), () {
-                                        slideToCenter();
-                                      });
-                                      if ((bottomSheetData["currentpage"] ?? "") == "main") {
-                                        return;
-                                      }
-                                      pushReplacement(
-                                        context,
-                                        const MainView(),
-                                      );
-                                    },
-                                    child: Container(
-                                      width: double.infinity,
-                                      height: 70,
-                                      color: getColor("background3"),
-                                      child: Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Icon(
-                                            Icons.messenger_outline,
-                                            color: getColor("secondarytext"),
-                                          ),
-                                          SizedBox(height: 2),
-                                          Text(
-                                            translation[currentLanguage]["sendmessage"],
-                                            style: getFont("mainfont")(
+                                      },
+                                      child: Container(
+                                        width: double.infinity,
+                                        height: 70,
+                                        color: getColor("background3"),
+                                        child: Column(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Icon(
+                                              Icons.messenger_outline,
                                               color: getColor("secondarytext"),
-                                              fontSize: 12,
                                             ),
-                                          ),
-                                        ],
+                                            SizedBox(height: 2),
+                                            Text(
+                                              translation[currentLanguage]["sendmessage"],
+                                              style: getFont("mainfont")(
+                                                color: getColor("secondarytext"),
+                                                fontSize: 12,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ),
                                   ),
-                                ),
-                                Expanded(
-                                  child: Builder(builder: (context) {
-                                    if (bottomSheetFriendType == 0) {
-                                      return GestureDetector(
-                                        onTap: () {
-                                          sendFriendRequest(
-                                            bottomSheetData["email"],
-                                          );
-                                        },
-                                        child: Container(
-                                          width: double.infinity,
-                                          height: 70,
-                                          color: getColor("background3"),
-                                          child: Column(
-                                            mainAxisAlignment: MainAxisAlignment.center,
-                                            children: [
-                                              Icon(
-                                                Icons.person_add_alt_1_outlined,
-                                                color: getColor("secondarytext"),
-                                              ),
-                                              SizedBox(height: 2),
-                                              Text(
-                                                translation[currentLanguage]["sendfriendrequest"],
-                                                style: getFont("mainfont")(
+                                  Expanded(
+                                    child: Builder(builder: (context) {
+                                      if (bottomSheetFriendType == 0) {
+                                        return GestureDetector(
+                                          onTap: () {
+                                            sendFriendRequest(
+                                              bottomSheetData["email"],
+                                            );
+                                          },
+                                          child: Container(
+                                            width: double.infinity,
+                                            height: 70,
+                                            color: getColor("background3"),
+                                            child: Column(
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              children: [
+                                                Icon(
+                                                  Icons.person_add_alt_1_outlined,
                                                   color: getColor("secondarytext"),
-                                                  fontSize: 12,
                                                 ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      );
-                                    } else if (bottomSheetFriendType == 1) {
-                                      return GestureDetector(
-                                        onTap: () {
-                                          removeFriend(bottomSheetData["email"]);
-                                        },
-                                        child: Container(
-                                          width: double.infinity,
-                                          height: 70,
-                                          color: getColor("background3"),
-                                          child: Column(
-                                            mainAxisAlignment: MainAxisAlignment.center,
-                                            children: [
-                                              Icon(
-                                                Icons.person_remove_alt_1_outlined,
-                                                color: getColor("secondarytext"),
-                                              ),
-                                              SizedBox(height: 2),
-                                              Text(
-                                                translation[currentLanguage]["removefriend"],
-                                                style: getFont("mainfont")(
-                                                  color: getColor("secondarytext"),
-                                                  fontSize: 12,
+                                                SizedBox(height: 2),
+                                                Text(
+                                                  translation[currentLanguage]["sendfriendrequest"],
+                                                  style: getFont("mainfont")(
+                                                    color: getColor("secondarytext"),
+                                                    fontSize: 12,
+                                                  ),
                                                 ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      );
-                                    }
-                                    return Container(
-                                      width: double.infinity,
-                                      height: 70,
-                                      color: getColor("background3"),
-                                      child: Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Image.asset(
-                                            "assets/friendadded.png",
-                                            width: 21,
-                                            height: 21,
-                                            color: getColor("secondarytext"),
-                                          ),
-                                          SizedBox(height: 4),
-                                          Text(
-                                            translation[currentLanguage]["friendrequestsent"],
-                                            style: getFont("mainfont")(
-                                              color: getColor("secondarytext"),
-                                              fontSize: 12,
+                                              ],
                                             ),
                                           ),
-                                        ],
-                                      ),
-                                    );
-                                  }),
-                                ),
-                              ],
+                                        );
+                                      } else if (bottomSheetFriendType == 1) {
+                                        return GestureDetector(
+                                          onTap: () {
+                                            removeFriend(bottomSheetData["email"]);
+                                          },
+                                          child: Container(
+                                            width: double.infinity,
+                                            height: 70,
+                                            color: getColor("background3"),
+                                            child: Column(
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              children: [
+                                                Icon(
+                                                  Icons.person_remove_alt_1_outlined,
+                                                  color: getColor("secondarytext"),
+                                                ),
+                                                SizedBox(height: 2),
+                                                Text(
+                                                  translation[currentLanguage]["removefriend"],
+                                                  style: getFont("mainfont")(
+                                                    color: getColor("secondarytext"),
+                                                    fontSize: 12,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        );
+                                      }
+                                      return Container(
+                                        width: double.infinity,
+                                        height: 70,
+                                        color: getColor("background3"),
+                                        child: Column(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Image.asset(
+                                              "assets/friendadded.png",
+                                              width: 21,
+                                              height: 21,
+                                              color: getColor("secondarytext"),
+                                            ),
+                                            SizedBox(height: 4),
+                                            Text(
+                                              translation[currentLanguage]["friendrequestsent"],
+                                              style: getFont("mainfont")(
+                                                color: getColor("secondarytext"),
+                                                fontSize: 12,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    }),
+                                  ),
+                                ],
+                              ),
                             );
                           });
                         }
