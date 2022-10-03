@@ -33,6 +33,7 @@ int friendRequestAmount = 0;
 String myStatus = "online", myProfilePicture = "", myDisplayName = "", myCustomStatus = "";
 String bottomSheetProfileStatus = "online";
 String bottomSheetProfileCustomStatus = "";
+String bottomSheetProfileRealName = "";
 DraggableScrollableController scrollController = DraggableScrollableController();
 double scrollSize = 0;
 bool isScrolling = false;
@@ -71,6 +72,9 @@ class _MainViewState extends State<MainView> {
       if (bottomSheetData["email"] != null && scrollSize != 0) {
         bottomSheetProfileStatus = await getStatus(bottomSheetData["email"]!);
         bottomSheetProfileCustomStatus = await getCustomStatus(bottomSheetData["email"]!);
+        if (nicknameExists(bottomSheetData["email"])) {
+          bottomSheetProfileRealName = await getDisplayName(bottomSheetData["email"]!, allowNickname: false);
+        }
       }
 
       myDisplayName = await getDisplayName(
@@ -426,7 +430,7 @@ class _SettingsViewState extends State<SettingsView> {
                                                 bannerDownloadURLs[isProfile ? bottomSheetData["email"] : FirebaseAuth.instance.currentUser?.email] ??
                                                     "",
                                             type: "banners",
-                                            username: bottomSheetData["displayname"] ?? "",
+                                            username: bottomSheetData["email"] ?? "",
                                           ),
                                           Builder(builder: (context) {
                                             if (isProfile) return const SizedBox();
@@ -585,14 +589,27 @@ class _SettingsViewState extends State<SettingsView> {
                                                 ),
                                                 suffixIcon: GestureDetector(
                                                   onTap: () {
-                                                    setState(() {
-                                                      myDisplayName = usernameController.text.trim();
-                                                      isEditingUsername = false;
-                                                    });
-                                                    changeUsername(
-                                                      FirebaseAuth.instance.currentUser?.email ?? "",
-                                                      myDisplayName,
-                                                    );
+                                                    String text = usernameController.text.trim();
+                                                    if (bottomSheetData["email"] == null) {
+                                                      setState(() {
+                                                        myDisplayName = text;
+                                                        isEditingUsername = false;
+                                                      });
+                                                      changeUsername(
+                                                        FirebaseAuth.instance.currentUser?.email ?? "",
+                                                        myDisplayName,
+                                                      );
+                                                    } else {
+                                                      setState(() {
+                                                        prefs?.setString('nicknameof${bottomSheetData["email"]}', text);
+                                                        if (text.isNotEmpty) {
+                                                          bottomSheetData["displayname"] = text;
+                                                        } else {
+                                                          bottomSheetData["displayname"] = bottomSheetProfileRealName;
+                                                        }
+                                                        isEditingUsername = false;
+                                                      });
+                                                    }
                                                   },
                                                   child: Padding(
                                                     padding: const EdgeInsets.all(8.0),
@@ -617,41 +634,77 @@ class _SettingsViewState extends State<SettingsView> {
                                             );
                                           }
                                           String displayName = isProfile ? bottomSheetData["displayname"] : myDisplayName;
-                                          return RichText(
-                                            overflow: TextOverflow.ellipsis,
-                                            text: TextSpan(children: [
-                                              TextSpan(
-                                                text: displayName.length > 25 ? "${displayName.substring(0, 25).trimRight()}..." : displayName,
-                                                style: getFont("mainfont")(
-                                                  color: getColor("maintext"),
-                                                  fontSize: 20,
-                                                  fontWeight: FontWeight.w600,
-                                                ),
-                                              ),
-                                              WidgetSpan(
-                                                child: Builder(builder: (context) {
-                                                  if (isProfile) {
-                                                    return const SizedBox();
-                                                  }
-                                                  return GestureDetector(
-                                                    onTap: () {
-                                                      setState(() {
-                                                        usernameController.text = myDisplayName;
-                                                        isEditingUsername = true;
-                                                      });
-                                                    },
-                                                    child: Padding(
-                                                      padding: const EdgeInsets.only(left: 4.0),
-                                                      child: Icon(
-                                                        Icons.edit,
-                                                        size: 20,
-                                                        color: getColor("secondarytext"),
-                                                      ),
+                                          return Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              RichText(
+                                                overflow: TextOverflow.ellipsis,
+                                                text: TextSpan(children: [
+                                                  TextSpan(
+                                                    text: displayName.length > 25 ? "${displayName.substring(0, 25).trimRight()}..." : displayName,
+                                                    style: getFont("mainfont")(
+                                                      color: getColor("maintext"),
+                                                      fontSize: 20,
+                                                      fontWeight: FontWeight.w600,
                                                     ),
-                                                  );
-                                                }),
+                                                  ),
+                                                  TextSpan(
+                                                    text: isProfile &&
+                                                            bottomSheetProfileRealName.isNotEmpty &&
+                                                            bottomSheetProfileRealName != bottomSheetData["displayname"]
+                                                        ? " AKA $bottomSheetProfileRealName"
+                                                        : "",
+                                                    style: getFont("mainfont")(
+                                                      color: getColor("secondarytext"),
+                                                      fontSize: 14,
+                                                      fontWeight: FontWeight.w600,
+                                                    ),
+                                                  ),
+                                                  WidgetSpan(
+                                                    child: Builder(builder: (context) {
+                                                      if (isProfile) {
+                                                        return const SizedBox();
+                                                      }
+                                                      return GestureDetector(
+                                                        onTap: () {
+                                                          setState(() {
+                                                            usernameController.text = myDisplayName;
+                                                            isEditingUsername = true;
+                                                          });
+                                                        },
+                                                        child: Padding(
+                                                          padding: const EdgeInsets.only(left: 4.0),
+                                                          child: Icon(
+                                                            Icons.edit,
+                                                            size: 20,
+                                                            color: getColor("secondarytext"),
+                                                          ),
+                                                        ),
+                                                      );
+                                                    }),
+                                                  ),
+                                                ]),
                                               ),
-                                            ]),
+                                              Builder(builder: (context) {
+                                                if (!isProfile || bottomSheetData["email"] == FirebaseAuth.instance.currentUser?.email) {
+                                                  return const SizedBox();
+                                                }
+                                                return GestureDetector(
+                                                  onTap: () {
+                                                    setState(() {
+                                                      usernameController.text = bottomSheetData["displayname"];
+                                                      isEditingUsername = true;
+                                                    });
+                                                  },
+                                                  child: Text(
+                                                    translation[currentLanguage]["setnickname"],
+                                                    style: getFont("mainfont")(
+                                                      color: getColor("secondarytext"),
+                                                    ),
+                                                  ),
+                                                );
+                                              })
+                                            ],
                                           );
                                         }),
                                       )

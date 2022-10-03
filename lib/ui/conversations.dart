@@ -170,7 +170,7 @@ class _ConversationsViewState extends State<ConversationsView> {
                                                         "image": profilePictures[conversation["email"]] ?? "",
                                                         "currentpage": "main",
                                                       };
-                                                      bottomSheetProfileCustomStatus = "";
+                                                      bottomSheetProfileCustomStatus = bottomSheetProfileRealName = "";
                                                       scrollController.animateTo(
                                                         0.5,
                                                         duration: const Duration(milliseconds: 275),

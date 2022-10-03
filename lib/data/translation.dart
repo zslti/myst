@@ -108,6 +108,7 @@ Map translation = {
     "setcustomstatustext": "Don't know what to write here?",
     "setcustomstatustext2": "Get some inspiration from a random quote.",
     "toomanyrequests": "You're too fast! Slow down a bit.",
+    "setnickname": "Set nickname",
   },
   "hu": {
     "countrycode": "hu",
@@ -219,5 +220,6 @@ Map translation = {
     "setcustomstatustext": "Nem tudod mit írj ide?",
     "setcustomstatustext2": "Inspirálódj egy véletlenszerű idézetből!",
     "toomanyrequests": "Túl gyors vagy! Kicsit lassíts.",
+    "setnickname": "Becenév beállítása",
   }
 };

@@ -111,8 +111,8 @@ class _MyAppState extends State<MyApp> {
   Future<bool> initializeApp() async {
     prefs?.setString("theme", ""); //TODO: remove line when everything is done
     //TODO: every setting in bottom sheet in profile view
-    //TODO: message actions like delete, copy, forward, reply
     //TODO: send image, video, audio, file, link(web, yt, fb..), location(if i can do it), emoji
+    //TODO: message actions like delete, copy, forward, reply
     //TODO: search in conversation(in right card)
     //TODO: delete conversation
     //TODO: when deleting account delete all conversations

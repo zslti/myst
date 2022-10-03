@@ -79,13 +79,22 @@ Future<List> getMessages(String user) async {
   return messages;
 }
 
-Future<String> getDisplayName(String email) async {
+bool nicknameExists(String email) {
+  return (prefs?.getString("nicknameof$email") ?? "").isNotEmpty;
+}
+
+Future<String> getDisplayName(String email, {bool allowNickname = true}) async {
   QuerySnapshot querySnapshot = await FirebaseFirestore.instance.collection('users').where("email", isEqualTo: email).get();
   List allData = querySnapshot.docs.map((doc) => doc.data()).toList();
   if (allData.isEmpty) {
     return "";
   }
-  return allData[0]['username'];
+  String displayName = allData[0]['username'];
+  String nickname = prefs?.getString("nicknameof${allData[0]['email']}") ?? "";
+  if (!allowNickname || nickname.isEmpty) {
+    return displayName;
+  }
+  return nickname;
 }
 
 Future<List> getUsersNamed(String name) async {
