@@ -44,6 +44,22 @@ class _AddFriendsViewState extends State<AddFriendsView> {
     if (mounted) {
       setState(() {});
     }
+    if (bottomSheetData["email"] != null && scrollSize != 0) {
+      bottomSheetProfileStatus = await getStatus(bottomSheetData["email"]!);
+      bottomSheetProfileCustomStatus = await getCustomStatus(bottomSheetData["email"]!);
+      if (nicknameExists(bottomSheetData["email"])) {
+        bottomSheetProfileRealName = await getDisplayName(bottomSheetData["email"]!, allowNickname: false);
+      }
+    }
+    List mutualFriends = await getMutualFriends(bottomSheetData["email"] ?? "");
+    for (int i = 0; i < mutualFriends.length; i++) {
+      mutualFriends[i] = {
+        "email": mutualFriends[i],
+        "displayname": await getDisplayName(mutualFriends[i]),
+        "picture": await getPicture(mutualFriends[i]),
+      };
+    }
+    bottomSheetProfileMutualFriends = mutualFriends;
   }
 
   Future<void> getProfilePictures() async {
@@ -177,6 +193,7 @@ class _AddFriendsViewState extends State<AddFriendsView> {
                                       "image": user["picture"],
                                     };
                                     bottomSheetProfileCustomStatus = bottomSheetProfileRealName = "";
+                                    bottomSheetProfileMutualFriends = [];
                                     scrollController.animateTo(
                                       0.5,
                                       duration: const Duration(milliseconds: 275),

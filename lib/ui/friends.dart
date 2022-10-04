@@ -56,7 +56,20 @@ class _FriendsViewState extends State<FriendsView> {
     myStatus = await getStatus(FirebaseAuth.instance.currentUser?.email ?? "");
     if (bottomSheetData["email"] != null && scrollSize != 0) {
       bottomSheetProfileStatus = await getStatus(bottomSheetData["email"]!);
+      bottomSheetProfileCustomStatus = await getCustomStatus(bottomSheetData["email"]!);
+      if (nicknameExists(bottomSheetData["email"])) {
+        bottomSheetProfileRealName = await getDisplayName(bottomSheetData["email"]!, allowNickname: false);
+      }
     }
+    List mutualFriends = await getMutualFriends(bottomSheetData["email"] ?? "");
+    for (int i = 0; i < mutualFriends.length; i++) {
+      mutualFriends[i] = {
+        "email": mutualFriends[i],
+        "displayname": await getDisplayName(mutualFriends[i]),
+        "picture": await getPicture(mutualFriends[i]),
+      };
+    }
+    bottomSheetProfileMutualFriends = mutualFriends;
     if (mounted) {
       setState(() {});
     }
@@ -135,12 +148,12 @@ class _FriendsViewState extends State<FriendsView> {
                           List offlineFriends = friends;
                           onlineFriends = onlineFriends
                               .where(
-                                (element) => statuses[element] != "offline",
+                                (element) => (statuses[element] == "online" || statuses[element] == "away" || statuses[element] == "busy"),
                               )
                               .toList();
                           offlineFriends = offlineFriends
                               .where(
-                                (element) => statuses[element] == "offline",
+                                (element) => (statuses[element] == "offline"),
                               )
                               .toList();
                           return ListView(
@@ -396,6 +409,7 @@ class _FriendState extends State<Friend> {
           "image": profilePictures[widget.friend] ?? "",
         };
         bottomSheetProfileCustomStatus = bottomSheetProfileRealName = "";
+        bottomSheetProfileMutualFriends = [];
         scrollController.animateTo(
           0.5,
           duration: const Duration(milliseconds: 275),
@@ -867,6 +881,7 @@ class _FriendRequestState extends State<FriendRequest> {
               : profilePictures[widget.request['receiver']] ?? "",
         };
         bottomSheetProfileCustomStatus = bottomSheetProfileRealName = "";
+        bottomSheetProfileMutualFriends = [];
         scrollController2.animateTo(
           0.5,
           duration: const Duration(milliseconds: 275),

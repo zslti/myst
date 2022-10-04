@@ -34,6 +34,7 @@ String myStatus = "online", myProfilePicture = "", myDisplayName = "", myCustomS
 String bottomSheetProfileStatus = "online";
 String bottomSheetProfileCustomStatus = "";
 String bottomSheetProfileRealName = "";
+List bottomSheetProfileMutualFriends = [];
 DraggableScrollableController scrollController = DraggableScrollableController();
 double scrollSize = 0;
 bool isScrolling = false;
@@ -88,6 +89,15 @@ class _MainViewState extends State<MainView> {
       }
       //statusController.text = myCustomStatus;
       getMyProfilePicture();
+      List mutualFriends = await getMutualFriends(bottomSheetData["email"] ?? "");
+      for (int i = 0; i < mutualFriends.length; i++) {
+        mutualFriends[i] = {
+          "email": mutualFriends[i],
+          "displayname": await getDisplayName(mutualFriends[i]),
+          "picture": await getPicture(mutualFriends[i]),
+        };
+      }
+      bottomSheetProfileMutualFriends = mutualFriends;
     }
   }
 
@@ -746,88 +756,59 @@ class _SettingsViewState extends State<SettingsView> {
                             if (bottomSheetData["email"] == FirebaseAuth.instance.currentUser?.email) {
                               return const SizedBox();
                             }
-                            return Container(
-                              decoration: BoxDecoration(
-                                //color: getColor("background"),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.25),
-                                    spreadRadius: 5,
-                                    blurRadius: 7,
-                                    offset: const Offset(0, 1),
-                                  ),
-                                ],
-                              ),
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    child: GestureDetector(
-                                      onTap: () {
-                                        currentConversation = {
-                                          "email": bottomSheetData["email"],
-                                          "displayname": bottomSheetData["displayname"],
-                                          "status": bottomSheetProfileStatus,
-                                        };
-                                        selectedIndex = 0;
-                                        if (scrollController.isAttached) {
-                                          scrollController.animateTo(
-                                            0,
-                                            duration: const Duration(milliseconds: 275),
-                                            curve: Curves.ease,
-                                          );
-                                        }
-                                        if (scrollController2.isAttached) {
-                                          scrollController2.animateTo(
-                                            0,
-                                            duration: const Duration(milliseconds: 275),
-                                            curve: Curves.ease,
-                                          );
-                                        }
-                                        if (!(bottomSheetData["needslide"] ?? true)) {
-                                          return;
-                                        }
-                                        Timer(const Duration(milliseconds: 500), () {
-                                          slideToCenter();
-                                        });
-                                        if ((bottomSheetData["currentpage"] ?? "") == "main") {
-                                          return;
-                                        }
-                                        pushReplacement(
-                                          context,
-                                          const MainView(),
-                                        );
-                                      },
-                                      child: Container(
-                                        width: double.infinity,
-                                        height: 70,
-                                        color: getColor("background3"),
-                                        child: Column(
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          children: [
-                                            Icon(
-                                              Icons.messenger_outline,
-                                              color: getColor("secondarytext"),
-                                            ),
-                                            SizedBox(height: 2),
-                                            Text(
-                                              translation[currentLanguage]["sendmessage"],
-                                              style: getFont("mainfont")(
-                                                color: getColor("secondarytext"),
-                                                fontSize: 12,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
+                            return Column(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  decoration: BoxDecoration(
+                                    //color: getColor("background"),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.25),
+                                        spreadRadius: 5,
+                                        blurRadius: 7,
+                                        offset: const Offset(0, 1),
                                       ),
-                                    ),
+                                    ],
                                   ),
-                                  Expanded(
-                                    child: Builder(builder: (context) {
-                                      if (bottomSheetFriendType == 0) {
-                                        return GestureDetector(
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        child: GestureDetector(
                                           onTap: () {
-                                            sendFriendRequest(
-                                              bottomSheetData["email"],
+                                            currentConversation = {
+                                              "email": bottomSheetData["email"],
+                                              "displayname": bottomSheetData["displayname"],
+                                              "status": bottomSheetProfileStatus,
+                                            };
+                                            selectedIndex = 0;
+                                            if (scrollController.isAttached) {
+                                              scrollController.animateTo(
+                                                0,
+                                                duration: const Duration(milliseconds: 275),
+                                                curve: Curves.ease,
+                                              );
+                                            }
+                                            if (scrollController2.isAttached) {
+                                              scrollController2.animateTo(
+                                                0,
+                                                duration: const Duration(milliseconds: 275),
+                                                curve: Curves.ease,
+                                              );
+                                            }
+                                            if (!(bottomSheetData["needslide"] ?? true)) {
+                                              return;
+                                            }
+                                            Timer(const Duration(milliseconds: 500), () {
+                                              slideToCenter();
+                                            });
+                                            if ((bottomSheetData["currentpage"] ?? "") == "main") {
+                                              return;
+                                            }
+                                            pushReplacement(
+                                              context,
+                                              const MainView(),
                                             );
                                           },
                                           child: Container(
@@ -838,12 +819,12 @@ class _SettingsViewState extends State<SettingsView> {
                                               mainAxisAlignment: MainAxisAlignment.center,
                                               children: [
                                                 Icon(
-                                                  Icons.person_add_alt_1_outlined,
+                                                  Icons.messenger_outline,
                                                   color: getColor("secondarytext"),
                                                 ),
                                                 SizedBox(height: 2),
                                                 Text(
-                                                  translation[currentLanguage]["sendfriendrequest"],
+                                                  translation[currentLanguage]["sendmessage"],
                                                   style: getFont("mainfont")(
                                                     color: getColor("secondarytext"),
                                                     fontSize: 12,
@@ -852,26 +833,85 @@ class _SettingsViewState extends State<SettingsView> {
                                               ],
                                             ),
                                           ),
-                                        );
-                                      } else if (bottomSheetFriendType == 1) {
-                                        return GestureDetector(
-                                          onTap: () {
-                                            removeFriend(bottomSheetData["email"]);
-                                          },
-                                          child: Container(
+                                        ),
+                                      ),
+                                      Expanded(
+                                        child: Builder(builder: (context) {
+                                          if (bottomSheetFriendType == 0) {
+                                            return GestureDetector(
+                                              onTap: () {
+                                                sendFriendRequest(
+                                                  bottomSheetData["email"],
+                                                );
+                                              },
+                                              child: Container(
+                                                width: double.infinity,
+                                                height: 70,
+                                                color: getColor("background3"),
+                                                child: Column(
+                                                  mainAxisAlignment: MainAxisAlignment.center,
+                                                  children: [
+                                                    Icon(
+                                                      Icons.person_add_alt_1_outlined,
+                                                      color: getColor("secondarytext"),
+                                                    ),
+                                                    SizedBox(height: 2),
+                                                    Text(
+                                                      translation[currentLanguage]["sendfriendrequest"],
+                                                      style: getFont("mainfont")(
+                                                        color: getColor("secondarytext"),
+                                                        fontSize: 12,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            );
+                                          } else if (bottomSheetFriendType == 1) {
+                                            return GestureDetector(
+                                              onTap: () {
+                                                removeFriend(bottomSheetData["email"]);
+                                              },
+                                              child: Container(
+                                                width: double.infinity,
+                                                height: 70,
+                                                color: getColor("background3"),
+                                                child: Column(
+                                                  mainAxisAlignment: MainAxisAlignment.center,
+                                                  children: [
+                                                    Icon(
+                                                      Icons.person_remove_alt_1_outlined,
+                                                      color: getColor("secondarytext"),
+                                                    ),
+                                                    SizedBox(height: 2),
+                                                    Text(
+                                                      translation[currentLanguage]["removefriend"],
+                                                      style: getFont("mainfont")(
+                                                        color: getColor("secondarytext"),
+                                                        fontSize: 12,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            );
+                                          }
+                                          return Container(
                                             width: double.infinity,
                                             height: 70,
                                             color: getColor("background3"),
                                             child: Column(
                                               mainAxisAlignment: MainAxisAlignment.center,
                                               children: [
-                                                Icon(
-                                                  Icons.person_remove_alt_1_outlined,
+                                                Image.asset(
+                                                  "assets/friendadded.png",
+                                                  width: 21,
+                                                  height: 21,
                                                   color: getColor("secondarytext"),
                                                 ),
-                                                SizedBox(height: 2),
+                                                SizedBox(height: 4),
                                                 Text(
-                                                  translation[currentLanguage]["removefriend"],
+                                                  translation[currentLanguage]["friendrequestsent"],
                                                   style: getFont("mainfont")(
                                                     color: getColor("secondarytext"),
                                                     fontSize: 12,
@@ -879,37 +919,67 @@ class _SettingsViewState extends State<SettingsView> {
                                                 ),
                                               ],
                                             ),
-                                          ),
-                                        );
+                                          );
+                                        }),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                SettingButton(
+                                  icon: Image.asset(
+                                    "assets/friends.png",
+                                    width: 24,
+                                    height: 24,
+                                    color: getColor("secondarytext"),
+                                  ),
+                                  text: translation[currentLanguage]["mutualfriends"],
+                                  padding: EdgeInsets.only(left: 10, right: 8),
+                                  isOpenable: true,
+                                  openableWidgetId: 3,
+                                  openedWidgets: [
+                                    Builder(builder: (context) {
+                                      if (bottomSheetProfileMutualFriends.isNotEmpty) {
+                                        return const SizedBox();
                                       }
-                                      return Container(
-                                        width: double.infinity,
-                                        height: 70,
-                                        color: getColor("background3"),
-                                        child: Column(
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          children: [
-                                            Image.asset(
-                                              "assets/friendadded.png",
-                                              width: 21,
-                                              height: 21,
-                                              color: getColor("secondarytext"),
-                                            ),
-                                            SizedBox(height: 4),
-                                            Text(
-                                              translation[currentLanguage]["friendrequestsent"],
-                                              style: getFont("mainfont")(
-                                                color: getColor("secondarytext"),
-                                                fontSize: 12,
-                                              ),
-                                            ),
-                                          ],
+                                      return Opacity(
+                                        opacity: 0.5,
+                                        child: Text(
+                                          translation[currentLanguage]["nomutualfriends"],
+                                          style: getFont("mainfont")(
+                                            color: getColor("secondarytext"),
+                                            fontSize: 14,
+                                          ),
                                         ),
                                       );
                                     }),
-                                  ),
-                                ],
-                              ),
+                                    for (final friend in bottomSheetProfileMutualFriends)
+                                      SettingButton(
+                                        icon: ClipRRect(
+                                          borderRadius: BorderRadius.circular(100),
+                                          child: SizedBox(
+                                            width: 32,
+                                            height: 32,
+                                            child: ProfileImage(url: friend["picture"] ?? ""),
+                                          ),
+                                        ),
+                                        text: friend["displayname"],
+                                        onTap: () {
+                                          // bottomSheetData = {
+                                          //   "email": friend["email"],
+                                          //   "displayname": friend["displayname"],
+                                          //   "image": friend["picture"],
+                                          // };
+                                          bottomSheetData["email"] = friend["email"];
+                                          bottomSheetData["displayname"] = friend["displayname"];
+                                          bottomSheetData["image"] = friend["picture"];
+                                          bottomSheetProfileCustomStatus = bottomSheetProfileRealName = "";
+                                          bottomSheetProfileMutualFriends = [];
+                                          openableWidgetStates[3]["state"] = false;
+                                        },
+                                      )
+                                  ],
+                                ),
+                              ],
                             );
                           });
                         }
@@ -1356,7 +1426,7 @@ class _SettingButtonState extends State<SettingButton> {
                 children: [
                   ConstrainedBox(
                     constraints: BoxConstraints(
-                      maxWidth: MediaQuery.of(context).size.width - 160,
+                      maxWidth: MediaQuery.of(context).size.width - 165,
                     ),
                     child: Text(
                       widget.text,

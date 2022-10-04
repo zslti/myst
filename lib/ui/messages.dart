@@ -73,6 +73,7 @@ class _MessageState extends State<Message> {
               "needslide": false,
             };
             bottomSheetProfileCustomStatus = bottomSheetProfileRealName = "";
+            bottomSheetProfileMutualFriends = [];
             scrollController.animateTo(
               0.5,
               duration: const Duration(milliseconds: 275),
@@ -113,6 +114,7 @@ class _MessageState extends State<Message> {
                       "needslide": false,
                     };
                     bottomSheetProfileCustomStatus = bottomSheetProfileRealName = "";
+                    bottomSheetProfileMutualFriends = [];
                     scrollController.animateTo(
                       0.5,
                       duration: const Duration(milliseconds: 275),

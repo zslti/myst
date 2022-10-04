@@ -651,3 +651,19 @@ Future<String> getCustomStatus(String email) async {
   }
   return allData[0]["customstatus"] ?? "";
 }
+
+Future<List> getMutualFriends(String email) async {
+  String myEmail = FirebaseAuth.instance.currentUser?.email ?? "";
+  if (email == myEmail || myEmail.isEmpty) {
+    return [];
+  }
+  List myFriends = await getFriends(myEmail);
+  List theirFriends = await getFriends(email);
+  List mutualFriends = [];
+  for (int i = 0; i < myFriends.length; i++) {
+    if (theirFriends.contains(myFriends[i])) {
+      mutualFriends.add(myFriends[i]);
+    }
+  }
+  return mutualFriends;
+}

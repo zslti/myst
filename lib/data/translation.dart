@@ -109,6 +109,8 @@ Map translation = {
     "setcustomstatustext2": "Get some inspiration from a random quote.",
     "toomanyrequests": "You're too fast! Slow down a bit.",
     "setnickname": "Set nickname",
+    "mutualfriends": "Mutual friends",
+    "nomutualfriends": "You have no mutual friends.",
   },
   "hu": {
     "countrycode": "hu",
@@ -221,5 +223,7 @@ Map translation = {
     "setcustomstatustext2": "Inspirálódj egy véletlenszerű idézetből!",
     "toomanyrequests": "Túl gyors vagy! Kicsit lassíts.",
     "setnickname": "Becenév beállítása",
+    "mutualfriends": "Közös barátok",
+    "nomutualfriends": "Nincsenek közös barátok.",
   }
 };
