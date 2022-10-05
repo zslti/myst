@@ -110,7 +110,7 @@ class _MyAppState extends State<MyApp> {
 
   Future<bool> initializeApp() async {
     prefs?.setString("theme", ""); //TODO: remove line when everything is done
-    //TODO: every setting in bottom sheet in profile view
+    //TODO: make image zoomable
     //TODO: send image, video, audio, file, link(web, yt, fb..), location(if i can do it), emoji
     //TODO: typing indicator
     //TODO: message actions like delete, copy, forward, reply

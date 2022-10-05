@@ -29,16 +29,20 @@ Future<List> getAllMessages() async {
   return allData;
 }
 
-Future<void> sendMessage(String message, String to) async {
+Future<void> sendMessage(String message, String to, {String? type}) async {
   CollectionReference messages = FirebaseFirestore.instance.collection(
     'messages',
   );
-  await messages.add({
+  Map<String, dynamic> data = {
     'message': encryptText(message.trimRight()),
     'users': "{{${FirebaseAuth.instance.currentUser?.email}}, {$to}}",
     'sender': FirebaseAuth.instance.currentUser?.email,
     'timestamp': DateTime.now().millisecondsSinceEpoch,
-  });
+  };
+  if (type != null) {
+    data['type'] = type;
+  }
+  await messages.add(data);
 }
 
 Future<List> getConversations() async {
@@ -317,7 +321,7 @@ Future<String> getStatus(String email) async {
 }
 
 Future<void> updatePicture(ImageSource source, {String folder = "profiles"}) async {
-  XFile? image = await ImagePicker().pickImage(source: source);
+  XFile? image = await ImagePicker().pickImage(source: source, preferredCameraDevice: CameraDevice.front);
   if (image == null) {
     return;
   }
@@ -666,4 +670,36 @@ Future<List> getMutualFriends(String email) async {
     }
   }
   return mutualFriends;
+}
+
+Future<void> sendImages(List<XFile> images, String to) async {
+  final storageRef = FirebaseStorage.instance.ref();
+  for (final image in images) {
+    final int now = DateTime.now().millisecondsSinceEpoch;
+    String path = "images/${encryptText('${FirebaseAuth.instance.currentUser?.email}$now')}";
+    final imageRef = storageRef.child(
+      path,
+    );
+    await imageRef.putFile(File(image.path));
+    sendMessage(path, to, type: "image");
+  }
+}
+
+Map sentImages = {};
+
+Future<String> getSentPicture(String path) async {
+  if (sentImages.containsKey(path)) {
+    return sentImages[path];
+  }
+  sentImages[path] = "";
+  final storageRef = FirebaseStorage.instance.ref();
+  final imageRef = storageRef.child(path);
+  try {
+    String url = await imageRef.getDownloadURL();
+    sentImages[path] = url;
+    return url;
+  } catch (e) {
+    sentImages[path] = "";
+    return "";
+  }
 }

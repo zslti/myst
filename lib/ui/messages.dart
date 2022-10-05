@@ -3,8 +3,10 @@ import 'dart:convert';
 import 'dart:math';
 import 'dart:ui';
 
+import 'package:dismissible_page/dismissible_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:myst/data/theme.dart';
 import 'package:myst/data/translation.dart';
 import 'package:myst/data/userdata.dart';
@@ -32,6 +34,8 @@ bool built = false;
 bool readMessageShown = false;
 double connectionIndicatorProgress = 0;
 double sendTransition = 0;
+double imageRoundedAmount = 0;
+String heroImageUrl = "";
 
 void startTransition() {
   if (transitionProgress != 0 || targetBarHeight > 134 || targetFieldHeight > 119) return;
@@ -157,34 +161,67 @@ class _MessageState extends State<Message> {
                 ),
               ],
             ),
-            SizedBox(
-              width: MediaQuery.of(context).size.width - 60,
-              child: RichText(
-                text: TextSpan(children: [
-                  TextSpan(
-                    text: widget.message['message'] ?? "",
-                    style: getFont("mainfont")(
-                      color: getColor("maintext"),
+            Builder(builder: (context) {
+              if (widget.message["type"] == "image") {
+                return GestureDetector(
+                  onTap: () {
+                    context.pushTransparentRoute(ImageView(url: sentImages[widget.message["message"]] ?? ""));
+                    Timer(const Duration(milliseconds: 200), () {
+                      imageRoundedAmount = 0;
+                      heroImageUrl = sentImages[widget.message["message"]] ?? "";
+                    });
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 4.0, bottom: 4.0),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(10 * (heroImageUrl == sentImages[widget.message["message"]] ? imageRoundedAmount : 1)),
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          maxWidth: MediaQuery.of(context).size.width / 1.5,
+                          maxHeight: MediaQuery.of(context).size.height / 2,
+                        ),
+                        child: Hero(
+                          tag: sentImages[widget.message["message"]] ?? "",
+                          child: ProfileImage(
+                            url: sentImages[widget.message["message"]] ?? "",
+                            type: "banner",
+                            username: "sentimage",
+                          ),
+                        ),
+                      ),
                     ),
                   ),
-                  WidgetSpan(
-                    child: Builder(builder: (context) {
-                      if (!(widget.read ?? false)) return Container();
-                      return Padding(
-                        padding: const EdgeInsets.only(left: 4),
-                        child: Image.asset(
-                          "assets/read.png",
-                          color: getColor("secondarytext"),
-                          width: 12,
-                          height: 12,
-                          opacity: const AlwaysStoppedAnimation(0.5),
-                        ),
-                      );
-                    }),
-                  ),
-                ]),
-              ),
-            ),
+                );
+              }
+              return SizedBox(
+                width: MediaQuery.of(context).size.width - 60,
+                child: RichText(
+                  text: TextSpan(children: [
+                    TextSpan(
+                      text: widget.message['message'] ?? "",
+                      style: getFont("mainfont")(
+                        color: getColor("maintext"),
+                      ),
+                    ),
+                    WidgetSpan(
+                      child: Builder(builder: (context) {
+                        if (!(widget.read ?? false)) return Container();
+                        return Padding(
+                          padding: const EdgeInsets.only(left: 4),
+                          child: Image.asset(
+                            "assets/read.png",
+                            color: getColor("secondarytext"),
+                            width: 12,
+                            height: 12,
+                            opacity: const AlwaysStoppedAnimation(0.5),
+                          ),
+                        );
+                      }),
+                    ),
+                  ]),
+                ),
+              );
+            }),
           ],
         ),
       ],
@@ -259,6 +296,11 @@ class _MessagesViewState extends State<MessagesView> {
       }
     } catch (e) {
       shouldRebuild = true;
+    }
+    for (final message in currentMessages) {
+      if (message["type"] == "image") {
+        await getSentPicture(message["message"]);
+      }
     }
   }
 
@@ -543,6 +585,56 @@ class _MessagesViewState extends State<MessagesView> {
                                 alignment: Alignment.center,
                                 child: Row(
                                   children: [
+                                    SizedBox(
+                                      width: 40 * (1 - Curves.easeInOut.transform(sendTransition)),
+                                      child: Opacity(
+                                        opacity: 1 - Curves.easeInOut.transform(sendTransition),
+                                        child: GestureDetector(
+                                          onTap: () async {
+                                            XFile? image = await ImagePicker().pickImage(source: ImageSource.camera);
+                                            if (image == null) {
+                                              return;
+                                            }
+                                            await sendImages([image], currentConversation["email"]);
+                                          },
+                                          child: Container(
+                                            width: 35,
+                                            height: 35,
+                                            padding: const EdgeInsets.only(top: 2.0, bottom: 2.0),
+                                            child: Icon(
+                                              Icons.camera_outlined,
+                                              color: getColor("secondarytext"),
+                                              size: 26,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      width: 40 * (1 - Curves.easeInOut.transform(sendTransition)),
+                                      child: Opacity(
+                                        opacity: 1 - Curves.easeInOut.transform(sendTransition),
+                                        child: GestureDetector(
+                                          onTap: () async {
+                                            List<XFile> images = await ImagePicker().pickMultiImage() ?? [];
+                                            if (images.isEmpty) {
+                                              return;
+                                            }
+                                            await sendImages(images, currentConversation["email"]);
+                                          },
+                                          child: Container(
+                                            width: 35,
+                                            height: 35,
+                                            padding: const EdgeInsets.only(left: 8.0, right: 6.0, top: 2.0, bottom: 2.0),
+                                            child: Icon(
+                                              Icons.image_outlined,
+                                              color: getColor("secondarytext"),
+                                              size: 26,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
                                     Expanded(
                                       child: ClipRRect(
                                         borderRadius: BorderRadius.circular(30),

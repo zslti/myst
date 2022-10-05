@@ -103,7 +103,7 @@ class _MainViewState extends State<MainView> {
 
   @override
   Widget build(BuildContext context) {
-    Timer(const Duration(milliseconds: 50), () {
+    Timer(const Duration(milliseconds: 250), () {
       if (shouldRebuild) {
         setState(() {});
       } else {

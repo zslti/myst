@@ -5,9 +5,11 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
+import 'package:dismissible_page/dismissible_page.dart';
 import 'package:encrypt/encrypt.dart' as encrypt;
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
+import 'package:myst/ui/messages.dart';
 
 import '../main.dart';
 import '../ui/mainscreen.dart';
@@ -339,6 +341,9 @@ String hourMinuteFormat(int hour, int minute) {
       suffix = "PM";
       hour -= 12;
     }
+    if (hour == 0 && suffix == "PM") {
+      hour = 12;
+    }
     String minuteString = minute.toString();
     if (minuteString.length == 1) {
       minuteString = "0$minuteString";
@@ -438,6 +443,9 @@ class _ProfileImageState extends State<ProfileImage> {
           image: downloadedImages["default"],
         );
       }
+      if (widget.username == "sentimage") {
+        return const SizedBox();
+      }
       String myName = widget.username.isEmpty ? myDisplayName : widget.username;
       if (myName.length < 3) {
         myName += "   ";
@@ -448,6 +456,7 @@ class _ProfileImageState extends State<ProfileImage> {
         (myName.codeUnitAt(1) % 10 * 25.5).round(),
         (myName.codeUnitAt(2) % 10 * 25.5).round(),
       ).withOpacity(0.2);
+
       return Container(
         width: double.infinity,
         height: double.infinity,
@@ -474,7 +483,7 @@ class _ProfileImageState extends State<ProfileImage> {
       );
     } else {
       return Image(
-        fit: BoxFit.fitWidth,
+        fit: widget.type == "image" ? BoxFit.fitHeight : BoxFit.fitWidth,
         width: double.infinity,
         errorBuilder: (BuildContext context, Object exception, StackTrace? stackTrace) {
           return Image(
@@ -556,4 +565,44 @@ Future<List<String>> getRandomQuote() async {
     return ["", ""];
   }
   return [jsonDecode(response)[0]["q"], jsonDecode(response)[0]["a"]];
+}
+
+class ImageView extends StatefulWidget {
+  const ImageView({super.key, required this.url});
+  final String url;
+  @override
+  State<ImageView> createState() => _ImageViewState();
+}
+
+class _ImageViewState extends State<ImageView> {
+  @override
+  Widget build(BuildContext context) {
+    return DismissiblePage(
+      onDismissed: () {
+        Timer(const Duration(milliseconds: 200), () {
+          Timer.periodic(const Duration(milliseconds: 10), (timer) {
+            imageRoundedAmount += 0.1;
+            if (imageRoundedAmount >= 1) {
+              imageRoundedAmount = 1;
+              timer.cancel();
+            }
+            if (mounted) {
+              setState(() {});
+            }
+          });
+        });
+        Navigator.of(context).pop();
+      },
+      direction: DismissiblePageDismissDirection.multi,
+      isFullScreen: true,
+      child: Hero(
+        tag: widget.url,
+        child: ProfileImage(
+          url: widget.url,
+          type: "banner",
+          username: "sentimage",
+        ),
+      ),
+    );
+  }
 }
