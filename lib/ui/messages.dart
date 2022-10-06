@@ -165,6 +165,7 @@ class _MessageState extends State<Message> {
               if (widget.message["type"] == "image") {
                 return GestureDetector(
                   onTap: () {
+                    FocusScope.of(context).unfocus();
                     context.pushTransparentRoute(ImageView(url: sentImages[widget.message["message"]] ?? ""));
                     Timer(const Duration(milliseconds: 200), () {
                       imageRoundedAmount = 0;

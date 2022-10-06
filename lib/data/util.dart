@@ -567,6 +567,9 @@ Future<List<String>> getRandomQuote() async {
   return [jsonDecode(response)[0]["q"], jsonDecode(response)[0]["a"]];
 }
 
+TransformationController _transformationController = TransformationController();
+TapDownDetails _doubleTapDetails = TapDownDetails();
+
 class ImageView extends StatefulWidget {
   const ImageView({super.key, required this.url});
   final String url;
@@ -576,31 +579,100 @@ class ImageView extends StatefulWidget {
 
 class _ImageViewState extends State<ImageView> {
   @override
+  void initState() {
+    super.initState();
+    _transformationController.value = Matrix4.identity();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return DismissiblePage(
-      onDismissed: () {
-        Timer(const Duration(milliseconds: 200), () {
-          Timer.periodic(const Duration(milliseconds: 10), (timer) {
-            imageRoundedAmount += 0.1;
-            if (imageRoundedAmount >= 1) {
-              imageRoundedAmount = 1;
-              timer.cancel();
-            }
-            if (mounted) {
-              setState(() {});
-            }
-          });
-        });
-        Navigator.of(context).pop();
+    return GestureDetector(
+      onDoubleTapDown: (details) {
+        _doubleTapDetails = details;
       },
-      direction: DismissiblePageDismissDirection.multi,
-      isFullScreen: true,
-      child: Hero(
-        tag: widget.url,
-        child: ProfileImage(
-          url: widget.url,
-          type: "banner",
-          username: "sentimage",
+      onDoubleTap: (() {
+        //if (_transformationController.value != Matrix4.identity()) {
+        //  _transformationController.value = Matrix4.identity();
+        //} else {
+        final position = _doubleTapDetails.localPosition;
+        bool zoomDirection = _transformationController.value == Matrix4.identity();
+        double zoomProgress = zoomDirection ? 0 : 1;
+
+        double incromentAmount = zoomDirection ? 0.05 : -0.05;
+        Timer.periodic(const Duration(milliseconds: 10), (timer) {
+          double adjustedZoomProgress = Curves.easeInOut.transform(zoomProgress) * (zoomDirection ? 1 : _transformationController.value[0] / 2);
+          _transformationController.value = Matrix4.identity()
+            ..translate(-position.dx * adjustedZoomProgress, -position.dy * adjustedZoomProgress)
+            ..scale(1 + adjustedZoomProgress);
+          zoomProgress += incromentAmount;
+          if (zoomProgress >= 1 && zoomDirection) {
+            zoomProgress = 1;
+            timer.cancel();
+            adjustedZoomProgress = Curves.easeInOut.transform(zoomProgress);
+            _transformationController.value = Matrix4.identity()
+              ..translate(-position.dx * adjustedZoomProgress, -position.dy * adjustedZoomProgress)
+              ..scale(1 + adjustedZoomProgress);
+          }
+          if (zoomProgress <= 0 && !zoomDirection) {
+            zoomProgress = 0;
+            timer.cancel();
+            adjustedZoomProgress = Curves.easeInOut.transform(zoomProgress);
+            _transformationController.value = Matrix4.identity()
+              ..translate(-position.dx * adjustedZoomProgress, -position.dy * adjustedZoomProgress)
+              ..scale(1 + adjustedZoomProgress);
+          }
+        });
+        //}
+      }),
+      child: DismissiblePage(
+        onDismissed: () {
+          Timer(const Duration(milliseconds: 200), () {
+            Timer.periodic(const Duration(milliseconds: 10), (timer) {
+              imageRoundedAmount += 0.03;
+              if (imageRoundedAmount >= 1) {
+                imageRoundedAmount = 1;
+                timer.cancel();
+              }
+              if (mounted) {
+                setState(() {});
+              }
+            });
+          });
+          Navigator.of(context).pop();
+        },
+        direction: DismissiblePageDismissDirection.multi,
+        isFullScreen: true,
+        child: Hero(
+          tag: widget.url,
+          child: InteractiveViewer(
+            transformationController: _transformationController,
+            onInteractionStart: (details) {
+              Offset offset = details.localFocalPoint;
+              if (details.pointerCount == 1 &&
+                  (offset.dx < 60 || offset.dx > MediaQuery.of(context).size.width - 60 || offset.dy > MediaQuery.of(context).size.height - 140)) {
+                Timer(const Duration(milliseconds: 200), () {
+                  Timer.periodic(const Duration(milliseconds: 10), (timer) {
+                    imageRoundedAmount += 0.03;
+                    if (imageRoundedAmount >= 1) {
+                      imageRoundedAmount = 1;
+                      timer.cancel();
+                    }
+                    if (mounted) {
+                      setState(() {});
+                    }
+                  });
+                });
+                Navigator.of(context).pop();
+              }
+            },
+            maxScale: 4,
+            minScale: 1,
+            child: ProfileImage(
+              url: widget.url,
+              type: "banner",
+              username: "sentimage",
+            ),
+          ),
         ),
       ),
     );
