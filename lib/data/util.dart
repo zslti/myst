@@ -1,4 +1,4 @@
-// ignore_for_file: depend_on_referenced_packages
+// ignore_for_file: depend_on_referenced_packages, library_private_types_in_public_api
 
 import 'dart:async';
 import 'dart:convert';
@@ -10,6 +10,7 @@ import 'package:encrypt/encrypt.dart' as encrypt;
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:myst/ui/messages.dart';
+import 'package:video_player/video_player.dart';
 
 import '../main.dart';
 import '../ui/mainscreen.dart';
@@ -678,3 +679,121 @@ class _ImageViewState extends State<ImageView> {
     );
   }
 }
+
+class VideoPlayerView extends StatefulWidget {
+  const VideoPlayerView({Key? key, required this.url}) : super(key: key);
+  final String url;
+  @override
+  _VideoPlayerViewState createState() => _VideoPlayerViewState();
+}
+
+class _VideoPlayerViewState extends State<VideoPlayerView> {
+  late VideoPlayerController _controller;
+
+  void _playVideo({bool init = false}) {
+    _controller = VideoPlayerController.network(widget.url)
+      ..addListener(() {
+        if (mounted) {
+          setState(() {});
+        }
+      })
+      // ..setLooping(true)
+      ..initialize().then((_) {
+        //_controller.play();
+        setState(() {});
+      });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _playVideo(init: true);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _controller.value.isInitialized
+        ? AspectRatio(
+            aspectRatio: _controller.value.aspectRatio,
+            child: VideoPlayer(_controller),
+          )
+        : Container();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _controller.dispose();
+  }
+}
+
+class FullscreenVideoPlayerView extends StatefulWidget {
+  const FullscreenVideoPlayerView({Key? key, required this.url}) : super(key: key);
+  final String url;
+  @override
+  _FullscreenVideoPlayerViewState createState() => _FullscreenVideoPlayerViewState();
+}
+
+class _FullscreenVideoPlayerViewState extends State<FullscreenVideoPlayerView> {
+  late VideoPlayerController _controller;
+
+  void _playVideo({bool init = false}) {
+    _controller = VideoPlayerController.network(widget.url)
+      ..addListener(() {
+        if (mounted) {
+          setState(() {});
+        }
+      })
+      ..setLooping(true)
+      ..initialize().then((_) {
+        _controller.play();
+        setState(() {});
+      });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _playVideo(init: true);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return DismissiblePage(
+      onDismissed: () {
+        Timer(const Duration(milliseconds: 200), () {
+          Timer.periodic(const Duration(milliseconds: 10), (timer) {
+            imageRoundedAmount += 0.03;
+            if (imageRoundedAmount >= 1) {
+              imageRoundedAmount = 1;
+              timer.cancel();
+            }
+            if (mounted) {
+              setState(() {});
+            }
+          });
+        });
+        Navigator.of(context).pop();
+      },
+      direction: DismissiblePageDismissDirection.multi,
+      isFullScreen: true,
+      child: Hero(
+        tag: widget.url,
+        child: _controller.value.isInitialized
+            ? AspectRatio(
+                aspectRatio: _controller.value.aspectRatio,
+                child: VideoPlayer(_controller),
+              )
+            : Container(),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _controller.dispose();
+  }
+}
+
+RegExp emailRegex = RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+");

@@ -5,6 +5,7 @@ import 'dart:ui';
 
 import 'package:dismissible_page/dismissible_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:myst/data/theme.dart';
@@ -12,6 +13,7 @@ import 'package:myst/data/translation.dart';
 import 'package:myst/data/userdata.dart';
 import 'package:myst/data/util.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 import '../main.dart';
 import 'conversations.dart';
@@ -166,25 +168,25 @@ class _MessageState extends State<Message> {
                 return GestureDetector(
                   onTap: () {
                     FocusScope.of(context).unfocus();
-                    context.pushTransparentRoute(ImageView(url: sentImages[widget.message["message"]] ?? ""));
+                    context.pushTransparentRoute(ImageView(url: sentMedia[widget.message["message"]] ?? ""));
                     Timer(const Duration(milliseconds: 200), () {
                       imageRoundedAmount = 0;
-                      heroImageUrl = sentImages[widget.message["message"]] ?? "";
+                      heroImageUrl = sentMedia[widget.message["message"]] ?? "";
                     });
                   },
                   child: Padding(
                     padding: const EdgeInsets.only(top: 4.0, bottom: 4.0),
                     child: ClipRRect(
-                      borderRadius: BorderRadius.circular(10 * (heroImageUrl == sentImages[widget.message["message"]] ? imageRoundedAmount : 1)),
+                      borderRadius: BorderRadius.circular(10 * (heroImageUrl == sentMedia[widget.message["message"]] ? imageRoundedAmount : 1)),
                       child: ConstrainedBox(
                         constraints: BoxConstraints(
                           maxWidth: MediaQuery.of(context).size.width / 1.5,
                           maxHeight: MediaQuery.of(context).size.height / 2,
                         ),
                         child: Hero(
-                          tag: sentImages[widget.message["message"]] ?? "",
+                          tag: sentMedia[widget.message["message"]] ?? "",
                           child: ProfileImage(
-                            url: sentImages[widget.message["message"]] ?? "",
+                            url: sentMedia[widget.message["message"]] ?? "",
                             type: "banner",
                             username: "sentimage",
                           ),
@@ -194,33 +196,101 @@ class _MessageState extends State<Message> {
                   ),
                 );
               }
-              return SizedBox(
-                width: MediaQuery.of(context).size.width - 60,
-                child: RichText(
-                  text: TextSpan(children: [
-                    TextSpan(
-                      text: widget.message['message'] ?? "",
-                      style: getFont("mainfont")(
-                        color: getColor("maintext"),
+              if (widget.message["type"] == "video") {
+                return GestureDetector(
+                  onTap: () {
+                    FocusScope.of(context).unfocus();
+                    context.pushTransparentRoute(FullscreenVideoPlayerView(url: sentMedia[widget.message["message"]] ?? ""));
+                    Timer(const Duration(milliseconds: 200), () {
+                      imageRoundedAmount = 0;
+                      heroImageUrl = sentMedia[widget.message["message"]] ?? "";
+                    });
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 4.0, bottom: 4.0),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(10 * (heroImageUrl == sentMedia[widget.message["message"]] ? imageRoundedAmount : 1)),
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          maxWidth: MediaQuery.of(context).size.width / 1.5,
+                          maxHeight: MediaQuery.of(context).size.height / 2,
+                        ),
+                        child: Hero(
+                          tag: sentMedia[widget.message["message"]] ?? "",
+                          child: Builder(builder: (context) {
+                            if ((sentMedia[widget.message["message"]] ?? "").isEmpty) {
+                              return Container();
+                            }
+                            return VideoPlayerView(url: sentMedia[widget.message["message"]] ?? "");
+                          }),
+                        ),
                       ),
                     ),
-                    WidgetSpan(
-                      child: Builder(builder: (context) {
-                        if (!(widget.read ?? false)) return Container();
-                        return Padding(
-                          padding: const EdgeInsets.only(left: 4),
-                          child: Image.asset(
-                            "assets/read.png",
-                            color: getColor("secondarytext"),
-                            width: 12,
-                            height: 12,
-                            opacity: const AlwaysStoppedAnimation(0.5),
+                  ),
+                );
+              }
+              return SizedBox(
+                width: MediaQuery.of(context).size.width - 60,
+                child: Builder(builder: (context) {
+                  String text = widget.message['message'] ?? "";
+                  List textSegments = [];
+                  RegExp linkRegex = RegExp("[1-z][.][1-z]");
+
+                  for (String word in text.split(" ")) {
+                    if (linkRegex.hasMatch(word)) {
+                      try {
+                        textSegments[textSegments.length - 1] += " ";
+                        // ignore: empty_catches
+                      } catch (e) {}
+                      textSegments.add(word);
+                      textSegments.add("");
+                    } else {
+                      try {
+                        textSegments[textSegments.length - 1] += " $word";
+                      } catch (e) {
+                        textSegments.add(word);
+                      }
+                    }
+                  }
+
+                  return RichText(
+                    text: TextSpan(children: [
+                      for (String text in textSegments)
+                        TextSpan(
+                          text: text,
+                          style: getFont("mainfont")(
+                            color: getColor("maintext"),
+                            decoration: linkRegex.hasMatch(text) ? TextDecoration.underline : TextDecoration.none,
                           ),
-                        );
-                      }),
-                    ),
-                  ]),
-                ),
+                          recognizer: TapGestureRecognizer()
+                            ..onTap = () async {
+                              if (!linkRegex.hasMatch(text)) return;
+                              String link = 'https://${text.trim().replaceAll("http://", "").replaceAll("https://", "").replaceAll("www.", "")}';
+                              try {
+                                await launchUrlString(link, mode: LaunchMode.externalApplication);
+                              } catch (e) {
+                                await launchUrlString(link);
+                              }
+                            },
+                        ),
+                      WidgetSpan(
+                        child: Builder(builder: (context) {
+                          if (!(widget.read ?? false)) return Container();
+                          return Padding(
+                            padding: const EdgeInsets.only(left: 4),
+                            child: Image.asset(
+                              "assets/read.png",
+                              color: getColor("secondarytext"),
+                              width: 12,
+                              height: 12,
+                              opacity: const AlwaysStoppedAnimation(0.5),
+                            ),
+                          );
+                        }),
+                      ),
+                    ]),
+                  );
+                }),
               );
             }),
           ],
@@ -299,8 +369,8 @@ class _MessagesViewState extends State<MessagesView> {
       shouldRebuild = true;
     }
     for (final message in currentMessages) {
-      if (message["type"] == "image") {
-        await getSentPicture(message["message"]);
+      if (message["type"] == "image" || message["type"] == "video") {
+        await getSentMedia(message["message"]);
       }
     }
   }
@@ -598,6 +668,13 @@ class _MessagesViewState extends State<MessagesView> {
                                             }
                                             await sendImages([image], currentConversation["email"]);
                                           },
+                                          onLongPress: () async {
+                                            XFile? video = await ImagePicker().pickVideo(source: ImageSource.camera);
+                                            if (video == null) {
+                                              return;
+                                            }
+                                            await sendVideos([video], currentConversation["email"]);
+                                          },
                                           child: Container(
                                             width: 35,
                                             height: 35,
@@ -623,6 +700,13 @@ class _MessagesViewState extends State<MessagesView> {
                                             }
                                             await sendImages(images, currentConversation["email"]);
                                           },
+                                          onLongPress: () async {
+                                            XFile? video = await ImagePicker().pickVideo(source: ImageSource.gallery);
+                                            if (video == null) {
+                                              return;
+                                            }
+                                            await sendVideos([video], currentConversation["email"]);
+                                          },
                                           child: Container(
                                             width: 35,
                                             height: 35,
@@ -643,7 +727,6 @@ class _MessagesViewState extends State<MessagesView> {
                                           height: currentFieldHeight,
                                           child: TextField(
                                             maxLines: 5,
-                                            //keyboardType: TextInputType.multiline,
                                             onChanged: (str) {
                                               Timer.periodic(const Duration(milliseconds: 10), (timer) {
                                                 if (messageController.text.isEmpty) {

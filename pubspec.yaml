@@ -57,6 +57,8 @@ dependencies:
   get: ^4.6.5
   dismissible_page: ^0.7.3
   zoom_widget: ^2.0.0
+  video_player: ^2.4.7
+  url_launcher: ^6.1.6
 
 dev_dependencies:
   flutter_test:

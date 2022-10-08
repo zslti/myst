@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -108,17 +109,35 @@ class _MyAppState extends State<MyApp> {
     // });
   }
 
+  Future<void> loadImages() async {
+    List messages = await getAllMessages();
+    messages.removeWhere((element) {
+      return !element["users"].contains(FirebaseAuth.instance.currentUser?.email);
+    });
+    //remove messages from the list that dont have the type image
+    messages.removeWhere((element) {
+      return element["type"] != "image";
+    });
+    for (var message in messages.getRange(0, min(50, messages.length))) {
+      if (message["type"] == "image") {
+        getSentMedia(message["message"]);
+      }
+    }
+  }
+
   Future<bool> initializeApp() async {
     prefs?.setString("theme", ""); //TODO: remove line when everything is done
-    //TODO: start loading images when app starts
-    //TODO: send image, video, audio, file, link(web, yt, fb..), location(if i can do it), emoji
+    //TODO: improve video player screen
+    //TODO: audio, file, location(if i can do it), emoji
     //TODO: typing indicator
-    //TODO: message actions like delete, copy, forward, reply
+    //TODO: message actions like delete, copy, forward, reply, download, share
     //TODO: search in conversation(in right card)
     //TODO: delete conversation
     //TODO: when deleting account delete all conversations
     //TODO: calls
+    //TODO: compress videos, images, audio
     //TODO: custom themes
+    //TODO: youtube embed
     //TODO: watch together
     //TODO: games
 
@@ -147,6 +166,7 @@ class _MyAppState extends State<MyApp> {
       if (DateTime.now().millisecondsSinceEpoch - lastGestureTime < 10000) {
         updateStatus();
       }
+      //precacheImages(context);
     });
 
     if (!hasLanguageSelected) {
@@ -184,6 +204,7 @@ class _MyAppState extends State<MyApp> {
       getPicture(conversation["email"]);
       getPicture(conversation["email"], folder: "banners");
     }
+    loadImages();
     await Future.delayed(const Duration(milliseconds: 3000));
     bool forceLogout = await updateSignedinDevices();
     if (forceLogout) {

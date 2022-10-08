@@ -8,6 +8,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 
@@ -685,21 +686,46 @@ Future<void> sendImages(List<XFile> images, String to) async {
   }
 }
 
-Map sentImages = {};
+Map sentMedia = {};
 
-Future<String> getSentPicture(String path) async {
-  if (sentImages.containsKey(path)) {
-    return sentImages[path];
+Future<String> getSentMedia(String path) async {
+  if (sentMedia.containsKey(path)) {
+    return sentMedia[path];
   }
-  sentImages[path] = "";
+  sentMedia[path] = "";
   final storageRef = FirebaseStorage.instance.ref();
   final imageRef = storageRef.child(path);
   try {
     String url = await imageRef.getDownloadURL();
-    sentImages[path] = url;
+    sentMedia[path] = url;
     return url;
   } catch (e) {
-    sentImages[path] = "";
+    sentMedia[path] = "";
     return "";
+  }
+}
+
+List cachedImages = [];
+void precacheImages(BuildContext context) {
+  List images = sentMedia.values.toList() + downloadedImages.values.toList();
+  for (final image in images) {
+    if (!cachedImages.contains(image)) {
+      try {
+        precacheImage(NetworkImage(image), context);
+        cachedImages.add(image);
+        // ignore: empty_catches
+      } catch (e) {}
+    }
+  }
+}
+
+Future<void> sendVideos(List<XFile> videos, String to) async {
+  final storageRef = FirebaseStorage.instance.ref();
+  for (final video in videos) {
+    final int now = DateTime.now().millisecondsSinceEpoch;
+    String path = "videos/${encryptText('${FirebaseAuth.instance.currentUser?.email}$now')}";
+    final videoRef = storageRef.child(path);
+    await videoRef.putFile(File(video.path));
+    sendMessage(path, to, type: "video");
   }
 }
