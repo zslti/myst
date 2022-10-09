@@ -411,7 +411,7 @@ String timestampToDate(int timestamp, {bool showOnlyDate = false}) {
   }
 }
 
-Map downloadedImages = {
+Map downloadedMedia = {
   "default": Image.network(
     "https://i.pinimg.com/736x/6b/f6/2c/6bf62c6c123cdcd33d2d693782a46b34.jpg",
   ).image
@@ -441,7 +441,7 @@ class _ProfileImageState extends State<ProfileImage> {
     if (widget.url.isEmpty || widget.url.contains(" ") || !widget.url.contains("https://")) {
       if (widget.type == "profile") {
         return Image(
-          image: downloadedImages["default"],
+          image: downloadedMedia["default"],
         );
       }
       if (widget.username == "sentimage") {
@@ -464,8 +464,8 @@ class _ProfileImageState extends State<ProfileImage> {
         color: color,
       );
     }
-    if (!downloadedImages.containsKey(widget.url)) {
-      downloadedImages[widget.url] = Image.network(
+    if (!downloadedMedia.containsKey(widget.url)) {
+      downloadedMedia[widget.url] = Image.network(
         widget.url,
       ).image;
     }
@@ -476,10 +476,10 @@ class _ProfileImageState extends State<ProfileImage> {
           fit: BoxFit.cover,
           errorBuilder: (BuildContext context, Object exception, StackTrace? stackTrace) {
             return Image(
-              image: downloadedImages["default"],
+              image: downloadedMedia["default"],
             );
           },
-          image: downloadedImages[widget.url],
+          image: downloadedMedia[widget.url],
         ),
       );
     } else {
@@ -488,10 +488,10 @@ class _ProfileImageState extends State<ProfileImage> {
         width: double.infinity,
         errorBuilder: (BuildContext context, Object exception, StackTrace? stackTrace) {
           return Image(
-            image: downloadedImages["default"],
+            image: downloadedMedia["default"],
           );
         },
-        image: downloadedImages[widget.url],
+        image: downloadedMedia[widget.url],
       );
     }
   }
@@ -643,39 +643,40 @@ class _ImageViewState extends State<ImageView> {
         },
         direction: DismissiblePageDismissDirection.multi,
         isFullScreen: true,
-        child: Hero(
-          tag: widget.url,
-          child: InteractiveViewer(
-            transformationController: _transformationController,
-            onInteractionStart: (details) {
-              Offset offset = details.localFocalPoint;
-              if (details.pointerCount == 1 &&
-                  (offset.dx < 60 || offset.dx > MediaQuery.of(context).size.width - 60 || offset.dy > MediaQuery.of(context).size.height - 140)) {
-                Timer(const Duration(milliseconds: 200), () {
-                  Timer.periodic(const Duration(milliseconds: 10), (timer) {
-                    imageRoundedAmount += 0.03;
-                    if (imageRoundedAmount >= 1) {
-                      imageRoundedAmount = 1;
-                      timer.cancel();
-                    }
-                    if (mounted) {
-                      setState(() {});
-                    }
-                  });
+        child: //Hero(
+            //tag: widget.url,
+            //child:
+            InteractiveViewer(
+          transformationController: _transformationController,
+          onInteractionStart: (details) {
+            Offset offset = details.localFocalPoint;
+            if (details.pointerCount == 1 &&
+                (offset.dx < 60 || offset.dx > MediaQuery.of(context).size.width - 60 || offset.dy > MediaQuery.of(context).size.height - 140)) {
+              Timer(const Duration(milliseconds: 200), () {
+                Timer.periodic(const Duration(milliseconds: 10), (timer) {
+                  imageRoundedAmount += 0.03;
+                  if (imageRoundedAmount >= 1) {
+                    imageRoundedAmount = 1;
+                    timer.cancel();
+                  }
+                  if (mounted) {
+                    setState(() {});
+                  }
                 });
-                Navigator.of(context).pop();
-              }
-            },
-            maxScale: 4,
-            minScale: 1,
-            child: ProfileImage(
-              url: widget.url,
-              type: "banner",
-              username: "sentimage",
-            ),
+              });
+              Navigator.of(context).pop();
+            }
+          },
+          maxScale: 4,
+          minScale: 1,
+          child: ProfileImage(
+            url: widget.url,
+            type: "banner",
+            username: "sentimage",
           ),
         ),
       ),
+      //),
     );
   }
 }
@@ -691,7 +692,7 @@ class _VideoPlayerViewState extends State<VideoPlayerView> {
   late VideoPlayerController _controller;
 
   void _playVideo({bool init = false}) {
-    _controller = VideoPlayerController.network(widget.url)
+    _controller = (downloadedMedia[widget.url] ?? VideoPlayerController.network(widget.url))
       ..addListener(() {
         if (mounted) {
           setState(() {});
@@ -727,6 +728,8 @@ class _VideoPlayerViewState extends State<VideoPlayerView> {
   }
 }
 
+int lastVideoStateChange = 0;
+
 class FullscreenVideoPlayerView extends StatefulWidget {
   const FullscreenVideoPlayerView({Key? key, required this.url}) : super(key: key);
   final String url;
@@ -738,7 +741,8 @@ class _FullscreenVideoPlayerViewState extends State<FullscreenVideoPlayerView> {
   late VideoPlayerController _controller;
 
   void _playVideo({bool init = false}) {
-    _controller = VideoPlayerController.network(widget.url)
+    _controller = (VideoPlayerController.network("https://i.imgur.com/3fkG0PD.mp4"))
+      //_controller = (downloadedMedia[widget.url] ?? VideoPlayerController.network(widget.url))
       ..addListener(() {
         if (mounted) {
           setState(() {});
@@ -759,33 +763,119 @@ class _FullscreenVideoPlayerViewState extends State<FullscreenVideoPlayerView> {
 
   @override
   Widget build(BuildContext context) {
-    return DismissiblePage(
-      onDismissed: () {
-        Timer(const Duration(milliseconds: 200), () {
-          Timer.periodic(const Duration(milliseconds: 10), (timer) {
-            imageRoundedAmount += 0.03;
-            if (imageRoundedAmount >= 1) {
-              imageRoundedAmount = 1;
-              timer.cancel();
-            }
-            if (mounted) {
-              setState(() {});
-            }
-          });
-        });
-        Navigator.of(context).pop();
+    return GestureDetector(
+      onTap: () {
+        if (_controller.value.isPlaying) {
+          _controller.pause();
+        } else {
+          _controller.play();
+        }
+        lastVideoStateChange = DateTime.now().millisecondsSinceEpoch;
       },
-      direction: DismissiblePageDismissDirection.multi,
-      isFullScreen: true,
-      child: Hero(
-        tag: widget.url,
-        child: _controller.value.isInitialized
-            ? AspectRatio(
-                aspectRatio: _controller.value.aspectRatio,
-                child: VideoPlayer(_controller),
-              )
-            : Container(),
+      child: DismissiblePage(
+        onDismissed: () {
+          Timer(const Duration(milliseconds: 200), () {
+            Timer.periodic(const Duration(milliseconds: 10), (timer) {
+              imageRoundedAmount += 0.03;
+              if (imageRoundedAmount >= 1) {
+                imageRoundedAmount = 1;
+                timer.cancel();
+              }
+              if (mounted) {
+                setState(() {});
+              }
+            });
+          });
+          Navigator.of(context).pop();
+        },
+        direction: DismissiblePageDismissDirection.multi,
+        isFullScreen: false,
+        child: //Hero(
+            //tag: widget.url,
+            //child:
+            Scaffold(
+          backgroundColor: Colors.black,
+          body: _controller.value.isInitialized
+              ? Stack(
+                  children: [
+                    Center(
+                      child: AspectRatio(
+                        aspectRatio: _controller.value.aspectRatio,
+                        child: Stack(
+                          children: [
+                            VideoPlayer(_controller),
+                            Builder(builder: (context) {
+                              Timer(const Duration(milliseconds: 100), () {
+                                setState(() {});
+                              });
+                              return AnimatedOpacity(
+                                opacity: DateTime.now().millisecondsSinceEpoch - lastVideoStateChange < 500 ? 0.75 : 0,
+                                duration: const Duration(milliseconds: 200),
+                                child: Center(
+                                  child: Icon(_controller.value.isPlaying ? Icons.play_arrow : Icons.pause, color: Colors.white, size: 100),
+                                ),
+                              );
+                            }),
+                          ],
+                        ),
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        if (_controller.value.isPlaying) {
+                          _controller.pause();
+                        } else {
+                          _controller.play();
+                        }
+                        lastVideoStateChange = DateTime.now().millisecondsSinceEpoch;
+                      },
+                      child: AnimatedOpacity(
+                        opacity: DateTime.now().millisecondsSinceEpoch - lastVideoStateChange < 2500 ? 0.75 : 0,
+                        duration: const Duration(milliseconds: 200),
+                        child: Align(
+                          alignment: Alignment.bottomCenter,
+                          child: Padding(
+                            padding: const EdgeInsets.only(bottom: 8, left: 16, right: 16),
+                            child: Column(
+                              children: [
+                                const Expanded(
+                                  child: SizedBox(
+                                    height: double.infinity,
+                                  ),
+                                ),
+                                Row(
+                                  children: [
+                                    Text(
+                                      _controller.value.position.toString().split(".")[0],
+                                      style: const TextStyle(color: Colors.white),
+                                    ),
+                                    Expanded(
+                                      child: Slider(
+                                        value: _controller.value.position.inMilliseconds / _controller.value.duration.inMilliseconds,
+                                        onChanged: (value) {
+                                          _controller.seekTo(Duration(milliseconds: (value * _controller.value.duration.inMilliseconds).toInt()));
+                                          _controller.play();
+                                        },
+                                      ),
+                                    ),
+                                    Text(
+                                      _controller.value.duration.toString().split(".")[0],
+                                      style: const TextStyle(color: Colors.white),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    )
+                  ],
+                )
+              : Container(),
+        ),
       ),
+      //),
     );
   }
 

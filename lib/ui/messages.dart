@@ -183,14 +183,15 @@ class _MessageState extends State<Message> {
                           maxWidth: MediaQuery.of(context).size.width / 1.5,
                           maxHeight: MediaQuery.of(context).size.height / 2,
                         ),
-                        child: Hero(
-                          tag: sentMedia[widget.message["message"]] ?? "",
-                          child: ProfileImage(
-                            url: sentMedia[widget.message["message"]] ?? "",
-                            type: "banner",
-                            username: "sentimage",
-                          ),
+                        child: //Hero(
+                            //tag: sentMedia[widget.message["message"]] ?? "",
+                            //child:
+                            ProfileImage(
+                          url: sentMedia[widget.message["message"]] ?? "",
+                          type: "banner",
+                          username: "sentimage",
                         ),
+                        //),
                       ),
                     ),
                   ),
@@ -200,10 +201,12 @@ class _MessageState extends State<Message> {
                 return GestureDetector(
                   onTap: () {
                     FocusScope.of(context).unfocus();
-                    context.pushTransparentRoute(FullscreenVideoPlayerView(url: sentMedia[widget.message["message"]] ?? ""));
+                    //context.pushTransparentRoute(FullscreenVideoPlayerView(url: sentMedia[widget.message["message"]] ?? ""));
+                    context.pushTransparentRoute(const FullscreenVideoPlayerView(url: "https://i.imgur.com/3fkG0PD.mp4"));
                     Timer(const Duration(milliseconds: 200), () {
                       imageRoundedAmount = 0;
-                      heroImageUrl = sentMedia[widget.message["message"]] ?? "";
+                      //heroImageUrl = sentMedia[widget.message["message"]] ?? "";
+                      heroImageUrl = "https://i.imgur.com/3fkG0PD.mp4";
                     });
                   },
                   child: Padding(
@@ -215,16 +218,18 @@ class _MessageState extends State<Message> {
                           maxWidth: MediaQuery.of(context).size.width / 1.5,
                           maxHeight: MediaQuery.of(context).size.height / 2,
                         ),
-                        child: Hero(
-                          tag: sentMedia[widget.message["message"]] ?? "",
-                          child: Builder(builder: (context) {
-                            if ((sentMedia[widget.message["message"]] ?? "").isEmpty) {
-                              return Container();
-                            }
-                            return VideoPlayerView(url: sentMedia[widget.message["message"]] ?? "");
-                          }),
-                        ),
+                        child: //Hero(
+                            //tag: sentMedia[widget.message["message"]] ?? "",
+                            //tag: "https://i.imgur.com/3fkG0PD.mp4$heroImageUrl",
+                            //child:
+                            Builder(builder: (context) {
+                          // if ((sentMedia[widget.message["message"]] ?? "").isEmpty) {
+                          //   return Container();
+                          // }
+                          return const VideoPlayerView(url: "https://i.imgur.com/3fkG0PD.mp4");
+                        }),
                       ),
+                      //),
                     ),
                   ),
                 );

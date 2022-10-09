@@ -11,6 +11,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
+import 'package:video_player/video_player.dart';
 
 import '../main.dart';
 import 'util.dart';
@@ -698,6 +699,9 @@ Future<String> getSentMedia(String path) async {
   try {
     String url = await imageRef.getDownloadURL();
     sentMedia[path] = url;
+    if (!downloadedMedia.containsKey(path) && path.contains("videos/")) {
+      downloadedMedia[path] = VideoPlayerController.network(url);
+    }
     return url;
   } catch (e) {
     sentMedia[path] = "";
@@ -707,7 +711,7 @@ Future<String> getSentMedia(String path) async {
 
 List cachedImages = [];
 void precacheImages(BuildContext context) {
-  List images = sentMedia.values.toList() + downloadedImages.values.toList();
+  List images = sentMedia.values.toList() + downloadedMedia.values.toList();
   for (final image in images) {
     if (!cachedImages.contains(image)) {
       try {

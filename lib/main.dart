@@ -127,8 +127,7 @@ class _MyAppState extends State<MyApp> {
 
   Future<bool> initializeApp() async {
     prefs?.setString("theme", ""); //TODO: remove line when everything is done
-    //TODO: improve video player screen
-    //TODO: audio, file, location(if i can do it), emoji
+    //TODO: send audio, file, phone number, location(if i can do it), emoji
     //TODO: typing indicator
     //TODO: message actions like delete, copy, forward, reply, download, share
     //TODO: search in conversation(in right card)
@@ -140,7 +139,7 @@ class _MyAppState extends State<MyApp> {
     //TODO: youtube embed
     //TODO: watch together
     //TODO: games
-
+    //TODO: optimize downloading videos
     //TODO: change push animation
     final themeData = prefs?.getString("theme") ?? "";
 
