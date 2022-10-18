@@ -733,3 +733,17 @@ Future<void> sendVideos(List<XFile> videos, String to) async {
     sendMessage(path, to, type: "video");
   }
 }
+
+Future<void> sendAudios(List<File> audios, String to) async {
+  // if (isRecording) {
+  //   return;
+  // }
+  final storageRef = FirebaseStorage.instance.ref();
+  for (final audio in audios) {
+    final int now = DateTime.now().millisecondsSinceEpoch;
+    String path = "audios/${encryptText('${FirebaseAuth.instance.currentUser?.email}$now')}";
+    final audioRef = storageRef.child(path);
+    await audioRef.putFile(audio);
+    sendMessage(path, to, type: "audio");
+  }
+}

@@ -127,7 +127,8 @@ class _MyAppState extends State<MyApp> {
 
   Future<bool> initializeApp() async {
     prefs?.setString("theme", ""); //TODO: remove line when everything is done
-    //TODO: send audio, file, phone number, location(if i can do it), emoji
+    //TODO: improve sending audio
+    //TODO: send file, phone number, location(if i can do it), emoji
     //TODO: typing indicator
     //TODO: message actions like delete, copy, forward, reply, download, share
     //TODO: search in conversation(in right card)
@@ -147,6 +148,9 @@ class _MyAppState extends State<MyApp> {
       options: DefaultFirebaseOptions.currentPlatform,
     );
 
+    // await FlutterDownloader.initialize(
+    //   ignoreSsl: true,
+    // );
     currentTheme = dark;
     if (themeData.isNotEmpty && jsonDecode(themeData) != null) {
       currentTheme = jsonDecode(themeData);

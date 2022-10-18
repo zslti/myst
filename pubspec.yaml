@@ -59,6 +59,12 @@ dependencies:
   zoom_widget: ^2.0.0
   video_player: ^2.4.7
   url_launcher: ^6.1.6
+  record: ^4.4.1
+  path_provider: ^2.0.11
+  audioplayers: ^1.1.1
+  audio_waveforms: ^0.1.5+1
+  flutter_downloader: ^1.8.4
+  just_waveform: ^0.0.3
 
 dev_dependencies:
   flutter_test:

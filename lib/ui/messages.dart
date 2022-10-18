@@ -1,8 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'dart:math';
 import 'dart:ui';
 
+//import 'package:audio_waveforms/audio_waveforms.dart';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:dismissible_page/dismissible_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
@@ -12,6 +15,8 @@ import 'package:myst/data/theme.dart';
 import 'package:myst/data/translation.dart';
 import 'package:myst/data/userdata.dart';
 import 'package:myst/data/util.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:record/record.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
@@ -38,6 +43,11 @@ double connectionIndicatorProgress = 0;
 double sendTransition = 0;
 double imageRoundedAmount = 0;
 String heroImageUrl = "";
+final record = Record();
+final player = AudioPlayer();
+Map waveForms = {};
+String currentAudioMessage = "";
+bool isRecording = false;
 
 void startTransition() {
   if (transitionProgress != 0 || targetBarHeight > 134 || targetFieldHeight > 119) return;
@@ -207,6 +217,7 @@ class _MessageState extends State<Message> {
                       imageRoundedAmount = 0;
                       //heroImageUrl = sentMedia[widget.message["message"]] ?? "";
                       heroImageUrl = "https://i.imgur.com/3fkG0PD.mp4";
+                      //systemchrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
                     });
                   },
                   child: Padding(
@@ -233,6 +244,72 @@ class _MessageState extends State<Message> {
                     ),
                   ),
                 );
+              }
+              if (widget.message["type"] == "audio") {
+                return Row(
+                  children: [
+                    GestureDetector(
+                      onTap: () async {
+                        if (player.state == PlayerState.playing) {
+                          player.pause();
+                        } else {
+                          await player.setSourceUrl(sentMedia[widget.message["message"]]);
+                          player.resume();
+                          currentAudioMessage = sentMedia[widget.message["message"]];
+                        }
+                      },
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: Container(
+                          color: getColor("background"),
+                          child: Row(
+                            children: [
+                              Icon(
+                                currentAudioMessage == sentMedia[widget.message["message"]]
+                                    ? player.state == PlayerState.playing
+                                        ? Icons.pause_rounded
+                                        : Icons.play_arrow_rounded
+                                    : Icons.play_arrow_rounded,
+                                color: getColor("secondarytext"),
+                                size: 35,
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(right: 8.0),
+                                child: Text(
+                                  translation[currentLanguage]["voicemessage"],
+                                  style: getFont("mainfont")(
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 12,
+                                    color: getColor("secondarytext"),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    // Builder(builder: (context) {
+                    //   if (waveForms[sentMedia[widget.message["message"]]] == null) return const SizedBox();
+                    //   return AudioWaveformWidget(
+                    //     waveform: waveForms[sentMedia[widget.message["message"]]].waveform,
+                    //     start: Duration.zero,
+                    //     duration: waveForms[sentMedia[widget.message["message"]]].waveform.duration,
+                    //   );
+                    // })
+                  ],
+                );
+
+                //await playerController.preparePlayer();
+                // return GestureDetector(
+                //   onTap: () async {
+                //     //File file = File.fromUri(Uri.parse(widget.message['message']));
+                //     String path = await filePathFromUrl(sentMedia[widget.message["message"]]);
+                //     await playerController.preparePlayer(path);
+                //     playerController.startPlayer();
+                //   },
+                //   child: AudioFileWaveforms(size: const Size.square(100), playerController: playerController),
+                // );
               }
               return SizedBox(
                 width: MediaQuery.of(context).size.width - 60,
@@ -374,8 +451,16 @@ class _MessagesViewState extends State<MessagesView> {
       shouldRebuild = true;
     }
     for (final message in currentMessages) {
-      if (message["type"] == "image" || message["type"] == "video") {
+      if (message["type"] == "image" || message["type"] == "video" || message["type"] == "audio") {
         await getSentMedia(message["message"]);
+        if (message["type"] == "audio" && !waveForms.containsKey(message["message"]) && (sentMedia[message["message"]] ?? "").toString().isNotEmpty) {
+          // String filepath = await filePathFromUrl(sentMedia[message["message"]]);
+          // waveForms[sentMedia[message["message"]]] = JustWaveform.extract(
+          //   audioInFile: File(filepath),
+          //   waveOutFile: File("$filepath.wave"),
+          //   zoom: const WaveformZoom.pixelsPerSecond(100),
+          // );
+        }
       }
     }
   }
@@ -725,73 +810,141 @@ class _MessagesViewState extends State<MessagesView> {
                                         ),
                                       ),
                                     ),
+                                    SizedBox(
+                                      width: 40 * (1 - Curves.easeInOut.transform(sendTransition)),
+                                      child: Opacity(
+                                        opacity: 1 - Curves.easeInOut.transform(sendTransition),
+                                        child: GestureDetector(
+                                          onTap: () async {
+                                            if (await record.hasPermission()) {
+                                              int now = DateTime.now().millisecondsSinceEpoch;
+                                              //String email = FirebaseAuth.instance.currentUser?.email ?? "";
+                                              //isRecording = await record.isRecording();
+
+                                              String directory = (await getApplicationDocumentsDirectory()).path;
+                                              if (!isRecording) {
+                                                await record.start(
+                                                  path: '$directory/$now.mp4',
+                                                  encoder: AudioEncoder.aacLc,
+                                                  bitRate: 128000,
+                                                );
+                                              } else {
+                                                String path = await record.stop() ?? "";
+                                                File file = File(path);
+                                                await sendAudios([file], currentConversation["email"]);
+                                              }
+                                              isRecording = !isRecording;
+                                            }
+                                          },
+                                          child: Container(
+                                            width: 35,
+                                            height: 35,
+                                            padding: const EdgeInsets.only(top: 2.0, bottom: 2.0),
+                                            child: Center(
+                                              child: Stack(
+                                                children: [
+                                                  Icon(
+                                                    Icons.mic_none_sharp,
+                                                    color: getColor("secondarytext"),
+                                                    size: 26,
+                                                  ),
+                                                  AnimatedOpacity(
+                                                    opacity: isRecording ? 1 : 0,
+                                                    duration: const Duration(milliseconds: 200),
+                                                    child: const Icon(
+                                                      Icons.mic_none_sharp,
+                                                      color: Color.fromARGB(255, 189, 13, 0),
+                                                      size: 26,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
                                     Expanded(
                                       child: ClipRRect(
                                         borderRadius: BorderRadius.circular(30),
                                         child: SizedBox(
                                           height: currentFieldHeight,
-                                          child: TextField(
-                                            maxLines: 5,
-                                            onChanged: (str) {
-                                              Timer.periodic(const Duration(milliseconds: 10), (timer) {
-                                                if (messageController.text.isEmpty) {
-                                                  sendTransition -= 0.075;
-                                                } else {
-                                                  sendTransition += 0.075;
-                                                }
-                                                double transition = sendTransition;
-                                                sendTransition = min(1, max(0, sendTransition));
-                                                if (transition != sendTransition) {
-                                                  timer.cancel();
-                                                }
-                                              });
-                                              targetFieldHeight = max(
-                                                35,
-                                                14 +
-                                                    messageController.text.textHeight(
-                                                      getFont("mainfont")(
-                                                        color: getColor("secondarytext"),
-                                                        fontSize: 14,
-                                                      ),
-                                                      MediaQuery.of(context).size.width - 70,
-                                                    ),
+                                          child: Builder(builder: (context) {
+                                            if (isRecording) {
+                                              return Align(
+                                                alignment: Alignment.centerLeft,
+                                                child: Text(
+                                                  translation[currentLanguage]["recording"],
+                                                  style: getFont("mainfont")(
+                                                    color: getColor("secondarytext"),
+                                                    fontSize: 14,
+                                                  ),
+                                                ),
                                               );
-                                              targetBarHeight = max(
-                                                50,
-                                                29 +
-                                                    messageController.text.textHeight(
-                                                      getFont("mainfont")(
-                                                        color: getColor("secondarytext"),
-                                                        fontSize: 14,
+                                            }
+                                            return TextField(
+                                              maxLines: 5,
+                                              onChanged: (str) {
+                                                Timer.periodic(const Duration(milliseconds: 10), (timer) {
+                                                  if (messageController.text.isEmpty) {
+                                                    sendTransition -= 0.075;
+                                                  } else {
+                                                    sendTransition += 0.075;
+                                                  }
+                                                  double transition = sendTransition;
+                                                  sendTransition = min(1, max(0, sendTransition));
+                                                  if (transition != sendTransition) {
+                                                    timer.cancel();
+                                                  }
+                                                });
+                                                targetFieldHeight = max(
+                                                  35,
+                                                  14 +
+                                                      messageController.text.textHeight(
+                                                        getFont("mainfont")(
+                                                          color: getColor("secondarytext"),
+                                                          fontSize: 14,
+                                                        ),
+                                                        MediaQuery.of(context).size.width - 70,
                                                       ),
-                                                      MediaQuery.of(context).size.width - 70,
-                                                    ),
-                                              );
-                                              startTransition();
-                                            },
-                                            textAlignVertical: const TextAlignVertical(
-                                              y: -1,
-                                            ),
-                                            controller: messageController,
-                                            cursorColor: getColor("cursor"),
-                                            cursorRadius: const Radius.circular(4),
-                                            style: getFont("mainfont")(
-                                              color: getColor("secondarytext"),
-                                              fontSize: 14,
-                                            ),
-                                            decoration: InputDecoration(
-                                              isDense: true,
-                                              fillColor: getColor("background"),
-                                              filled: true,
-                                              hintText: translation[currentLanguage]["message"],
-                                              hintStyle: getFont("mainfont")(
+                                                );
+                                                targetBarHeight = max(
+                                                  50,
+                                                  29 +
+                                                      messageController.text.textHeight(
+                                                        getFont("mainfont")(
+                                                          color: getColor("secondarytext"),
+                                                          fontSize: 14,
+                                                        ),
+                                                        MediaQuery.of(context).size.width - 70,
+                                                      ),
+                                                );
+                                                startTransition();
+                                              },
+                                              textAlignVertical: const TextAlignVertical(
+                                                y: -1,
+                                              ),
+                                              controller: messageController,
+                                              cursorColor: getColor("cursor"),
+                                              cursorRadius: const Radius.circular(4),
+                                              style: getFont("mainfont")(
                                                 color: getColor("secondarytext"),
                                                 fontSize: 14,
-                                                height: 1.3,
                                               ),
-                                              border: InputBorder.none,
-                                            ),
-                                          ),
+                                              decoration: InputDecoration(
+                                                isDense: true,
+                                                fillColor: getColor("background"),
+                                                filled: true,
+                                                hintText: translation[currentLanguage]["message"],
+                                                hintStyle: getFont("mainfont")(
+                                                  color: getColor("secondarytext"),
+                                                  fontSize: 14,
+                                                  height: 1.3,
+                                                ),
+                                                border: InputBorder.none,
+                                              ),
+                                            );
+                                          }),
                                         ),
                                       ),
                                     ),

@@ -111,6 +111,8 @@ Map translation = {
     "setnickname": "Set nickname",
     "mutualfriends": "Mutual friends",
     "nomutualfriends": "You have no mutual friends.",
+    "voicemessage": "Voice message",
+    "recording": "Recording voice message...",
   },
   "hu": {
     "countrycode": "hu",
@@ -225,5 +227,7 @@ Map translation = {
     "setnickname": "Becenév beállítása",
     "mutualfriends": "Közös barátok",
     "nomutualfriends": "Nincsenek közös barátok.",
+    "voicemessage": "Hangüzenet",
+    "recording": "Hangüzenet felvétele folyamatban...",
   }
 };
