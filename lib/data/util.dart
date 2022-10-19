@@ -7,6 +7,7 @@ import 'dart:math';
 
 import 'package:dismissible_page/dismissible_page.dart';
 import 'package:encrypt/encrypt.dart' as encrypt;
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:just_waveform/just_waveform.dart';
@@ -1026,4 +1027,14 @@ class AudioWaveformPainter extends CustomPainter {
       return height - 1 - y * height / 256;
     }
   }
+}
+
+void downloadFile(String path) async {
+  final storageRef = FirebaseStorage.instance.ref();
+  final fileRef = storageRef.child(path);
+
+  final dir = await getApplicationDocumentsDirectory();
+  final file = File('${dir.absolute}/$path');
+
+  await fileRef.writeToFile(file);
 }

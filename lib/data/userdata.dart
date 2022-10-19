@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:video_player/video_player.dart';
+import 'package:path/path.dart' as p;
 
 import '../main.dart';
 import 'util.dart';
@@ -745,5 +746,16 @@ Future<void> sendAudios(List<File> audios, String to) async {
     final audioRef = storageRef.child(path);
     await audioRef.putFile(audio);
     sendMessage(path, to, type: "audio");
+  }
+}
+
+Future<void> sendFiles(List<File> files, String to) async {
+  final storageRef = FirebaseStorage.instance.ref();
+  for (final file in files) {
+    final int now = DateTime.now().millisecondsSinceEpoch;
+    String path = "files/${encryptText('${FirebaseAuth.instance.currentUser?.email}${now}filename=${p.basename(file.path)}')}";
+    final fileRef = storageRef.child(path);
+    await fileRef.putFile(file);
+    sendMessage(path, to, type: "file");
   }
 }

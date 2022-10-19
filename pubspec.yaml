@@ -65,6 +65,8 @@ dependencies:
   audio_waveforms: ^0.1.5+1
   flutter_downloader: ^1.8.4
   just_waveform: ^0.0.3
+  file_picker: ^5.2.1
+  al_downloader: ^1.6.0
 
 dev_dependencies:
   flutter_test:

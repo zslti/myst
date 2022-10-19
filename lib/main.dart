@@ -22,6 +22,7 @@ SharedPreferences? prefs;
 String currentLanguage = "en";
 bool hasLanguageSelected = true;
 int lastGestureTime = DateTime.now().millisecondsSinceEpoch;
+bool downloaderInitialized = false;
 const AndroidNotificationChannel channel = AndroidNotificationChannel(
   'high_importance_channel', // id
   'High Importance Notifications', // title
@@ -127,8 +128,7 @@ class _MyAppState extends State<MyApp> {
 
   Future<bool> initializeApp() async {
     prefs?.setString("theme", ""); //TODO: remove line when everything is done
-    //TODO: improve sending audio
-    //TODO: send file, phone number, location(if i can do it), emoji
+    //TODO: send file, location(if i can do it), emoji
     //TODO: typing indicator
     //TODO: message actions like delete, copy, forward, reply, download, share
     //TODO: search in conversation(in right card)
@@ -148,9 +148,13 @@ class _MyAppState extends State<MyApp> {
       options: DefaultFirebaseOptions.currentPlatform,
     );
 
-    // await FlutterDownloader.initialize(
-    //   ignoreSsl: true,
-    // );
+    // if (!downloaderInitialized) {
+    //   await FlutterDownloader.initialize(
+    //     ignoreSsl: true,
+    //   );
+    //   downloaderInitialized = true;
+    // }
+
     currentTheme = dark;
     if (themeData.isNotEmpty && jsonDecode(themeData) != null) {
       currentTheme = jsonDecode(themeData);

@@ -7,6 +7,7 @@ import 'dart:ui';
 //import 'package:audio_waveforms/audio_waveforms.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:dismissible_page/dismissible_page.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -20,6 +21,7 @@ import 'package:record/record.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
+import '../data/fileextensions.dart';
 import '../main.dart';
 import 'conversations.dart';
 import 'mainscreen.dart';
@@ -311,6 +313,66 @@ class _MessageState extends State<Message> {
                 //   child: AudioFileWaveforms(size: const Size.square(100), playerController: playerController),
                 // );
               }
+              if (widget.message["type"] == "file") {
+                String fileName = decryptText(widget.message["message"].substring(6)).split("filename=").last;
+                return Row(
+                  children: [
+                    GestureDetector(
+                      onTap: () async {
+                        launchUrlString(sentMedia[widget.message["message"]], mode: LaunchMode.externalApplication);
+                      },
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: Container(
+                          color: getColor("background"),
+                          child: Row(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(5),
+                                child: Icon(
+                                  Icons.file_download_outlined,
+                                  color: getColor("secondarytext"),
+                                  size: 25,
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(right: 8, top: 8, bottom: 8),
+                                child: ConstrainedBox(
+                                  constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.65),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        fileName,
+                                        style: getFont("mainfont")(
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 12,
+                                          color: getColor("secondarytext"),
+                                        ),
+                                      ),
+                                      Opacity(
+                                        opacity: 0.5,
+                                        child: Text(
+                                          getExtensionDescription(fileName.split(".").last),
+                                          style: getFont("mainfont")(
+                                            fontWeight: FontWeight.w500,
+                                            fontSize: 12,
+                                            color: getColor("secondarytext"),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              }
               return SizedBox(
                 width: MediaQuery.of(context).size.width - 60,
                 child: Builder(builder: (context) {
@@ -451,16 +513,16 @@ class _MessagesViewState extends State<MessagesView> {
       shouldRebuild = true;
     }
     for (final message in currentMessages) {
-      if (message["type"] == "image" || message["type"] == "video" || message["type"] == "audio") {
+      if (message["type"] == "image" || message["type"] == "video" || message["type"] == "audio" || message["type"] == "file") {
         await getSentMedia(message["message"]);
-        if (message["type"] == "audio" && !waveForms.containsKey(message["message"]) && (sentMedia[message["message"]] ?? "").toString().isNotEmpty) {
-          // String filepath = await filePathFromUrl(sentMedia[message["message"]]);
-          // waveForms[sentMedia[message["message"]]] = JustWaveform.extract(
-          //   audioInFile: File(filepath),
-          //   waveOutFile: File("$filepath.wave"),
-          //   zoom: const WaveformZoom.pixelsPerSecond(100),
-          // );
-        }
+        //if (message["type"] == "audio" && !waveForms.containsKey(message["message"]) && (sentMedia[message["message"]] ?? "").toString().isNotEmpty) {
+        // String filepath = await filePathFromUrl(sentMedia[message["message"]]);
+        // waveForms[sentMedia[message["message"]]] = JustWaveform.extract(
+        //   audioInFile: File(filepath),
+        //   waveOutFile: File("$filepath.wave"),
+        //   zoom: const WaveformZoom.pixelsPerSecond(100),
+        // );
+        //}
       }
     }
   }
@@ -746,6 +808,31 @@ class _MessagesViewState extends State<MessagesView> {
                                 alignment: Alignment.center,
                                 child: Row(
                                   children: [
+                                    SizedBox(
+                                      width: 40 * (1 - Curves.easeInOut.transform(sendTransition)),
+                                      child: Opacity(
+                                        opacity: 1 - Curves.easeInOut.transform(sendTransition),
+                                        child: GestureDetector(
+                                          onTap: () async {
+                                            FilePickerResult? result = await FilePicker.platform.pickFiles(allowMultiple: true);
+                                            if (result != null) {
+                                              List<File> files = result.paths.map((path) => File(path ?? "")).toList();
+                                              sendFiles(files, currentConversation["email"]);
+                                            }
+                                          },
+                                          child: Container(
+                                            width: 35,
+                                            height: 35,
+                                            padding: const EdgeInsets.only(top: 2.0, bottom: 2.0),
+                                            child: Icon(
+                                              Icons.insert_drive_file_outlined,
+                                              color: getColor("secondarytext"),
+                                              size: 26,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
                                     SizedBox(
                                       width: 40 * (1 - Curves.easeInOut.transform(sendTransition)),
                                       child: Opacity(
