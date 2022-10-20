@@ -172,7 +172,7 @@ Map fileExtensions = {
     "descriptions": ["Music (6 Channel Module)"]
   },
   "7z": {
-    "descriptions": ["A compressed archive file format that supports several different data compression, encryption and pre-processing algorithms"]
+    "descriptions": ["7-Zip compressed file"]
   },
   "83p": {
     "descriptions": ["Executable program for TI-83 Graphing Calculator"]
@@ -292,7 +292,7 @@ Map fileExtensions = {
     "descriptions": ["Data"]
   },
   "ACCDB": {
-    "descriptions": ["Data"]
+    "descriptions": ["Microsoft Access Database"]
   },
   "ACCDE": {
     "descriptions": ["Data"]
@@ -1793,7 +1793,7 @@ Map fileExtensions = {
   },
   "DAT": {
     "descriptions": [
-      "AMPL data file",
+      "Data file",
       "Maxum chromatograph chromatogram",
       "LDraw (Sub)Part File, 3D Model",
       "Document",
@@ -2107,13 +2107,13 @@ Map fileExtensions = {
     "descriptions": ["Java servlet file"]
   },
   "DOC": {
-    "descriptions": ["A Document, or an ASCII text file with text formatting codes in with the text; used by many word processors"]
+    "descriptions": ["Microsoft Word document"]
   },
   "DOCM": {
     "descriptions": ["Microsoft Word 2007 Master document"]
   },
   "DOCX": {
-    "descriptions": ["Office Open XML Text document"]
+    "descriptions": ["Microsoft Word document"]
   },
   "DOF": {
     "descriptions": ["Delphi project options file"]
@@ -3237,7 +3237,7 @@ Map fileExtensions = {
     "descriptions": ["Global index of old Windows Help file"]
   },
   "GIF": {
-    "descriptions": ["Compuserves' Graphics Interchange Format (bitmapped graphics)"]
+    "descriptions": ["Graphics Interchange Format"]
   },
   "GIW": {
     "descriptions": ["Presentation"]
@@ -5897,7 +5897,7 @@ Map fileExtensions = {
   },
   "PDF": {
     "descriptions": [
-      "Adobe's Portable Document Format",
+      "Portable Document",
       "Graphics file (ED-SCAN 24bit format)",
       "Package Definition File",
       "PCAD Database Interchange Format",
@@ -6380,7 +6380,7 @@ Map fileExtensions = {
     "descriptions": ["For big Photoshop files"]
   },
   "PSD": {
-    "descriptions": ["Design II for Windows Process Simulation Diagram", "Periscope Debbuger Def file", "Photoshop bitmap file"]
+    "descriptions": ["Photoshop bitmap file"]
   },
   "PSE": {
     "descriptions": ["PyMOL session[8]", "Truncated form of PSEG (see below)"]
@@ -8384,7 +8384,7 @@ Map fileExtensions = {
     "descriptions": ["Support file"]
   },
   "TXT": {
-    "descriptions": ["Common name for ASCII text file", "Tab-Delimited Text File", "Document Extension"]
+    "descriptions": ["Text file"]
   },
   "TXW": {
     "descriptions": ["Yamaha TX-16W Wave File"]
@@ -8987,7 +8987,7 @@ Map fileExtensions = {
     "descriptions": ["ProComm Script File (source code)"]
   },
   "WAV": {
-    "descriptions": ["Sound format (Microsoft Windows RIFF WAVE)"]
+    "descriptions": ["Microsoft Windows RIFF WAVE"]
   },
   "WAX": {
     "descriptions": ["TVTonic WAX video packaging", "ProComm compiled script", "Windows Media Audio Shortcut"]
@@ -9410,7 +9410,7 @@ Map fileExtensions = {
     "descriptions": ["Microsoft Excel 2007 Macro-Enabled Workbook (Spreadsheets)"]
   },
   "XLSX": {
-    "descriptions": ["Office Open XML Workbook (Spreadsheets)"]
+    "descriptions": ["Microsoft Excel Spreadsheet"]
   },
   "XLT": {
     "descriptions": ["Microsoft Excel Template", "Translation table"]

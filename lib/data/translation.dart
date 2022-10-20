@@ -113,6 +113,8 @@ Map translation = {
     "nomutualfriends": "You have no mutual friends.",
     "voicemessage": "Voice message",
     "recording": "Recording voice message...",
+    "enablelocation": "Enable location access to use this feature.",
+    "sharedlocation": "Shared their location",
   },
   "hu": {
     "countrycode": "hu",
@@ -229,5 +231,7 @@ Map translation = {
     "nomutualfriends": "Nincsenek közös barátok.",
     "voicemessage": "Hangüzenet",
     "recording": "Hangüzenet felvétele folyamatban...",
+    "enablelocation": "Engedélyezd a helymeghatározást a helyzeted megosztásához.",
+    "sharedlocation": "Megosztotta a helyzetét",
   }
 };

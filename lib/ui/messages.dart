@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 import 'dart:ui';
+import 'package:http/http.dart' as http;
 
 //import 'package:audio_waveforms/audio_waveforms.dart';
 import 'package:audioplayers/audioplayers.dart';
@@ -11,6 +12,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:myst/data/theme.dart';
 import 'package:myst/data/translation.dart';
@@ -354,6 +356,72 @@ class _MessageState extends State<Message> {
                                         opacity: 0.5,
                                         child: Text(
                                           getExtensionDescription(fileName.split(".").last),
+                                          style: getFont("mainfont")(
+                                            fontWeight: FontWeight.w500,
+                                            fontSize: 12,
+                                            color: getColor("secondarytext"),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              }
+              if (widget.message["type"] == "location") {
+                return Row(
+                  children: [
+                    GestureDetector(
+                      onTap: () async {
+                        double latitude = double.parse(widget.message["message"].split(",")[0]);
+                        double longitude = double.parse(widget.message["message"].split(",")[1].toString().split("location=").first);
+                        String url = "https://www.google.com/maps/search/?api=1&query=$latitude,$longitude";
+                        try {
+                          launchUrlString(url, mode: LaunchMode.externalApplication);
+                        } catch (e) {
+                          launchUrlString(url);
+                        }
+                      },
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: Container(
+                          color: getColor("background"),
+                          child: Row(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(5),
+                                child: Icon(
+                                  Icons.location_on_outlined,
+                                  color: getColor("secondarytext"),
+                                  size: 25,
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(right: 8, top: 8, bottom: 8),
+                                child: ConstrainedBox(
+                                  constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.65),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        translation[currentLanguage]["sharedlocation"],
+                                        style: getFont("mainfont")(
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 12,
+                                          color: getColor("secondarytext"),
+                                        ),
+                                      ),
+                                      Opacity(
+                                        opacity: 0.5,
+                                        child: Text(
+                                          widget.message["message"].split("location=").last,
                                           style: getFont("mainfont")(
                                             fontWeight: FontWeight.w500,
                                             fontSize: 12,
@@ -809,7 +877,61 @@ class _MessagesViewState extends State<MessagesView> {
                                 child: Row(
                                   children: [
                                     SizedBox(
-                                      width: 40 * (1 - Curves.easeInOut.transform(sendTransition)),
+                                      width: 30 * (1 - Curves.easeInOut.transform(sendTransition)),
+                                      child: Opacity(
+                                        opacity: 1 - Curves.easeInOut.transform(sendTransition),
+                                        child: GestureDetector(
+                                          onTap: () async {
+                                            Position? position;
+                                            String location = "Unknown";
+                                            try {
+                                              position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+                                            } catch (e) {
+                                              //await Geolocator.openAppSettings();
+                                              await Geolocator.openLocationSettings();
+                                            }
+                                            try {
+                                              String response = (await http.get(Uri.parse("http://ip-api.com/json"))).body;
+                                              dynamic data = json.decode(response);
+                                              location = "${data['city']}, ${data['regionName']}, ${data['country']}";
+                                              // ignore: empty_catches
+                                            } catch (e) {}
+                                            if (position != null) {
+                                              sendMessage(
+                                                "${position.latitude},${position.longitude}location=$location",
+                                                currentConversation["email"],
+                                                type: "location",
+                                              );
+                                            } else {
+                                              // ignore: use_build_context_synchronously
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                SnackBar(
+                                                  backgroundColor: getColor("background"),
+                                                  content: Text(
+                                                    translation[currentLanguage]["enablelocation"],
+                                                    style: getFont("mainfont")(
+                                                      color: getColor("maintext"),
+                                                    ),
+                                                  ),
+                                                ),
+                                              );
+                                            }
+                                          },
+                                          child: Container(
+                                            width: 30,
+                                            height: 35,
+                                            padding: const EdgeInsets.only(top: 2.0, bottom: 2.0),
+                                            child: Icon(
+                                              Icons.location_on_outlined,
+                                              color: getColor("secondarytext"),
+                                              size: 26,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      width: 35 * (1 - Curves.easeInOut.transform(sendTransition)),
                                       child: Opacity(
                                         opacity: 1 - Curves.easeInOut.transform(sendTransition),
                                         child: GestureDetector(
@@ -821,7 +943,7 @@ class _MessagesViewState extends State<MessagesView> {
                                             }
                                           },
                                           child: Container(
-                                            width: 35,
+                                            width: 30,
                                             height: 35,
                                             padding: const EdgeInsets.only(top: 2.0, bottom: 2.0),
                                             child: Icon(
@@ -834,7 +956,7 @@ class _MessagesViewState extends State<MessagesView> {
                                       ),
                                     ),
                                     SizedBox(
-                                      width: 40 * (1 - Curves.easeInOut.transform(sendTransition)),
+                                      width: 35 * (1 - Curves.easeInOut.transform(sendTransition)),
                                       child: Opacity(
                                         opacity: 1 - Curves.easeInOut.transform(sendTransition),
                                         child: GestureDetector(
@@ -853,7 +975,7 @@ class _MessagesViewState extends State<MessagesView> {
                                             await sendVideos([video], currentConversation["email"]);
                                           },
                                           child: Container(
-                                            width: 35,
+                                            width: 30,
                                             height: 35,
                                             padding: const EdgeInsets.only(top: 2.0, bottom: 2.0),
                                             child: Icon(
@@ -866,7 +988,7 @@ class _MessagesViewState extends State<MessagesView> {
                                       ),
                                     ),
                                     SizedBox(
-                                      width: 40 * (1 - Curves.easeInOut.transform(sendTransition)),
+                                      width: 35 * (1 - Curves.easeInOut.transform(sendTransition)),
                                       child: Opacity(
                                         opacity: 1 - Curves.easeInOut.transform(sendTransition),
                                         child: GestureDetector(
@@ -884,10 +1006,10 @@ class _MessagesViewState extends State<MessagesView> {
                                             }
                                             await sendVideos([video], currentConversation["email"]);
                                           },
-                                          child: Container(
-                                            width: 35,
+                                          child: SizedBox(
+                                            width: 30,
                                             height: 35,
-                                            padding: const EdgeInsets.only(left: 8.0, right: 6.0, top: 2.0, bottom: 2.0),
+                                            //padding: const EdgeInsets.only(left: 8.0, right: 6.0, top: 2.0, bottom: 2.0),
                                             child: Icon(
                                               Icons.image_outlined,
                                               color: getColor("secondarytext"),
@@ -898,7 +1020,7 @@ class _MessagesViewState extends State<MessagesView> {
                                       ),
                                     ),
                                     SizedBox(
-                                      width: 40 * (1 - Curves.easeInOut.transform(sendTransition)),
+                                      width: 32 * (1 - Curves.easeInOut.transform(sendTransition)),
                                       child: Opacity(
                                         opacity: 1 - Curves.easeInOut.transform(sendTransition),
                                         child: GestureDetector(
@@ -924,7 +1046,7 @@ class _MessagesViewState extends State<MessagesView> {
                                             }
                                           },
                                           child: Container(
-                                            width: 35,
+                                            width: 30,
                                             height: 35,
                                             padding: const EdgeInsets.only(top: 2.0, bottom: 2.0),
                                             child: Center(

@@ -128,8 +128,9 @@ class _MyAppState extends State<MyApp> {
 
   Future<bool> initializeApp() async {
     prefs?.setString("theme", ""); //TODO: remove line when everything is done
-    //TODO: send file, location(if i can do it), emoji
+    //TODO: location(if i can do it), emoji
     //TODO: typing indicator
+    //TODO: optimize messages view when there are a lot of messages
     //TODO: message actions like delete, copy, forward, reply, download, share
     //TODO: search in conversation(in right card)
     //TODO: delete conversation
