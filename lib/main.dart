@@ -7,6 +7,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:myst/ui/messages.dart';
 import 'package:myst/ui/register.dart';
 import 'package:myst/ui/selectlanguage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -128,7 +129,6 @@ class _MyAppState extends State<MyApp> {
 
   Future<bool> initializeApp() async {
     prefs?.setString("theme", ""); //TODO: remove line when everything is done
-    //TODO: location(if i can do it), emoji
     //TODO: typing indicator
     //TODO: optimize messages view when there are a lot of messages
     //TODO: message actions like delete, copy, forward, reply, download, share
@@ -144,7 +144,8 @@ class _MyAppState extends State<MyApp> {
     //TODO: optimize downloading videos
     //TODO: change push animation
     final themeData = prefs?.getString("theme") ?? "";
-
+    emList.removeAt(40);
+    emList.removeAt(102);
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );

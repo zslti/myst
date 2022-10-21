@@ -1,8 +1,13 @@
+// ignore_for_file: depend_on_referenced_packages
+
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 import 'dart:ui';
+
+import 'package:emojis/emoji.dart' as emoji;
+import 'package:flutter_emoji/flutter_emoji.dart';
 import 'package:http/http.dart' as http;
 
 //import 'package:audio_waveforms/audio_waveforms.dart';
@@ -52,6 +57,46 @@ final player = AudioPlayer();
 Map waveForms = {};
 String currentAudioMessage = "";
 bool isRecording = false;
+List<emoji.Emoji> emList = emoji.Emoji.all().toList();
+final parser = EmojiParser();
+
+void updateMessageFieldHeight(BuildContext context) {
+  Timer.periodic(const Duration(milliseconds: 10), (timer) {
+    if (messageController.text.isEmpty) {
+      sendTransition -= 0.075;
+    } else {
+      sendTransition += 0.075;
+    }
+    double transition = sendTransition;
+    sendTransition = min(1, max(0, sendTransition));
+    if (transition != sendTransition) {
+      timer.cancel();
+    }
+  });
+  targetFieldHeight = max(
+    35,
+    14 +
+        messageController.text.textHeight(
+          getFont("mainfont")(
+            color: getColor("secondarytext"),
+            fontSize: 14,
+          ),
+          MediaQuery.of(context).size.width - 110,
+        ),
+  );
+  targetBarHeight = max(
+    50,
+    29 +
+        messageController.text.textHeight(
+          getFont("mainfont")(
+            color: getColor("secondarytext"),
+            fontSize: 14,
+          ),
+          MediaQuery.of(context).size.width - 110,
+        ),
+  );
+  startTransition();
+}
 
 void startTransition() {
   if (transitionProgress != 0 || targetBarHeight > 134 || targetFieldHeight > 119) return;
@@ -447,6 +492,7 @@ class _MessageState extends State<Message> {
                   String text = widget.message['message'] ?? "";
                   List textSegments = [];
                   RegExp linkRegex = RegExp("[1-z][.][1-z]");
+                  bool isEmojiOnly = parser.count(text) == text.replaceAll(" ", "").length / 2;
 
                   for (String word in text.split(" ")) {
                     if (linkRegex.hasMatch(word)) {
@@ -473,6 +519,7 @@ class _MessageState extends State<Message> {
                           style: getFont("mainfont")(
                             color: getColor("maintext"),
                             decoration: linkRegex.hasMatch(text) ? TextDecoration.underline : TextDecoration.none,
+                            fontSize: isEmojiOnly ? 28 : 14,
                           ),
                           recognizer: TapGestureRecognizer()
                             ..onTap = () async {
@@ -1094,41 +1141,7 @@ class _MessagesViewState extends State<MessagesView> {
                                             return TextField(
                                               maxLines: 5,
                                               onChanged: (str) {
-                                                Timer.periodic(const Duration(milliseconds: 10), (timer) {
-                                                  if (messageController.text.isEmpty) {
-                                                    sendTransition -= 0.075;
-                                                  } else {
-                                                    sendTransition += 0.075;
-                                                  }
-                                                  double transition = sendTransition;
-                                                  sendTransition = min(1, max(0, sendTransition));
-                                                  if (transition != sendTransition) {
-                                                    timer.cancel();
-                                                  }
-                                                });
-                                                targetFieldHeight = max(
-                                                  35,
-                                                  14 +
-                                                      messageController.text.textHeight(
-                                                        getFont("mainfont")(
-                                                          color: getColor("secondarytext"),
-                                                          fontSize: 14,
-                                                        ),
-                                                        MediaQuery.of(context).size.width - 70,
-                                                      ),
-                                                );
-                                                targetBarHeight = max(
-                                                  50,
-                                                  29 +
-                                                      messageController.text.textHeight(
-                                                        getFont("mainfont")(
-                                                          color: getColor("secondarytext"),
-                                                          fontSize: 14,
-                                                        ),
-                                                        MediaQuery.of(context).size.width - 70,
-                                                      ),
-                                                );
-                                                startTransition();
+                                                updateMessageFieldHeight(context);
                                               },
                                               textAlignVertical: const TextAlignVertical(
                                                 y: -1,
@@ -1141,6 +1154,30 @@ class _MessagesViewState extends State<MessagesView> {
                                                 fontSize: 14,
                                               ),
                                               decoration: InputDecoration(
+                                                suffixIconConstraints: const BoxConstraints(
+                                                  maxHeight: 40,
+                                                  maxWidth: 60,
+                                                ),
+                                                suffixIcon: AnimatedOpacity(
+                                                  //opacity: messageController.text.isEmpty ? 1 : 0,
+                                                  opacity: 1,
+                                                  duration: const Duration(milliseconds: 200),
+                                                  child: GestureDetector(
+                                                    onTap: () {
+                                                      //print(emList);
+                                                      showModalBottomSheet(
+                                                        context: context,
+                                                        builder: (BuildContext context) {
+                                                          return const EmojiSelector();
+                                                        },
+                                                      );
+                                                    },
+                                                    child: Padding(
+                                                      padding: const EdgeInsets.only(right: 8.0),
+                                                      child: Icon(Icons.emoji_emotions_outlined, color: getColor("secondarytext"), size: 24),
+                                                    ),
+                                                  ),
+                                                ),
                                                 isDense: true,
                                                 fillColor: getColor("background"),
                                                 filled: true,
@@ -1258,5 +1295,103 @@ class _MessagesViewState extends State<MessagesView> {
         body: const SizedBox(),
       );
     }
+  }
+}
+
+class EmojiSelector extends StatelessWidget {
+  const EmojiSelector({
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height / 2,
+      color: getColor("background"),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Column(
+              children: [
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 16, right: 16),
+                    child: Row(
+                      children: [
+                        Text(
+                          translation[currentLanguage]["sendemoji"],
+                          style: getFont("mainfont")(color: getColor("maintext"), fontSize: 24),
+                        ),
+                        Expanded(
+                          child: Align(
+                            alignment: Alignment.centerRight,
+                            child: GestureDetector(
+                              onTap: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: Icon(Icons.close, color: getColor("secondarytext")),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                SizedBox(
+                    height: MediaQuery.of(context).size.height / 2 - 50,
+                    child: ShaderMask(
+                      shaderCallback: (Rect rect) {
+                        return LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.black.withAlpha(220),
+                            Colors.transparent,
+                            Colors.transparent,
+                            Colors.black.withAlpha(220),
+                          ],
+                          stops: const [0.0, 0.1, 0.9, 1.0],
+                        ).createShader(rect);
+                      },
+                      blendMode: BlendMode.dstOut,
+                      child: SingleChildScrollView(
+                        child: Center(
+                          child: Wrap(
+                            alignment: WrapAlignment.center,
+                            children: [
+                              for (final emoji in emList)
+                                Builder(builder: (context) {
+                                  if (!parser.hasEmoji(emoji.toString())) {
+                                    return const SizedBox();
+                                  }
+                                  return GestureDetector(
+                                    onTap: () {
+                                      messageController.text += emoji.toString();
+                                      updateMessageFieldHeight(context);
+                                    },
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Text(
+                                        emoji.toString(),
+                                        style: const TextStyle(fontSize: 30, color: Colors.white),
+                                      ),
+                                    ),
+                                  );
+                                })
+                            ],
+                          ),
+                        ),
+                      ),
+                    ))
+              ],
+            )
+          ],
+        ),
+      ),
+    );
   }
 }

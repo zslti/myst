@@ -77,12 +77,12 @@ Color getColor(String name, {Map? theme}) {
   nextTheme ??= light;
   //currentTheme = light;
   List<double> colors = interpolateBetween(
-    currentTheme!["colors"][name][0],
-    currentTheme!["colors"][name][1],
-    currentTheme!["colors"][name][2],
-    nextTheme!["colors"][name][0],
-    nextTheme!["colors"][name][1],
-    nextTheme!["colors"][name][2],
+    currentTheme!["colors"][name]?[0] ?? 255,
+    currentTheme!["colors"][name]?[1] ?? 255,
+    currentTheme!["colors"][name]?[2] ?? 255,
+    nextTheme!["colors"][name]?[0] ?? 255,
+    nextTheme!["colors"][name]?[1] ?? 255,
+    nextTheme!["colors"][name]?[2] ?? 255,
     themeSwitchProgress,
   );
   return Color.fromARGB(

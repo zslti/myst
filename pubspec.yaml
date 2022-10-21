@@ -69,6 +69,8 @@ dependencies:
   al_downloader: ^1.6.0
   google_maps_flutter: ^2.2.1
   geolocator: ^9.0.2
+  emojis: ^0.9.9
+  flutter_emoji: ^2.4.0
 
 dev_dependencies:
   flutter_test:
