@@ -759,3 +759,55 @@ Future<void> sendFiles(List<File> files, String to) async {
     sendMessage(path, to, type: "file");
   }
 }
+
+Future<void> updateTypingStatus(String to) async {
+  QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+      .collection('users')
+      .where(
+        "email",
+        isEqualTo: FirebaseAuth.instance.currentUser?.email,
+      )
+      .get();
+
+  for (var doc in querySnapshot.docs) {
+    if (FirebaseAuth.instance.currentUser?.email != null && doc.data().toString().contains(FirebaseAuth.instance.currentUser?.email ?? "")) {
+      doc.reference.update({
+        'typing': {
+          'to': to,
+          'time': DateTime.now().millisecondsSinceEpoch,
+        },
+      });
+    }
+  }
+}
+
+Future<bool> getTypingStatus(String email) async {
+  QuerySnapshot querySnapshot = await FirebaseFirestore.instance.collection('users').where("email", isEqualTo: email).get();
+  List allData = querySnapshot.docs.map((doc) => doc.data()).toList();
+  if (allData.isEmpty) {
+    return false;
+  }
+  Map typing = allData[0]["typing"] ?? {};
+  if (typing.isEmpty) {
+    return false;
+  }
+  if (typing["to"] == FirebaseAuth.instance.currentUser?.email && DateTime.now().millisecondsSinceEpoch - typing["time"] < 5000) {
+    return true;
+  }
+  return false;
+
+  // QuerySnapshot querySnapshot =
+  //     await FirebaseFirestore.instance.collection('users').where("email", isEqualTo: FirebaseAuth.instance.currentUser?.email).get();
+  // List allData = querySnapshot.docs.map((doc) => doc.data()).toList();
+  // if (allData.isEmpty) {
+  //   return false;
+  // }
+  // Map typing = allData[0]["typing"] ?? {};
+  // if (typing.isEmpty) {
+  //   return false;
+  // }
+  // if (DateTime.now().millisecondsSinceEpoch - typing["time"] < 5000) {
+  //   return true;
+  // }
+  // return false;
+}

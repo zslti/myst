@@ -231,7 +231,7 @@ Map translation = {
     "mutualfriends": "Közös barátok",
     "nomutualfriends": "Nincsenek közös barátok.",
     "voicemessage": "Hangüzenet",
-    "recording": "Hangüzenet felvétele folyamatban...",
+    "recording": "Felvétel folyamatban...",
     "enablelocation": "Engedélyezd a helymeghatározást a helyzeted megosztásához.",
     "sharedlocation": "Megosztotta a helyzetét",
     "sendemoji": "Hangulatjel küldése",

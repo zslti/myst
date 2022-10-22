@@ -59,6 +59,9 @@ String currentAudioMessage = "";
 bool isRecording = false;
 List<emoji.Emoji> emList = emoji.Emoji.all().toList();
 final parser = EmojiParser();
+bool isTyping = false;
+double typingIndicatorProgress = 0;
+double typingIndicatorAnimation = 0;
 
 void updateMessageFieldHeight(BuildContext context) {
   Timer.periodic(const Duration(milliseconds: 10), (timer) {
@@ -640,6 +643,7 @@ class _MessagesViewState extends State<MessagesView> {
         //}
       }
     }
+    isTyping = await getTypingStatus(currentConversation["email"]);
   }
 
   @override
@@ -678,10 +682,18 @@ class _MessagesViewState extends State<MessagesView> {
         ),
       );
     }
-    Timer(const Duration(milliseconds: 50), () {
+    Timer(const Duration(milliseconds: 200), () {
       refreshMessages();
     });
 
+    double typingIndicatorModifier = 0.05 * (isTyping ? 1 : -1);
+    if (typingIndicatorProgress + typingIndicatorModifier > 1) {
+      typingIndicatorProgress = 1;
+    } else if (typingIndicatorProgress + typingIndicatorModifier < 0) {
+      typingIndicatorProgress = 0;
+    } else {
+      typingIndicatorProgress += typingIndicatorModifier;
+    }
     try {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!built) {
@@ -699,105 +711,117 @@ class _MessagesViewState extends State<MessagesView> {
               behavior: MyBehavior(),
               child: Stack(
                 children: [
-                  Padding(
-                    padding: EdgeInsets.only(top: 50, bottom: currentBarHeight),
-                    child: AnimatedOpacity(
-                      opacity: built ? 1 : 0,
-                      duration: Duration(milliseconds: 300 * (built ? 1 : 0)),
-                      child: ScrollablePositionedList.builder(
-                          itemPositionsListener: _itemPositionsListener,
-                          itemScrollController: _scrollController,
-                          itemCount: currentMessages.length,
-                          reverse: true,
-                          scrollDirection: Axis.vertical,
-                          itemBuilder: (context, index) {
-                            try {
-                              DateTime lastMessageTime = DateTime.fromMillisecondsSinceEpoch(
-                                currentMessages[max(index - 1, 0)]["timestamp"],
-                              );
-                              DateTime thisMessageTime = DateTime.fromMillisecondsSinceEpoch(
-                                currentMessages[index]["timestamp"],
-                              );
-                              if (index == 0 && !(currentMessages[index]["read"] ?? false)) {
-                                readMessage(
-                                  currentMessages[index]["sender"],
-                                  currentMessages[index]["message"],
-                                  currentMessages[index]["timestamp"],
-                                );
-                              }
-                              bool read = false;
-                              if (!readMessageShown &&
-                                  ((currentMessages[index]["read"] ?? false) ||
-                                      currentMessages[index]["sender"] != FirebaseAuth.instance.currentUser?.email)) {
-                                readMessageShown = true;
-                                read = true;
-                              }
-                              if (lastMessageTime.day != thisMessageTime.day ||
-                                  lastMessageTime.month != thisMessageTime.month ||
-                                  lastMessageTime.year != thisMessageTime.year) {
-                                return Column(
-                                  children: [
-                                    Padding(
-                                      padding: const EdgeInsets.only(top: 6.0),
-                                      child: Message(
-                                        message: currentMessages[index],
-                                        read: read,
-                                      ),
-                                    ),
-                                    Opacity(
-                                      opacity: 0.5,
-                                      child: Row(
-                                        children: [
-                                          const SizedBox(width: 16),
-                                          Expanded(
-                                            child: Container(
-                                              width: double.infinity,
-                                              height: 1,
-                                              color: getColor("secondarytext"),
-                                            ),
+                  Stack(
+                    children: [
+                      Padding(
+                        padding: EdgeInsets.only(top: 50, bottom: currentBarHeight + 48 * Curves.easeInOut.transform(typingIndicatorProgress)),
+                        child: AnimatedOpacity(
+                          opacity: built ? 1 : 0,
+                          duration: Duration(milliseconds: 300 * (built ? 1 : 0)),
+                          child: ScrollablePositionedList.builder(
+                              itemPositionsListener: _itemPositionsListener,
+                              itemScrollController: _scrollController,
+                              itemCount: currentMessages.length,
+                              reverse: true,
+                              scrollDirection: Axis.vertical,
+                              itemBuilder: (context, index) {
+                                try {
+                                  DateTime lastMessageTime = DateTime.fromMillisecondsSinceEpoch(
+                                    currentMessages[max(index - 1, 0)]["timestamp"],
+                                  );
+                                  DateTime thisMessageTime = DateTime.fromMillisecondsSinceEpoch(
+                                    currentMessages[index]["timestamp"],
+                                  );
+                                  if (index == 0 && !(currentMessages[index]["read"] ?? false)) {
+                                    readMessage(
+                                      currentMessages[index]["sender"],
+                                      currentMessages[index]["message"],
+                                      currentMessages[index]["timestamp"],
+                                    );
+                                  }
+                                  bool read = false;
+                                  if (!readMessageShown &&
+                                      ((currentMessages[index]["read"] ?? false) ||
+                                          currentMessages[index]["sender"] != FirebaseAuth.instance.currentUser?.email)) {
+                                    readMessageShown = true;
+                                    read = true;
+                                  }
+                                  if (lastMessageTime.day != thisMessageTime.day ||
+                                      lastMessageTime.month != thisMessageTime.month ||
+                                      lastMessageTime.year != thisMessageTime.year) {
+                                    return Column(
+                                      children: [
+                                        Padding(
+                                          padding: const EdgeInsets.only(top: 6.0, bottom: 6.0),
+                                          child: Message(
+                                            message: currentMessages[index],
+                                            read: read,
                                           ),
-                                          Padding(
-                                            padding: const EdgeInsets.only(left: 8, right: 8),
-                                            child: Text(
-                                              timestampToDate(
-                                                currentMessages[max(index - 1, 0)]["timestamp"],
-                                                showOnlyDate: true,
+                                        ),
+                                        Opacity(
+                                          opacity: 0.5,
+                                          child: Row(
+                                            children: [
+                                              const SizedBox(width: 16),
+                                              Expanded(
+                                                child: Container(
+                                                  width: double.infinity,
+                                                  height: 1,
+                                                  color: getColor("secondarytext"),
+                                                ),
                                               ),
-                                              style: getFont("mainfont")(
-                                                color: getColor("secondarytext"),
-                                                fontSize: 12,
+                                              Padding(
+                                                padding: const EdgeInsets.only(left: 8, right: 8),
+                                                child: Text(
+                                                  timestampToDate(
+                                                    currentMessages[max(index - 1, 0)]["timestamp"],
+                                                    showOnlyDate: true,
+                                                  ),
+                                                  style: getFont("mainfont")(
+                                                    color: getColor("secondarytext"),
+                                                    fontSize: 12,
+                                                  ),
+                                                ),
                                               ),
-                                            ),
+                                              Expanded(
+                                                child: Container(
+                                                  width: double.infinity,
+                                                  height: 1,
+                                                  color: getColor("secondarytext"),
+                                                ),
+                                              ),
+                                              const SizedBox(width: 16),
+                                            ],
                                           ),
-                                          Expanded(
-                                            child: Container(
-                                              width: double.infinity,
-                                              height: 1,
-                                              color: getColor("secondarytext"),
-                                            ),
-                                          ),
-                                          const SizedBox(width: 16),
-                                        ],
-                                      ),
+                                        ),
+                                      ],
+                                    );
+                                  }
+                                  return Padding(
+                                    padding: EdgeInsets.only(
+                                      top: 6.0,
+                                      bottom: index == 0 ? 10 : 0,
                                     ),
-                                  ],
-                                );
-                              }
-                              return Padding(
-                                padding: EdgeInsets.only(
-                                  top: 6.0,
-                                  bottom: index == 0 ? 10 : 0,
-                                ),
-                                child: Message(
-                                  message: currentMessages[index],
-                                  read: read,
-                                ),
-                              );
-                            } catch (e) {
-                              return Container();
-                            }
-                          }),
-                    ),
+                                    child: Message(
+                                      message: currentMessages[index],
+                                      read: read,
+                                    ),
+                                  );
+                                } catch (e) {
+                                  return Container();
+                                }
+                              }),
+                        ),
+                      ),
+                      Align(
+                        alignment: Alignment.bottomLeft,
+                        child: Padding(
+                          padding: EdgeInsets.only(bottom: currentBarHeight, left: 12),
+                          // ignore: prefer_const_constructors
+                          child: TypingIndicator(),
+                        ),
+                      ),
+                    ],
                   ),
                   Container(
                     width: MediaQuery.of(context).size.width,
@@ -1142,6 +1166,7 @@ class _MessagesViewState extends State<MessagesView> {
                                               maxLines: 5,
                                               onChanged: (str) {
                                                 updateMessageFieldHeight(context);
+                                                updateTypingStatus(currentConversation["email"]);
                                               },
                                               textAlignVertical: const TextAlignVertical(
                                                 y: -1,
@@ -1298,11 +1323,100 @@ class _MessagesViewState extends State<MessagesView> {
   }
 }
 
-class EmojiSelector extends StatelessWidget {
+class TypingIndicator extends StatelessWidget {
+  const TypingIndicator({
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Builder(builder: (context) {
+      if (typingIndicatorProgress == 0) {
+        return const SizedBox();
+      }
+      typingIndicatorAnimation += 0.025;
+      double typingIndicatorDisplayValue = Curves.easeInOut.transform(typingIndicatorProgress);
+      return Opacity(
+        opacity: typingIndicatorDisplayValue,
+        child: SizedBox(
+          height: 48 * typingIndicatorDisplayValue,
+          child: Padding(
+            padding: EdgeInsets.only(
+              bottom: 8.0 * typingIndicatorDisplayValue,
+              top: 4.0 * typingIndicatorDisplayValue,
+            ),
+            child: Row(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(50),
+                  child: SizedBox(
+                    width: 32,
+                    height: 32,
+                    child: ProfileImage(
+                      url: profilePictures[currentConversation['email']] ?? "",
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(15),
+                  child: Container(
+                    color: getColor("background"),
+                    width: 50,
+                    height: 40,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        for (int i = 0; i < 3; i++)
+                          Padding(
+                            padding: const EdgeInsets.all(3.0),
+                            child: Builder(builder: (context) {
+                              double animationValue = typingIndicatorAnimation - typingIndicatorAnimation.floor() + 0.12 * (3 - i);
+                              return SizedBox(
+                                height: double.infinity,
+                                child: AnimatedOpacity(
+                                  opacity: animationValue > 0.5 && animationValue < 1 - 0.12 * (3 - i) ? 1 : 0.5,
+                                  duration: const Duration(milliseconds: 150),
+                                  child: AnimatedAlign(
+                                    alignment:
+                                        animationValue > 0.5 && animationValue < 1 - 0.12 * (3 - i) ? const Alignment(0, -0.6) : Alignment.center,
+                                    duration: const Duration(milliseconds: 150),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(15),
+                                      child: Container(
+                                        width: 5,
+                                        height: 5,
+                                        color: getColor("logo"),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    });
+  }
+}
+
+class EmojiSelector extends StatefulWidget {
   const EmojiSelector({
     Key? key,
   }) : super(key: key);
 
+  @override
+  State<EmojiSelector> createState() => _EmojiSelectorState();
+}
+
+class _EmojiSelectorState extends State<EmojiSelector> {
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -1342,51 +1456,108 @@ class EmojiSelector extends StatelessWidget {
                   ),
                 ),
                 SizedBox(
-                    height: MediaQuery.of(context).size.height / 2 - 50,
-                    child: ShaderMask(
-                      shaderCallback: (Rect rect) {
-                        return LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.black.withAlpha(220),
-                            Colors.transparent,
-                            Colors.transparent,
-                            Colors.black.withAlpha(220),
-                          ],
-                          stops: const [0.0, 0.1, 0.9, 1.0],
-                        ).createShader(rect);
-                      },
-                      blendMode: BlendMode.dstOut,
-                      child: SingleChildScrollView(
-                        child: Center(
-                          child: Wrap(
-                            alignment: WrapAlignment.center,
-                            children: [
-                              for (final emoji in emList)
-                                Builder(builder: (context) {
-                                  if (!parser.hasEmoji(emoji.toString())) {
-                                    return const SizedBox();
-                                  }
-                                  return GestureDetector(
-                                    onTap: () {
-                                      messageController.text += emoji.toString();
-                                      updateMessageFieldHeight(context);
-                                    },
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Text(
-                                        emoji.toString(),
-                                        style: const TextStyle(fontSize: 30, color: Colors.white),
-                                      ),
+                  height: MediaQuery.of(context).size.height / 2 - 100,
+                  child: ShaderMask(
+                    shaderCallback: (Rect rect) {
+                      return LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.black.withAlpha(220),
+                          Colors.transparent,
+                          Colors.transparent,
+                          Colors.black.withAlpha(220),
+                        ],
+                        stops: const [0.0, 0.1, 0.9, 1.0],
+                      ).createShader(rect);
+                    },
+                    blendMode: BlendMode.dstOut,
+                    child: SingleChildScrollView(
+                      child: Center(
+                        child: Wrap(
+                          alignment: WrapAlignment.center,
+                          children: [
+                            for (final emoji in emList)
+                              Builder(builder: (context) {
+                                if (!parser.hasEmoji(emoji.toString())) {
+                                  return const SizedBox();
+                                }
+                                return GestureDetector(
+                                  onTap: () {
+                                    messageController.text += emoji.toString();
+                                    updateMessageFieldHeight(context);
+                                    updateTypingStatus(currentConversation["email"]);
+                                    setState(() {});
+                                  },
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Text(
+                                      emoji.toString(),
+                                      style: const TextStyle(fontSize: 30, color: Colors.white),
                                     ),
-                                  );
-                                })
-                            ],
-                          ),
+                                  ),
+                                );
+                              })
+                          ],
                         ),
                       ),
-                    ))
+                    ),
+                  ),
+                ),
+                SizedBox(
+                  height: 50,
+                  width: double.infinity,
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 16, right: 16),
+                    child: Row(
+                      children: [
+                        ConstrainedBox(
+                          constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width - 150),
+                          child: Text(
+                            messageController.text,
+                            maxLines: 1,
+                            overflow: TextOverflow.fade,
+                            style: getFont("mainfont")(color: getColor("secondarytext"), fontSize: 18),
+                          ),
+                        ),
+                        Expanded(
+                          child: Align(
+                            alignment: Alignment.centerRight,
+                            child: GestureDetector(
+                              onTap: () {
+                                try {
+                                  if (parser.hasEmoji(messageController.text.characters.last.toString())) {
+                                    messageController.text = messageController.text.substring(0, messageController.text.length - 1);
+                                  }
+                                  messageController.text = messageController.text.substring(0, messageController.text.length - 1);
+                                  updateMessageFieldHeight(context);
+                                  setState(() {});
+                                  // ignore: empty_catches
+                                } catch (e) {}
+                              },
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(10),
+                                child: Container(
+                                  height: 35,
+                                  width: 35,
+                                  color: getColor("button2"),
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(right: 2.0),
+                                    child: Icon(
+                                      Icons.backspace_outlined,
+                                      color: getColor("secondarytext"),
+                                      size: 20,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
               ],
             )
           ],
