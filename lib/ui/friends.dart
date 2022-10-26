@@ -34,10 +34,6 @@ class FriendsView extends StatefulWidget {
   State<FriendsView> createState() => _FriendsViewState();
 }
 
-//LsUdPipRPnXuntsWHbPg9g==
-//1662660194535
-//{{fulop.zsolt.2004@gmail.com}, {sndffsdfds}}
-
 class _FriendsViewState extends State<FriendsView> {
   void getData() async {
     incomingRequests = await getFriendRequests();
@@ -83,6 +79,7 @@ class _FriendsViewState extends State<FriendsView> {
 
   @override
   Widget build(BuildContext context) {
+    //return const Scaffold();
     Timer(const Duration(milliseconds: 500), () {
       if (mounted) {
         setState(() {});
@@ -270,7 +267,7 @@ class _FriendsViewState extends State<FriendsView> {
                       onPressed: () {
                         if (selectedIndex == 0) return;
                         selectedIndex = 0;
-                        push(context, const MainView());
+                        pushReplacement(context, const MainView());
                       },
                       child: AnimatedOpacity(
                         duration: const Duration(milliseconds: 250),
@@ -330,7 +327,7 @@ class _FriendsViewState extends State<FriendsView> {
                       onPressed: () {
                         //if (selectedIndex == 2) return;
                         //selectedIndex = 2;
-                        //push(context, const MainView());
+                        //pushReplacement(context, const MainView());
                         bottomSheetData = {};
                         scrollController.animateTo(
                           0.5,
@@ -381,6 +378,11 @@ class _FriendsViewState extends State<FriendsView> {
               );
             },
           ),
+          // TextButton(
+          //     onPressed: () {
+          //       pushReplacement(context, const MainView());
+          //     },
+          //     child: const Text("Back")),
         ],
       ),
     );
@@ -721,7 +723,7 @@ class _FriendRequestsViewState extends State<FriendRequestsView> {
                         onPressed: () {
                           if (selectedIndex == 0) return;
                           selectedIndex = 0;
-                          push(context, const MainView());
+                          pushReplacement(context, const MainView());
                         },
                         child: AnimatedOpacity(
                           duration: const Duration(milliseconds: 250),
@@ -781,7 +783,7 @@ class _FriendRequestsViewState extends State<FriendRequestsView> {
                         onPressed: () {
                           //if (selectedIndex == 2) return;
                           //selectedIndex = 2;
-                          //push(context, const MainView());
+                          //pushReplacement(context, const MainView());
                           bottomSheetData = {};
                           scrollController2.animateTo(
                             0.5,

@@ -581,6 +581,10 @@ class _MessagesViewState extends State<MessagesView> {
   }
 
   Future<void> refreshMessages() async {
+    int now = DateTime.now().millisecondsSinceEpoch;
+    if (now - lastRequestTime < 200) {
+      return;
+    }
     hasNetwork();
     if (currentConversation == null) {
       Timer(const Duration(milliseconds: 500), () {
@@ -588,15 +592,17 @@ class _MessagesViewState extends State<MessagesView> {
       });
       return;
     }
-    int now = DateTime.now().millisecondsSinceEpoch;
-    if (now - lastRequestTime < 100) {
-      return;
-    }
+
     shouldRebuild = false;
     lastRequestTime = now;
 
+    List oldMessages = currentMessages;
     currentMessages = await getMessages(currentConversation["email"]);
     currentConversation["status"] = await getStatus(currentConversation["email"]);
+    isTyping = await getTypingStatus(currentConversation["email"]);
+    if (oldMessages == currentMessages) {
+      return;
+    }
     built = true;
     done = false;
 
@@ -643,7 +649,6 @@ class _MessagesViewState extends State<MessagesView> {
         //}
       }
     }
-    isTyping = await getTypingStatus(currentConversation["email"]);
   }
 
   @override

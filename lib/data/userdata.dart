@@ -46,6 +46,7 @@ Future<void> sendMessage(String message, String to, {String? type}) async {
     data['type'] = type;
   }
   await messages.add(data);
+  updateTypingStatus("");
 }
 
 Future<List> getConversations() async {
@@ -795,19 +796,4 @@ Future<bool> getTypingStatus(String email) async {
     return true;
   }
   return false;
-
-  // QuerySnapshot querySnapshot =
-  //     await FirebaseFirestore.instance.collection('users').where("email", isEqualTo: FirebaseAuth.instance.currentUser?.email).get();
-  // List allData = querySnapshot.docs.map((doc) => doc.data()).toList();
-  // if (allData.isEmpty) {
-  //   return false;
-  // }
-  // Map typing = allData[0]["typing"] ?? {};
-  // if (typing.isEmpty) {
-  //   return false;
-  // }
-  // if (DateTime.now().millisecondsSinceEpoch - typing["time"] < 5000) {
-  //   return true;
-  // }
-  // return false;
 }

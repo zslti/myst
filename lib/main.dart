@@ -39,8 +39,10 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   prefs = await SharedPreferences.getInstance();
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+    systemNavigationBarColor: Colors.transparent,
     statusBarColor: Colors.transparent,
   ));
+  //SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge, overlays: [SystemUiOverlay.top]);
 
   // flutterLocalNotificationsPlugin.initialize(
   //   const InitializationSettings(
@@ -129,8 +131,7 @@ class _MyAppState extends State<MyApp> {
 
   Future<bool> initializeApp() async {
     prefs?.setString("theme", ""); //TODO: remove line when everything is done
-    //TODO: typing indicator
-    //TODO: optimize messages view when there are a lot of messages
+    //TODO: optimizations (switching to friends view causes slowdown)
     //TODO: message actions like delete, copy, forward, reply, download, share
     //TODO: search in conversation(in right card)
     //TODO: delete conversation
@@ -140,6 +141,7 @@ class _MyAppState extends State<MyApp> {
     //TODO: custom themes
     //TODO: youtube embed
     //TODO: watch together
+    //TODO: vanish mode
     //TODO: games
     //TODO: optimize downloading videos
     //TODO: change push animation

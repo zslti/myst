@@ -255,6 +255,8 @@ class _MainViewState extends State<MainView> {
                       if (selectedIndex == 1) return;
                       selectedIndex = 1;
                       pushReplacement(context, const FriendsView());
+                      // Navigator.of(context).pop();
+                      // push(context, const FriendsView());
                     },
                     child: Stack(
                       children: [

@@ -73,7 +73,7 @@ void pushReplacement(BuildContext context, Widget widget) {
   Timer(const Duration(milliseconds: 2500), () {
     increasing = false;
   });
-  Navigator.pushReplacement(
+  Navigator.pushAndRemoveUntil(
     context,
     PageRouteBuilder(
       // ignore: prefer_const_constructors
@@ -91,6 +91,7 @@ void pushReplacement(BuildContext context, Widget widget) {
         milliseconds: 250,
       ),
     ),
+    (Route<dynamic> route) => false,
   );
 }
 

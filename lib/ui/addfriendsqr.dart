@@ -234,7 +234,7 @@ class _AddFriendsQRState extends State<AddFriendsQR> {
                     onPressed: () {
                       if (selectedIndex == 0) return;
                       selectedIndex = 0;
-                      push(context, const MainView());
+                      pushReplacement(context, const MainView());
                     },
                     child: AnimatedOpacity(
                       duration: const Duration(milliseconds: 250),
