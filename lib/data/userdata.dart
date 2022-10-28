@@ -797,3 +797,39 @@ Future<bool> getTypingStatus(String email) async {
   }
   return false;
 }
+
+Future<void> addReaction(Map? message, String emoji) async {
+  if (message == null || message.isEmpty) {
+    return;
+  }
+  QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+      .collection('messages')
+      .where("message", isEqualTo: encryptText(message["message"]))
+      .where("users", isEqualTo: message["users"])
+      .where("timestamp", isEqualTo: message["timestamp"])
+      .get();
+  for (var doc in querySnapshot.docs) {
+    if (doc.data().toString().contains(message["message"])) {
+      List r = querySnapshot.docs.map((doc) => doc.data()).toList();
+      List reactions = r[0]["reactions"] ?? [];
+      bool sameReaction = false;
+      for (final reaction in reactions) {
+        if (reaction["email"] == FirebaseAuth.instance.currentUser?.email && reaction["emoji"] == emoji) {
+          sameReaction = true;
+          break;
+        }
+      }
+      reactions.removeWhere((element) => element["email"] == FirebaseAuth.instance.currentUser?.email);
+      if (!sameReaction) {
+        reactions.add({
+          "email": FirebaseAuth.instance.currentUser?.email,
+          "emoji": emoji,
+        });
+      }
+
+      doc.reference.update({
+        'reactions': reactions,
+      });
+    }
+  }
+}

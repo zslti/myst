@@ -116,6 +116,7 @@ Map translation = {
     "enablelocation": "Enable location access to use this feature.",
     "sharedlocation": "Shared their location",
     "sendemoji": "Send an emoji",
+    "sendreaction": "Send reaction",
   },
   "hu": {
     "countrycode": "hu",
@@ -235,5 +236,6 @@ Map translation = {
     "enablelocation": "Engedélyezd a helymeghatározást a helyzeted megosztásához.",
     "sharedlocation": "Megosztotta a helyzetét",
     "sendemoji": "Hangulatjel küldése",
+    "sendreaction": "Reakció küldése",
   }
 };

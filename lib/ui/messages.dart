@@ -62,6 +62,7 @@ final parser = EmojiParser();
 bool isTyping = false;
 double typingIndicatorProgress = 0;
 double typingIndicatorAnimation = 0;
+List recentEmojis = [];
 
 void updateMessageFieldHeight(BuildContext context) {
   Timer.periodic(const Duration(milliseconds: 10), (timer) {
@@ -125,439 +126,632 @@ class Message extends StatefulWidget {
   State<Message> createState() => _MessageState();
 }
 
-class _MessageState extends State<Message> {
+class _MessageState extends State<Message> with AutomaticKeepAliveClientMixin {
   @override
+  // ignore: must_call_super
   Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        GestureDetector(
-          onTap: () {
-            bottomSheetData = {
-              "email": widget.message["sender"],
-              "displayname": displayNames[widget.message["sender"]],
-              "image": profilePictures[widget.message["sender"]],
-              "currentpage": "main",
-              "needslide": false,
-            };
-            bottomSheetProfileCustomStatus = bottomSheetProfileRealName = "";
-            bottomSheetProfileMutualFriends = [];
-            scrollController.animateTo(
-              0.5,
-              duration: const Duration(milliseconds: 275),
-              curve: Curves.ease,
-            );
-            isScrolling = true;
-            Timer(const Duration(milliseconds: 275), () {
-              isScrolling = false;
-            });
+    return GestureDetector(
+      onLongPress: () {
+        showModalBottomSheet(
+          context: context,
+          builder: (BuildContext context) {
+            return MessageActionSelector(message: widget.message);
           },
-          child: Padding(
-            padding: const EdgeInsets.only(top: 5, left: 10, right: 10),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(50),
-              child: SizedBox(
-                width: 32,
-                height: 32,
-                child: ProfileImage(
-                  url: profilePictures[widget.message['sender']] ?? "",
+        );
+      },
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          GestureDetector(
+            onTap: () {
+              bottomSheetData = {
+                "email": widget.message["sender"],
+                "displayname": displayNames[widget.message["sender"]],
+                "image": profilePictures[widget.message["sender"]],
+                "currentpage": "main",
+                "needslide": false,
+              };
+              bottomSheetProfileCustomStatus = bottomSheetProfileRealName = "";
+              bottomSheetProfileMutualFriends = [];
+              scrollController.animateTo(
+                0.5,
+                duration: const Duration(milliseconds: 275),
+                curve: Curves.ease,
+              );
+              isScrolling = true;
+              Timer(const Duration(milliseconds: 275), () {
+                isScrolling = false;
+              });
+            },
+            child: Padding(
+              padding: const EdgeInsets.only(top: 5, left: 10, right: 10),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(50),
+                child: SizedBox(
+                  width: 32,
+                  height: 32,
+                  child: ProfileImage(
+                    url: profilePictures[widget.message['sender']] ?? "",
+                  ),
                 ),
               ),
             ),
           ),
-        ),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                GestureDetector(
-                  onTap: () {
-                    bottomSheetData = {
-                      "email": widget.message["sender"],
-                      "displayname": displayNames[widget.message["sender"]],
-                      "image": profilePictures[widget.message["sender"]],
-                      "currentpage": "main",
-                      "needslide": false,
-                    };
-                    bottomSheetProfileCustomStatus = bottomSheetProfileRealName = "";
-                    bottomSheetProfileMutualFriends = [];
-                    scrollController.animateTo(
-                      0.5,
-                      duration: const Duration(milliseconds: 275),
-                      curve: Curves.ease,
-                    );
-                    isScrolling = true;
-                    Timer(const Duration(milliseconds: 275), () {
-                      isScrolling = false;
-                    });
-                  },
-                  child: Container(
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  GestureDetector(
+                    onTap: () {
+                      bottomSheetData = {
+                        "email": widget.message["sender"],
+                        "displayname": displayNames[widget.message["sender"]],
+                        "image": profilePictures[widget.message["sender"]],
+                        "currentpage": "main",
+                        "needslide": false,
+                      };
+                      bottomSheetProfileCustomStatus = bottomSheetProfileRealName = "";
+                      bottomSheetProfileMutualFriends = [];
+                      scrollController.animateTo(
+                        0.5,
+                        duration: const Duration(milliseconds: 275),
+                        curve: Curves.ease,
+                      );
+                      isScrolling = true;
+                      Timer(const Duration(milliseconds: 275), () {
+                        isScrolling = false;
+                      });
+                    },
+                    child: Container(
+                      constraints: BoxConstraints(
+                        maxWidth: MediaQuery.of(context).size.width / 2.5,
+                      ),
+                      child: Text(
+                        displayNames[widget.message['sender']] ?? "",
+                        overflow: TextOverflow.ellipsis,
+                        style: getFont("mainfont")(
+                          color: getColor("secondarytext"),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 5),
+                  Container(
                     constraints: BoxConstraints(
                       maxWidth: MediaQuery.of(context).size.width / 2.5,
                     ),
-                    child: Text(
-                      displayNames[widget.message['sender']] ?? "",
-                      overflow: TextOverflow.ellipsis,
-                      style: getFont("mainfont")(
-                        color: getColor("secondarytext"),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 5),
-                Container(
-                  constraints: BoxConstraints(
-                    maxWidth: MediaQuery.of(context).size.width / 2.5,
-                  ),
-                  child: Opacity(
-                    opacity: 0.5,
-                    child: Text(
-                      timestampToDate(widget.message['timestamp']),
-                      overflow: TextOverflow.ellipsis,
-                      style: getFont("mainfont")(
-                        color: getColor("secondarytext"),
-                        fontSize: 12,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            Builder(builder: (context) {
-              if (widget.message["type"] == "image") {
-                return GestureDetector(
-                  onTap: () {
-                    FocusScope.of(context).unfocus();
-                    context.pushTransparentRoute(ImageView(url: sentMedia[widget.message["message"]] ?? ""));
-                    Timer(const Duration(milliseconds: 200), () {
-                      imageRoundedAmount = 0;
-                      heroImageUrl = sentMedia[widget.message["message"]] ?? "";
-                    });
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 4.0, bottom: 4.0),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(10 * (heroImageUrl == sentMedia[widget.message["message"]] ? imageRoundedAmount : 1)),
-                      child: ConstrainedBox(
-                        constraints: BoxConstraints(
-                          maxWidth: MediaQuery.of(context).size.width / 1.5,
-                          maxHeight: MediaQuery.of(context).size.height / 2,
+                    child: Opacity(
+                      opacity: 0.5,
+                      child: Text(
+                        timestampToDate(widget.message['timestamp']),
+                        overflow: TextOverflow.ellipsis,
+                        style: getFont("mainfont")(
+                          color: getColor("secondarytext"),
+                          fontSize: 12,
                         ),
-                        child: //Hero(
-                            //tag: sentMedia[widget.message["message"]] ?? "",
-                            //child:
-                            ProfileImage(
-                          url: sentMedia[widget.message["message"]] ?? "",
-                          type: "banner",
-                          username: "sentimage",
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              Builder(builder: (context) {
+                if (widget.message["type"] == "image") {
+                  return GestureDetector(
+                    onTap: () {
+                      FocusScope.of(context).unfocus();
+                      context.pushTransparentRoute(ImageView(url: sentMedia[widget.message["message"]] ?? ""));
+                      Timer(const Duration(milliseconds: 200), () {
+                        imageRoundedAmount = 0;
+                        heroImageUrl = sentMedia[widget.message["message"]] ?? "";
+                      });
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 4.0, bottom: 4.0),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(10 * (heroImageUrl == sentMedia[widget.message["message"]] ? imageRoundedAmount : 1)),
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            maxWidth: MediaQuery.of(context).size.width / 1.5,
+                            maxHeight: MediaQuery.of(context).size.height / 2,
+                          ),
+                          child: //Hero(
+                              //tag: sentMedia[widget.message["message"]] ?? "",
+                              //child:
+                              ProfileImage(
+                            url: sentMedia[widget.message["message"]] ?? "",
+                            type: "banner",
+                            username: "sentimage",
+                          ),
+                          //),
+                        ),
+                      ),
+                    ),
+                  );
+                }
+                if (widget.message["type"] == "video") {
+                  return GestureDetector(
+                    onTap: () {
+                      FocusScope.of(context).unfocus();
+                      //context.pushTransparentRoute(FullscreenVideoPlayerView(url: sentMedia[widget.message["message"]] ?? ""));
+                      context.pushTransparentRoute(const FullscreenVideoPlayerView(url: "https://i.imgur.com/3fkG0PD.mp4"));
+                      Timer(const Duration(milliseconds: 200), () {
+                        imageRoundedAmount = 0;
+                        //heroImageUrl = sentMedia[widget.message["message"]] ?? "";
+                        heroImageUrl = "https://i.imgur.com/3fkG0PD.mp4";
+                        //systemchrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
+                      });
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 4.0, bottom: 4.0),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(10 * (heroImageUrl == sentMedia[widget.message["message"]] ? imageRoundedAmount : 1)),
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            maxWidth: MediaQuery.of(context).size.width / 1.5,
+                            maxHeight: MediaQuery.of(context).size.height / 2,
+                          ),
+                          child: //Hero(
+                              //tag: sentMedia[widget.message["message"]] ?? "",
+                              //tag: "https://i.imgur.com/3fkG0PD.mp4$heroImageUrl",
+                              //child:
+                              Builder(builder: (context) {
+                            // if ((sentMedia[widget.message["message"]] ?? "").isEmpty) {
+                            //   return Container();
+                            // }
+                            return const VideoPlayerView(url: "https://i.imgur.com/3fkG0PD.mp4");
+                          }),
                         ),
                         //),
                       ),
                     ),
-                  ),
-                );
-              }
-              if (widget.message["type"] == "video") {
-                return GestureDetector(
-                  onTap: () {
-                    FocusScope.of(context).unfocus();
-                    //context.pushTransparentRoute(FullscreenVideoPlayerView(url: sentMedia[widget.message["message"]] ?? ""));
-                    context.pushTransparentRoute(const FullscreenVideoPlayerView(url: "https://i.imgur.com/3fkG0PD.mp4"));
-                    Timer(const Duration(milliseconds: 200), () {
-                      imageRoundedAmount = 0;
-                      //heroImageUrl = sentMedia[widget.message["message"]] ?? "";
-                      heroImageUrl = "https://i.imgur.com/3fkG0PD.mp4";
-                      //systemchrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
-                    });
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 4.0, bottom: 4.0),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(10 * (heroImageUrl == sentMedia[widget.message["message"]] ? imageRoundedAmount : 1)),
-                      child: ConstrainedBox(
-                        constraints: BoxConstraints(
-                          maxWidth: MediaQuery.of(context).size.width / 1.5,
-                          maxHeight: MediaQuery.of(context).size.height / 2,
+                  );
+                }
+                if (widget.message["type"] == "audio") {
+                  return Row(
+                    children: [
+                      GestureDetector(
+                        onTap: () async {
+                          if (player.state == PlayerState.playing) {
+                            player.pause();
+                          } else {
+                            await player.setSourceUrl(sentMedia[widget.message["message"]]);
+                            player.resume();
+                            currentAudioMessage = sentMedia[widget.message["message"]];
+                          }
+                        },
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: Container(
+                            color: getColor("background"),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  currentAudioMessage == sentMedia[widget.message["message"]]
+                                      ? player.state == PlayerState.playing
+                                          ? Icons.pause_rounded
+                                          : Icons.play_arrow_rounded
+                                      : Icons.play_arrow_rounded,
+                                  color: getColor("secondarytext"),
+                                  size: 35,
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 8.0),
+                                  child: Text(
+                                    translation[currentLanguage]["voicemessage"],
+                                    style: getFont("mainfont")(
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 12,
+                                      color: getColor("secondarytext"),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
-                        child: //Hero(
-                            //tag: sentMedia[widget.message["message"]] ?? "",
-                            //tag: "https://i.imgur.com/3fkG0PD.mp4$heroImageUrl",
-                            //child:
-                            Builder(builder: (context) {
-                          // if ((sentMedia[widget.message["message"]] ?? "").isEmpty) {
-                          //   return Container();
-                          // }
-                          return const VideoPlayerView(url: "https://i.imgur.com/3fkG0PD.mp4");
-                        }),
                       ),
-                      //),
-                    ),
-                  ),
-                );
-              }
-              if (widget.message["type"] == "audio") {
-                return Row(
-                  children: [
-                    GestureDetector(
-                      onTap: () async {
-                        if (player.state == PlayerState.playing) {
-                          player.pause();
-                        } else {
-                          await player.setSourceUrl(sentMedia[widget.message["message"]]);
-                          player.resume();
-                          currentAudioMessage = sentMedia[widget.message["message"]];
-                        }
-                      },
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
-                        child: Container(
-                          color: getColor("background"),
-                          child: Row(
-                            children: [
-                              Icon(
-                                currentAudioMessage == sentMedia[widget.message["message"]]
-                                    ? player.state == PlayerState.playing
-                                        ? Icons.pause_rounded
-                                        : Icons.play_arrow_rounded
-                                    : Icons.play_arrow_rounded,
-                                color: getColor("secondarytext"),
-                                size: 35,
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(right: 8.0),
-                                child: Text(
-                                  translation[currentLanguage]["voicemessage"],
-                                  style: getFont("mainfont")(
-                                    fontWeight: FontWeight.w500,
-                                    fontSize: 12,
+                      // Builder(builder: (context) {
+                      //   if (waveForms[sentMedia[widget.message["message"]]] == null) return const SizedBox();
+                      //   return AudioWaveformWidget(
+                      //     waveform: waveForms[sentMedia[widget.message["message"]]].waveform,
+                      //     start: Duration.zero,
+                      //     duration: waveForms[sentMedia[widget.message["message"]]].waveform.duration,
+                      //   );
+                      // })
+                    ],
+                  );
+
+                  //await playerController.preparePlayer();
+                  // return GestureDetector(
+                  //   onTap: () async {
+                  //     //File file = File.fromUri(Uri.parse(widget.message['message']));
+                  //     String path = await filePathFromUrl(sentMedia[widget.message["message"]]);
+                  //     await playerController.preparePlayer(path);
+                  //     playerController.startPlayer();
+                  //   },
+                  //   child: AudioFileWaveforms(size: const Size.square(100), playerController: playerController),
+                  // );
+                }
+                if (widget.message["type"] == "file") {
+                  String fileName = decryptText(widget.message["message"].substring(6)).split("filename=").last;
+                  return Row(
+                    children: [
+                      GestureDetector(
+                        onTap: () async {
+                          launchUrlString(sentMedia[widget.message["message"]], mode: LaunchMode.externalApplication);
+                        },
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: Container(
+                            color: getColor("background"),
+                            child: Row(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.all(5),
+                                  child: Icon(
+                                    Icons.file_download_outlined,
                                     color: getColor("secondarytext"),
+                                    size: 25,
                                   ),
                                 ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    // Builder(builder: (context) {
-                    //   if (waveForms[sentMedia[widget.message["message"]]] == null) return const SizedBox();
-                    //   return AudioWaveformWidget(
-                    //     waveform: waveForms[sentMedia[widget.message["message"]]].waveform,
-                    //     start: Duration.zero,
-                    //     duration: waveForms[sentMedia[widget.message["message"]]].waveform.duration,
-                    //   );
-                    // })
-                  ],
-                );
-
-                //await playerController.preparePlayer();
-                // return GestureDetector(
-                //   onTap: () async {
-                //     //File file = File.fromUri(Uri.parse(widget.message['message']));
-                //     String path = await filePathFromUrl(sentMedia[widget.message["message"]]);
-                //     await playerController.preparePlayer(path);
-                //     playerController.startPlayer();
-                //   },
-                //   child: AudioFileWaveforms(size: const Size.square(100), playerController: playerController),
-                // );
-              }
-              if (widget.message["type"] == "file") {
-                String fileName = decryptText(widget.message["message"].substring(6)).split("filename=").last;
-                return Row(
-                  children: [
-                    GestureDetector(
-                      onTap: () async {
-                        launchUrlString(sentMedia[widget.message["message"]], mode: LaunchMode.externalApplication);
-                      },
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
-                        child: Container(
-                          color: getColor("background"),
-                          child: Row(
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.all(5),
-                                child: Icon(
-                                  Icons.file_download_outlined,
-                                  color: getColor("secondarytext"),
-                                  size: 25,
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(right: 8, top: 8, bottom: 8),
-                                child: ConstrainedBox(
-                                  constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.65),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        fileName,
-                                        style: getFont("mainfont")(
-                                          fontWeight: FontWeight.w500,
-                                          fontSize: 12,
-                                          color: getColor("secondarytext"),
-                                        ),
-                                      ),
-                                      Opacity(
-                                        opacity: 0.5,
-                                        child: Text(
-                                          getExtensionDescription(fileName.split(".").last),
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 8, top: 8, bottom: 8),
+                                  child: ConstrainedBox(
+                                    constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.65),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          fileName,
                                           style: getFont("mainfont")(
                                             fontWeight: FontWeight.w500,
                                             fontSize: 12,
                                             color: getColor("secondarytext"),
                                           ),
                                         ),
-                                      ),
-                                    ],
+                                        Opacity(
+                                          opacity: 0.5,
+                                          child: Text(
+                                            getExtensionDescription(fileName.split(".").last),
+                                            style: getFont("mainfont")(
+                                              fontWeight: FontWeight.w500,
+                                              fontSize: 12,
+                                              color: getColor("secondarytext"),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
-                );
-              }
-              if (widget.message["type"] == "location") {
-                return Row(
-                  children: [
-                    GestureDetector(
-                      onTap: () async {
-                        double latitude = double.parse(widget.message["message"].split(",")[0]);
-                        double longitude = double.parse(widget.message["message"].split(",")[1].toString().split("location=").first);
-                        String url = "https://www.google.com/maps/search/?api=1&query=$latitude,$longitude";
+                    ],
+                  );
+                }
+                if (widget.message["type"] == "location") {
+                  return Row(
+                    children: [
+                      GestureDetector(
+                        onTap: () async {
+                          double latitude = double.parse(widget.message["message"].split(",")[0]);
+                          double longitude = double.parse(widget.message["message"].split(",")[1].toString().split("location=").first);
+                          String url = "https://www.google.com/maps/search/?api=1&query=$latitude,$longitude";
+                          try {
+                            launchUrlString(url, mode: LaunchMode.externalApplication);
+                          } catch (e) {
+                            launchUrlString(url);
+                          }
+                        },
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: Container(
+                            color: getColor("background"),
+                            child: Row(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.all(5),
+                                  child: Icon(
+                                    Icons.location_on_outlined,
+                                    color: getColor("secondarytext"),
+                                    size: 25,
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 8, top: 8, bottom: 8),
+                                  child: ConstrainedBox(
+                                    constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.65),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          translation[currentLanguage]["sharedlocation"],
+                                          style: getFont("mainfont")(
+                                            fontWeight: FontWeight.w500,
+                                            fontSize: 12,
+                                            color: getColor("secondarytext"),
+                                          ),
+                                        ),
+                                        Opacity(
+                                          opacity: 0.5,
+                                          child: Text(
+                                            widget.message["message"].split("location=").last,
+                                            style: getFont("mainfont")(
+                                              fontWeight: FontWeight.w500,
+                                              fontSize: 12,
+                                              color: getColor("secondarytext"),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                }
+                return SizedBox(
+                  width: MediaQuery.of(context).size.width - 60,
+                  child: Builder(builder: (context) {
+                    String text = widget.message['message'] ?? "";
+                    List textSegments = [];
+                    RegExp linkRegex = RegExp("[1-z][.][1-z]");
+                    bool isEmojiOnly = parser.count(text) == text.replaceAll(" ", "").length / 2;
+
+                    for (String word in text.split(" ")) {
+                      if (linkRegex.hasMatch(word)) {
                         try {
-                          launchUrlString(url, mode: LaunchMode.externalApplication);
-                        } catch (e) {
-                          launchUrlString(url);
-                        }
-                      },
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
-                        child: Container(
-                          color: getColor("background"),
-                          child: Row(
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.all(5),
-                                child: Icon(
-                                  Icons.location_on_outlined,
-                                  color: getColor("secondarytext"),
-                                  size: 25,
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(right: 8, top: 8, bottom: 8),
-                                child: ConstrainedBox(
-                                  constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.65),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        translation[currentLanguage]["sharedlocation"],
-                                        style: getFont("mainfont")(
-                                          fontWeight: FontWeight.w500,
-                                          fontSize: 12,
-                                          color: getColor("secondarytext"),
-                                        ),
-                                      ),
-                                      Opacity(
-                                        opacity: 0.5,
-                                        child: Text(
-                                          widget.message["message"].split("location=").last,
-                                          style: getFont("mainfont")(
-                                            fontWeight: FontWeight.w500,
-                                            fontSize: 12,
-                                            color: getColor("secondarytext"),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                );
-              }
-              return SizedBox(
-                width: MediaQuery.of(context).size.width - 60,
-                child: Builder(builder: (context) {
-                  String text = widget.message['message'] ?? "";
-                  List textSegments = [];
-                  RegExp linkRegex = RegExp("[1-z][.][1-z]");
-                  bool isEmojiOnly = parser.count(text) == text.replaceAll(" ", "").length / 2;
-
-                  for (String word in text.split(" ")) {
-                    if (linkRegex.hasMatch(word)) {
-                      try {
-                        textSegments[textSegments.length - 1] += " ";
-                        // ignore: empty_catches
-                      } catch (e) {}
-                      textSegments.add(word);
-                      textSegments.add("");
-                    } else {
-                      try {
-                        textSegments[textSegments.length - 1] += " $word";
-                      } catch (e) {
+                          textSegments[textSegments.length - 1] += " ";
+                          // ignore: empty_catches
+                        } catch (e) {}
                         textSegments.add(word);
+                        textSegments.add("");
+                      } else {
+                        try {
+                          textSegments[textSegments.length - 1] += " $word";
+                        } catch (e) {
+                          textSegments.add(word);
+                        }
                       }
                     }
-                  }
 
-                  return RichText(
-                    text: TextSpan(children: [
-                      for (String text in textSegments)
-                        TextSpan(
-                          text: text,
-                          style: getFont("mainfont")(
-                            color: getColor("maintext"),
-                            decoration: linkRegex.hasMatch(text) ? TextDecoration.underline : TextDecoration.none,
-                            fontSize: isEmojiOnly ? 28 : 14,
-                          ),
-                          recognizer: TapGestureRecognizer()
-                            ..onTap = () async {
-                              if (!linkRegex.hasMatch(text)) return;
-                              String link = 'https://${text.trim().replaceAll("http://", "").replaceAll("https://", "").replaceAll("www.", "")}';
-                              try {
-                                await launchUrlString(link, mode: LaunchMode.externalApplication);
-                              } catch (e) {
-                                await launchUrlString(link);
-                              }
-                            },
-                        ),
-                      WidgetSpan(
-                        child: Builder(builder: (context) {
-                          if (!(widget.read ?? false)) return Container();
-                          return Padding(
-                            padding: const EdgeInsets.only(left: 4),
-                            child: Image.asset(
-                              "assets/read.png",
-                              color: getColor("secondarytext"),
-                              width: 12,
-                              height: 12,
-                              opacity: const AlwaysStoppedAnimation(0.5),
+                    return RichText(
+                      text: TextSpan(children: [
+                        for (String text in textSegments)
+                          TextSpan(
+                            text: text,
+                            style: getFont("mainfont")(
+                              color: getColor("maintext"),
+                              decoration: linkRegex.hasMatch(text) ? TextDecoration.underline : TextDecoration.none,
+                              fontSize: isEmojiOnly ? 28 : 14,
                             ),
-                          );
-                        }),
+                            recognizer: TapGestureRecognizer()
+                              ..onTap = () async {
+                                if (!linkRegex.hasMatch(text)) return;
+                                String link = 'https://${text.trim().replaceAll("http://", "").replaceAll("https://", "").replaceAll("www.", "")}';
+                                try {
+                                  await launchUrlString(link, mode: LaunchMode.externalApplication);
+                                } catch (e) {
+                                  await launchUrlString(link);
+                                }
+                              },
+                          ),
+                        WidgetSpan(
+                          child: Builder(builder: (context) {
+                            if (!(widget.read ?? false)) return Container();
+                            return Padding(
+                              padding: const EdgeInsets.only(left: 4),
+                              child: Image.asset(
+                                "assets/read.png",
+                                color: getColor("secondarytext"),
+                                width: 12,
+                                height: 12,
+                                opacity: const AlwaysStoppedAnimation(0.5),
+                              ),
+                            );
+                          }),
+                        ),
+                      ]),
+                    );
+                  }),
+                );
+              }),
+              Builder(builder: (context) {
+                if (!widget.message.containsKey("reactions") || widget.message["reactions"].length == 0) return const SizedBox();
+                List reactions = widget.message["reactions"];
+                Map reactionMap = {};
+                for (Map reaction in reactions) {
+                  if (!reactionMap.containsKey(reaction["emoji"])) reactionMap[reaction["emoji"]] = [];
+                  reactionMap[reaction["emoji"]].add(reaction["email"]);
+                }
+                return Wrap(
+                  children: [
+                    for (final reaction in reactionMap.keys)
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(5),
+                        child: Container(
+                          color: getColor("background"),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            child: Row(
+                              children: [
+                                Text(
+                                  reaction,
+                                ),
+                                Builder(builder: (context) {
+                                  if (reactionMap[reaction].length <= 1) return const SizedBox();
+                                  return Padding(
+                                    padding: const EdgeInsets.only(left: 4),
+                                    child: Text(
+                                      reactionMap[reaction].length,
+                                      style: getFont("mainfont")(
+                                        color: getColor("secondarytext"),
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 10,
+                                      ),
+                                    ),
+                                  );
+                                }),
+                              ],
+                            ),
+                          ),
+                        ),
                       ),
-                    ]),
-                  );
-                }),
-              );
-            }),
-          ],
-        ),
-      ],
+                  ],
+                );
+              })
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  bool get wantKeepAlive => true;
+}
+
+class MessageActionSelector extends StatefulWidget {
+  const MessageActionSelector({
+    Key? key,
+    required this.message,
+  }) : super(key: key);
+  final Map message;
+
+  @override
+  State<MessageActionSelector> createState() => _MessageActionSelectorState();
+}
+
+class _MessageActionSelectorState extends State<MessageActionSelector> {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height / 2,
+      color: getColor("background"),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: double.infinity,
+            height: 50,
+            child: Padding(
+              padding: const EdgeInsets.only(right: 16),
+              child: Row(
+                children: [
+                  ShaderMask(
+                    shaderCallback: (Rect rect) {
+                      return LinearGradient(
+                        begin: Alignment.centerLeft,
+                        end: Alignment.centerRight,
+                        colors: [
+                          Colors.black.withAlpha(220),
+                          Colors.transparent,
+                          Colors.transparent,
+                          Colors.black.withAlpha(220),
+                        ],
+                        stops: const [0.0, 0.1, 0.9, 1.0],
+                      ).createShader(rect);
+                    },
+                    blendMode: BlendMode.dstOut,
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width - 80),
+                      child: ListView(
+                        scrollDirection: Axis.horizontal,
+                        shrinkWrap: true,
+                        children: [
+                          const SizedBox(
+                            width: 8,
+                          ),
+                          for (final emoji in recentEmojis.reversed)
+                            GestureDetector(
+                              onTap: () {
+                                addReaction(widget.message, emoji);
+                                Navigator.pop(context);
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.only(left: 4, right: 4, top: 6, bottom: 6),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(100),
+                                  child: Container(
+                                    width: 40,
+                                    height: 40,
+                                    color: getColor("background2"),
+                                    alignment: Alignment.center,
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(top: 2, left: 1),
+                                      child: Text(
+                                        emoji.toString(),
+                                        style: const TextStyle(fontSize: 22),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      showModalBottomSheet(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return EmojiSelector(
+                            type: "reaction",
+                            message: widget.message,
+                          );
+                        },
+                      );
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(6),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(100),
+                        child: Container(
+                          width: 40,
+                          height: 40,
+                          color: getColor("background2"),
+                          alignment: Alignment.center,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.emoji_emotions_outlined, color: getColor("secondarytext"), size: 22),
+                              Text("+", style: TextStyle(color: getColor("secondarytext"), fontSize: 12)),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: GestureDetector(
+                        onTap: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: Icon(Icons.close, color: getColor("secondarytext")),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -1415,8 +1609,12 @@ class TypingIndicator extends StatelessWidget {
 class EmojiSelector extends StatefulWidget {
   const EmojiSelector({
     Key? key,
+    this.type = "text",
+    this.message,
   }) : super(key: key);
 
+  final String type;
+  final Map? message;
   @override
   State<EmojiSelector> createState() => _EmojiSelectorState();
 }
@@ -1442,7 +1640,7 @@ class _EmojiSelectorState extends State<EmojiSelector> {
                     child: Row(
                       children: [
                         Text(
-                          translation[currentLanguage]["sendemoji"],
+                          translation[currentLanguage][widget.type == "reaction" ? "sendreaction" : "sendemoji"],
                           style: getFont("mainfont")(color: getColor("maintext"), fontSize: 24),
                         ),
                         Expanded(
@@ -1489,6 +1687,14 @@ class _EmojiSelectorState extends State<EmojiSelector> {
                                 }
                                 return GestureDetector(
                                   onTap: () {
+                                    recentEmojis.add(emoji.toString());
+                                    recentEmojis = recentEmojis.toSet().toList();
+                                    prefs?.setString("recentemojis", jsonEncode(recentEmojis));
+                                    if (widget.type == "reaction") {
+                                      addReaction(widget.message, emoji.toString());
+                                      Navigator.of(context).pop();
+                                      return;
+                                    }
                                     messageController.text += emoji.toString();
                                     updateMessageFieldHeight(context);
                                     updateTypingStatus(currentConversation["email"]);

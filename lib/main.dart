@@ -118,7 +118,6 @@ class _MyAppState extends State<MyApp> {
     messages.removeWhere((element) {
       return !element["users"].contains(FirebaseAuth.instance.currentUser?.email);
     });
-    //remove messages from the list that dont have the type image
     messages.removeWhere((element) {
       return element["type"] != "image";
     });
@@ -131,8 +130,9 @@ class _MyAppState extends State<MyApp> {
 
   Future<bool> initializeApp() async {
     prefs?.setString("theme", ""); //TODO: remove line when everything is done
-    //TODO: optimizations (switching to friends view causes slowdown)
+    //TODO: when pressing reactions show who reacted what
     //TODO: message actions like delete, copy, forward, reply, download, share
+    //TODO: app icon
     //TODO: search in conversation(in right card)
     //TODO: delete conversation
     //TODO: when deleting account delete all conversations
@@ -142,12 +142,15 @@ class _MyAppState extends State<MyApp> {
     //TODO: youtube embed
     //TODO: watch together
     //TODO: vanish mode
+    //TODO: group chats
+    //TODO: polls
     //TODO: games
     //TODO: optimize downloading videos
     //TODO: change push animation
     final themeData = prefs?.getString("theme") ?? "";
     emList.removeAt(40);
     emList.removeAt(102);
+    recentEmojis = jsonDecode(prefs?.getString("recentemojis") ?? "[]");
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );

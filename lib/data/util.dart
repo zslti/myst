@@ -180,7 +180,7 @@ class OverlappingPanelsState extends State<OverlappingPanels> with TickerProvide
 
     final animationController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 300),
+      duration: const Duration(milliseconds: 250),
     );
     animationController.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
