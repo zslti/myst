@@ -799,37 +799,55 @@ Future<bool> getTypingStatus(String email) async {
 }
 
 Future<void> addReaction(Map? message, String emoji) async {
+  //print(message);
   if (message == null || message.isEmpty) {
     return;
   }
   QuerySnapshot querySnapshot = await FirebaseFirestore.instance
       .collection('messages')
-      .where("message", isEqualTo: encryptText(message["message"]))
+      //.where("message", isEqualTo: encryptText(message["message"]))
+      .where("sender", isEqualTo: message["sender"])
       .where("users", isEqualTo: message["users"])
       .where("timestamp", isEqualTo: message["timestamp"])
       .get();
   for (var doc in querySnapshot.docs) {
-    if (doc.data().toString().contains(message["message"])) {
-      List r = querySnapshot.docs.map((doc) => doc.data()).toList();
-      List reactions = r[0]["reactions"] ?? [];
-      bool sameReaction = false;
-      for (final reaction in reactions) {
-        if (reaction["email"] == FirebaseAuth.instance.currentUser?.email && reaction["emoji"] == emoji) {
-          sameReaction = true;
-          break;
-        }
+    //if (doc.data().toString().contains(message["message"])) {
+    List r = querySnapshot.docs.map((doc) => doc.data()).toList();
+    List reactions = r[0]["reactions"] ?? [];
+    bool sameReaction = false;
+    for (final reaction in reactions) {
+      if (reaction["email"] == FirebaseAuth.instance.currentUser?.email && reaction["emoji"] == emoji) {
+        sameReaction = true;
+        break;
       }
-      reactions.removeWhere((element) => element["email"] == FirebaseAuth.instance.currentUser?.email);
-      if (!sameReaction) {
-        reactions.add({
-          "email": FirebaseAuth.instance.currentUser?.email,
-          "emoji": emoji,
-        });
-      }
-
-      doc.reference.update({
-        'reactions': reactions,
+    }
+    reactions.removeWhere((element) => element["email"] == FirebaseAuth.instance.currentUser?.email);
+    if (!sameReaction) {
+      reactions.add({
+        "email": FirebaseAuth.instance.currentUser?.email,
+        "emoji": emoji,
       });
     }
+
+    doc.reference.update({
+      'reactions': reactions.isNotEmpty ? reactions : FieldValue.delete(),
+    });
+    //}
+  }
+}
+
+Future<void> deleteMessage(Map message) async {
+  QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+      .collection('messages')
+      .where("sender", isEqualTo: message["sender"])
+      .where("users", isEqualTo: message["users"])
+      .where("timestamp", isEqualTo: message["timestamp"])
+      .get();
+  for (var doc in querySnapshot.docs) {
+    doc.reference.delete();
+  }
+
+  if (message["type"] == "image" || message["type"] == "video" || message["type"] == "audio" || message["type"] == "file") {
+    FirebaseStorage.instance.refFromURL(sentMedia[message["message"]]).delete();
   }
 }

@@ -574,40 +574,56 @@ class _MessageState extends State<Message> with AutomaticKeepAliveClientMixin {
                   if (!reactionMap.containsKey(reaction["emoji"])) reactionMap[reaction["emoji"]] = [];
                   reactionMap[reaction["emoji"]].add(reaction["email"]);
                 }
-                return Wrap(
-                  children: [
-                    for (final reaction in reactionMap.keys)
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(5),
-                        child: Container(
-                          color: getColor("background"),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                            child: Row(
-                              children: [
-                                Text(
-                                  reaction,
-                                ),
-                                Builder(builder: (context) {
-                                  if (reactionMap[reaction].length <= 1) return const SizedBox();
-                                  return Padding(
-                                    padding: const EdgeInsets.only(left: 4),
-                                    child: Text(
-                                      reactionMap[reaction].length,
-                                      style: getFont("mainfont")(
-                                        color: getColor("secondarytext"),
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 10,
+                return GestureDetector(
+                  onTap: () {
+                    showModalBottomSheet(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return ReactionSheet(reactions: reactionMap);
+                      },
+                    );
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 4.0),
+                    child: Wrap(
+                      children: [
+                        for (final reaction in reactionMap.keys)
+                          Padding(
+                            padding: const EdgeInsets.only(right: 2.5),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(5),
+                              child: Container(
+                                color: getColor("background"),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  child: Row(
+                                    children: [
+                                      Text(
+                                        reaction,
                                       ),
-                                    ),
-                                  );
-                                }),
-                              ],
+                                      Builder(builder: (context) {
+                                        if (reactionMap[reaction].length <= 1) return const SizedBox();
+                                        return Padding(
+                                          padding: const EdgeInsets.only(left: 4),
+                                          child: Text(
+                                            reactionMap[reaction].length.toString(),
+                                            style: getFont("mainfont")(
+                                              color: getColor("secondarytext"),
+                                              fontWeight: FontWeight.w600,
+                                              fontSize: 10,
+                                            ),
+                                          ),
+                                        );
+                                      }),
+                                    ],
+                                  ),
+                                ),
+                              ),
                             ),
                           ),
-                        ),
-                      ),
-                  ],
+                      ],
+                    ),
+                  ),
                 );
               })
             ],
@@ -750,9 +766,73 @@ class _MessageActionSelectorState extends State<MessageActionSelector> {
               ),
             ),
           ),
+          Builder(builder: (context) {
+            bool isMyMessage = widget.message["sender"] == FirebaseAuth.instance.currentUser?.email;
+            return SizedBox(
+              height: MediaQuery.of(context).size.height / 2 - 50,
+              child: ScrollConfiguration(
+                behavior: MyBehavior(),
+                child: ListView(
+                  children: [
+                    MessageActionButton(
+                      isMyMessage: isMyMessage,
+                      widgets: [
+                        Padding(
+                          padding: const EdgeInsets.only(left: 8.0),
+                          child: Icon(Icons.delete_outline, color: getColor("secondarytext")),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 8, top: 4),
+                          child: Text(
+                            translation[currentLanguage]["deletemessage"],
+                            style: getFont("mainfont")(color: getColor("secondarytext"), fontSize: 14),
+                          ),
+                        ),
+                      ],
+                      onPressed: () {
+                        deleteMessage(widget.message);
+                        Navigator.pop(context);
+                      },
+                    )
+                  ],
+                ),
+              ),
+            );
+          }),
         ],
       ),
     );
+  }
+}
+
+class MessageActionButton extends StatefulWidget {
+  const MessageActionButton({
+    Key? key,
+    required this.isMyMessage,
+    required this.onPressed,
+    required this.widgets,
+  }) : super(key: key);
+
+  final bool isMyMessage;
+  final Function onPressed;
+  final List<Widget> widgets;
+
+  @override
+  State<MessageActionButton> createState() => _MessageActionButtonState();
+}
+
+class _MessageActionButtonState extends State<MessageActionButton> {
+  @override
+  Widget build(BuildContext context) {
+    return Builder(builder: (context) {
+      if (!widget.isMyMessage) return const SizedBox();
+      return TextButton(
+        onPressed: widget.onPressed as void Function(),
+        child: Row(
+          children: widget.widgets,
+        ),
+      );
+    });
   }
 }
 
@@ -1772,6 +1852,118 @@ class _EmojiSelectorState extends State<EmojiSelector> {
               ],
             )
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class ReactionSheet extends StatefulWidget {
+  const ReactionSheet({super.key, required this.reactions});
+
+  final Map reactions;
+  @override
+  State<ReactionSheet> createState() => _ReactionSheetState();
+}
+
+class _ReactionSheetState extends State<ReactionSheet> {
+  @override
+  Widget build(BuildContext context) {
+    return ShaderMask(
+      shaderCallback: (Rect rect) {
+        return const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Colors.transparent,
+            Colors.transparent,
+            Colors.transparent,
+            Colors.transparent,
+          ],
+          stops: [0.0, 0.1, 0.9, 1.0],
+        ).createShader(rect);
+      },
+      blendMode: BlendMode.dstOut,
+      child: Container(
+        height: MediaQuery.of(context).size.height / 2,
+        color: getColor("background"),
+        child: ScrollConfiguration(
+          behavior: MyBehavior(),
+          child: Column(
+            children: [
+              SizedBox(
+                height: 50,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Row(
+                    children: [
+                      Text(
+                        translation[currentLanguage]["reactions"],
+                        style: getFont("mainfont")(color: getColor("maintext"), fontSize: 24),
+                      ),
+                      Expanded(
+                        child: Align(
+                          alignment: Alignment.centerRight,
+                          child: GestureDetector(
+                            onTap: () {
+                              Navigator.of(context).pop();
+                            },
+                            child: Icon(Icons.close, color: getColor("secondarytext")),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              SizedBox(
+                height: MediaQuery.of(context).size.height / 2 - 50,
+                child: ListView(shrinkWrap: true, children: [
+                  for (final reaction in widget.reactions.entries)
+                    Padding(
+                      padding: const EdgeInsets.only(left: 16, right: 16, top: 8, bottom: 8),
+                      child: Row(
+                        children: [
+                          Text(
+                            reaction.key,
+                            style: getFont("mainfont")(color: getColor("maintext"), fontSize: 24),
+                          ),
+                          const SizedBox(
+                            width: 50,
+                          ),
+                          Expanded(
+                            child: Align(
+                              alignment: Alignment.centerRight,
+                              child: Builder(builder: (context) {
+                                List reactions = reaction.value as List;
+                                String reactionString = "";
+                                for (int i = 0; i < min(reactions.length, 3); i++) {
+                                  String displayName = displayNames[reactions[i]] ?? "";
+                                  if (displayName.length > 12) {
+                                    displayName = "${displayName.substring(0, 12).trim()}...";
+                                  }
+                                  reactionString += " $displayName,";
+                                }
+                                reactionString = reactionString.substring(0, reactionString.length - 1);
+                                if (reactions.length > 3) {
+                                  reactionString +=
+                                      "${translation[currentLanguage]["andnmore1"]}${reactions.length - 3}${translation[currentLanguage]["andnmore2"]}";
+                                }
+                                return Text(
+                                  reactionString.trim(),
+                                  textAlign: TextAlign.right,
+                                  style: getFont("mainfont")(color: getColor("secondarytext"), fontSize: 12),
+                                );
+                              }),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                ]),
+              ),
+            ],
+          ),
         ),
       ),
     );

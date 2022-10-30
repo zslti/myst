@@ -117,6 +117,10 @@ Map translation = {
     "sharedlocation": "Shared their location",
     "sendemoji": "Send an emoji",
     "sendreaction": "Send reaction",
+    "reactions": "Reactions",
+    "andnmore1": " and ",
+    "andnmore2": " more",
+    "deletemessage": "Delete message",
   },
   "hu": {
     "countrycode": "hu",
@@ -237,5 +241,9 @@ Map translation = {
     "sharedlocation": "Megosztotta a helyzetét",
     "sendemoji": "Hangulatjel küldése",
     "sendreaction": "Reakció küldése",
+    "reactions": "Reakciók",
+    "andnmore1": " és még ",
+    "andnmore2": " más",
+    "deletemessage": "Üzenet törlése",
   }
 };
