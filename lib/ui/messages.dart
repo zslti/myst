@@ -1,4 +1,4 @@
-// ignore_for_file: depend_on_referenced_packages
+// ignore_for_file: depend_on_referenced_packages, use_build_context_synchronously
 
 import 'dart:async';
 import 'dart:convert';
@@ -7,6 +7,7 @@ import 'dart:math';
 import 'dart:ui';
 
 import 'package:emojis/emoji.dart' as emoji;
+import 'package:flutter/services.dart';
 import 'package:flutter_emoji/flutter_emoji.dart';
 import 'package:http/http.dart' as http;
 
@@ -256,15 +257,14 @@ class _MessageState extends State<Message> with AutomaticKeepAliveClientMixin {
                             maxWidth: MediaQuery.of(context).size.width / 1.5,
                             maxHeight: MediaQuery.of(context).size.height / 2,
                           ),
-                          child: //Hero(
-                              //tag: sentMedia[widget.message["message"]] ?? "",
-                              //child:
-                              ProfileImage(
-                            url: sentMedia[widget.message["message"]] ?? "",
-                            type: "banner",
-                            username: "sentimage",
+                          child: Hero(
+                            tag: sentMedia[widget.message["message"]] ?? "",
+                            child: ProfileImage(
+                              url: sentMedia[widget.message["message"]] ?? "",
+                              type: "banner",
+                              username: "sentimage",
+                            ),
                           ),
-                          //),
                         ),
                       ),
                     ),
@@ -567,6 +567,34 @@ class _MessageState extends State<Message> with AutomaticKeepAliveClientMixin {
                 );
               }),
               Builder(builder: (context) {
+                if (widget.message["forwarded"] == null || !widget.message["forwarded"]) {
+                  return const SizedBox();
+                }
+                return Opacity(
+                  opacity: 0.5,
+                  child: Row(
+                    children: [
+                      RotatedBox(
+                        quarterTurns: 2,
+                        child: Icon(
+                          Icons.arrow_back_ios,
+                          size: 12,
+                          color: getColor("secondarytext"),
+                        ),
+                      ),
+                      const SizedBox(width: 5),
+                      Text(
+                        translation[currentLanguage]["forwardedmessage"],
+                        style: getFont("mainfont")(
+                          color: getColor("secondarytext"),
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }),
+              Builder(builder: (context) {
                 if (!widget.message.containsKey("reactions") || widget.message["reactions"].length == 0) return const SizedBox();
                 List reactions = widget.message["reactions"];
                 Map reactionMap = {};
@@ -775,7 +803,7 @@ class _MessageActionSelectorState extends State<MessageActionSelector> {
                 child: ListView(
                   children: [
                     MessageActionButton(
-                      isMyMessage: isMyMessage,
+                      showCondition: isMyMessage,
                       widgets: [
                         Padding(
                           padding: const EdgeInsets.only(left: 8.0),
@@ -793,7 +821,71 @@ class _MessageActionSelectorState extends State<MessageActionSelector> {
                         deleteMessage(widget.message);
                         Navigator.pop(context);
                       },
-                    )
+                    ),
+                    MessageActionButton(
+                      showCondition: widget.message["type"] == null,
+                      widgets: [
+                        Padding(
+                          padding: const EdgeInsets.only(left: 8.0),
+                          child: Icon(Icons.content_copy_rounded, color: getColor("secondarytext")),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 8, top: 2, bottom: 2),
+                          child: Text(
+                            translation[currentLanguage]["copymessage"],
+                            style: getFont("mainfont")(color: getColor("secondarytext"), fontSize: 14),
+                          ),
+                        ),
+                      ],
+                      onPressed: () async {
+                        await Clipboard.setData(ClipboardData(text: widget.message["message"]));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            backgroundColor: getColor("background"),
+                            content: Text(
+                              translation[currentLanguage]["copymessagetext"],
+                              style: getFont("mainfont")(
+                                color: getColor("maintext"),
+                              ),
+                            ),
+                          ),
+                        );
+                        Navigator.pop(context);
+                      },
+                    ),
+                    MessageActionButton(
+                      widgets: [
+                        Padding(
+                          padding: const EdgeInsets.only(left: 4, right: 6),
+                          child: RotatedBox(
+                            quarterTurns: 2,
+                            child: Icon(
+                              Icons.arrow_back_ios,
+                              color: getColor("secondarytext"),
+                              size: 22,
+                            ),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 8, top: 2, bottom: 2),
+                          child: Text(
+                            translation[currentLanguage]["forwardmessage"],
+                            style: getFont("mainfont")(color: getColor("secondarytext"), fontSize: 14),
+                          ),
+                        ),
+                      ],
+                      onPressed: () async {
+                        Navigator.pop(context);
+                        forwardedTo = {};
+                        push(
+                          context,
+                          ConversationsView(
+                            isForwarding: true,
+                            forwardedMessage: widget.message,
+                          ),
+                        );
+                      },
+                    ),
                   ],
                 ),
               ),
@@ -808,12 +900,12 @@ class _MessageActionSelectorState extends State<MessageActionSelector> {
 class MessageActionButton extends StatefulWidget {
   const MessageActionButton({
     Key? key,
-    required this.isMyMessage,
+    this.showCondition = true,
     required this.onPressed,
     required this.widgets,
   }) : super(key: key);
 
-  final bool isMyMessage;
+  final bool showCondition;
   final Function onPressed;
   final List<Widget> widgets;
 
@@ -825,7 +917,7 @@ class _MessageActionButtonState extends State<MessageActionButton> {
   @override
   Widget build(BuildContext context) {
     return Builder(builder: (context) {
-      if (!widget.isMyMessage) return const SizedBox();
+      if (!widget.showCondition) return const SizedBox();
       return TextButton(
         onPressed: widget.onPressed as void Function(),
         child: Row(

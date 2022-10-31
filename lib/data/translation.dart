@@ -121,6 +121,12 @@ Map translation = {
     "andnmore1": " and ",
     "andnmore2": " more",
     "deletemessage": "Delete message",
+    "copymessage": "Copy message text",
+    "copymessagetext": "Message copied to clipboard.",
+    "forwardmessage": "Forward message",
+    "send": "Send",
+    "undo": "Undo",
+    "forwardedmessage": "Forwarded message",
   },
   "hu": {
     "countrycode": "hu",
@@ -245,5 +251,11 @@ Map translation = {
     "andnmore1": " és még ",
     "andnmore2": " más",
     "deletemessage": "Üzenet törlése",
+    "copymessage": "Szoveg másolása",
+    "copymessagetext": "Az üzenet szövege a vágólapra másolva.",
+    "forwardmessage": "Üzenet továbbítása",
+    "send": "Küldés",
+    "undo": "Visszavonás",
+    "forwardedmessage": "Továbbított üzenet",
   }
 };

@@ -650,40 +650,39 @@ class _ImageViewState extends State<ImageView> {
         },
         direction: DismissiblePageDismissDirection.multi,
         isFullScreen: true,
-        child: //Hero(
-            //tag: widget.url,
-            //child:
-            InteractiveViewer(
-          transformationController: _transformationController,
-          onInteractionStart: (details) {
-            Offset offset = details.localFocalPoint;
-            if (details.pointerCount == 1 &&
-                (offset.dx < 60 || offset.dx > MediaQuery.of(context).size.width - 60 || offset.dy > MediaQuery.of(context).size.height - 140)) {
-              Timer(const Duration(milliseconds: 200), () {
-                Timer.periodic(const Duration(milliseconds: 10), (timer) {
-                  imageRoundedAmount += 0.03;
-                  if (imageRoundedAmount >= 1) {
-                    imageRoundedAmount = 1;
-                    timer.cancel();
-                  }
-                  if (mounted) {
-                    setState(() {});
-                  }
+        child: Hero(
+          tag: widget.url,
+          child: InteractiveViewer(
+            transformationController: _transformationController,
+            onInteractionStart: (details) {
+              Offset offset = details.localFocalPoint;
+              if (details.pointerCount == 1 &&
+                  (offset.dx < 60 || offset.dx > MediaQuery.of(context).size.width - 60 || offset.dy > MediaQuery.of(context).size.height - 140)) {
+                Timer(const Duration(milliseconds: 200), () {
+                  Timer.periodic(const Duration(milliseconds: 10), (timer) {
+                    imageRoundedAmount += 0.03;
+                    if (imageRoundedAmount >= 1) {
+                      imageRoundedAmount = 1;
+                      timer.cancel();
+                    }
+                    if (mounted) {
+                      setState(() {});
+                    }
+                  });
                 });
-              });
-              Navigator.of(context).pop();
-            }
-          },
-          maxScale: 4,
-          minScale: 1,
-          child: ProfileImage(
-            url: widget.url,
-            type: "banner",
-            username: "sentimage",
+                Navigator.of(context).pop();
+              }
+            },
+            maxScale: 4,
+            minScale: 1,
+            child: ProfileImage(
+              url: widget.url,
+              type: "banner",
+              username: "sentimage",
+            ),
           ),
         ),
       ),
-      //),
     );
   }
 }

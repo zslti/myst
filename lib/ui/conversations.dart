@@ -19,6 +19,7 @@ int lastSearchTime = 0, searchApplyTime = 0;
 bool searchApplied = false;
 int lastRequestTime = 0;
 Map profilePictures = {};
+Map forwardedTo = {};
 
 void applySearchTerm(String str) {
   isSearching = true;
@@ -37,8 +38,14 @@ void applySearchTerm(String str) {
 }
 
 class ConversationsView extends StatefulWidget {
-  const ConversationsView({Key? key}) : super(key: key);
+  const ConversationsView({
+    Key? key,
+    this.isForwarding = false,
+    this.forwardedMessage,
+  }) : super(key: key);
 
+  final bool isForwarding;
+  final Map? forwardedMessage;
   @override
   State<ConversationsView> createState() => _ConversationsViewState();
 }
@@ -84,7 +91,13 @@ class _ConversationsViewState extends State<ConversationsView> {
         t = true;
       });
     }
-
+    if (widget.isForwarding) {
+      Timer(const Duration(milliseconds: 50), () {
+        if (mounted) {
+          setState(() {});
+        }
+      });
+    }
     return Scaffold(
       backgroundColor: getColor("background"),
       resizeToAvoidBottomInset: false,
@@ -92,10 +105,10 @@ class _ConversationsViewState extends State<ConversationsView> {
         duration: const Duration(milliseconds: 500),
         opacity: t ? 1 : 0,
         child: SizedBox(
-          width: MediaQuery.of(context).size.width - 50,
+          width: MediaQuery.of(context).size.width - (widget.isForwarding ? 0 : 50),
           child: Padding(
-            padding: const EdgeInsets.only(
-              right: 7,
+            padding: EdgeInsets.only(
+              right: widget.isForwarding ? 0 : 7,
               top: 35,
             ),
             child: KeyboardVisibilityBuilder(
@@ -125,13 +138,32 @@ class _ConversationsViewState extends State<ConversationsView> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            translation[currentLanguage]["messages"],
-                            style: getFont("mainfont")(
-                              color: getColor("maintext"),
-                              fontSize: 20,
-                              fontWeight: FontWeight.w500,
-                            ),
+                          Row(
+                            children: [
+                              Builder(builder: (context) {
+                                if (!widget.isForwarding) {
+                                  return const SizedBox();
+                                }
+                                return GestureDetector(
+                                  onTap: () {
+                                    Navigator.pop(context);
+                                  },
+                                  child: Icon(
+                                    Icons.arrow_back_ios,
+                                    color: getColor("secondarytext"),
+                                    size: 20,
+                                  ),
+                                );
+                              }),
+                              Text(
+                                translation[currentLanguage][widget.isForwarding ? "forwardmessage" : "messages"],
+                                style: getFont("mainfont")(
+                                  color: getColor("maintext"),
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
                           ),
                           const SizedBox(height: 10),
                           Stack(
@@ -156,12 +188,7 @@ class _ConversationsViewState extends State<ConversationsView> {
                                                 ),
                                                 opacity: isSearching ? 0 : 1,
                                                 child: SizedBox(
-                                                  height: 53 *
-                                                      (!conversation["displayname"].toString().contains(
-                                                                searchText,
-                                                              )
-                                                          ? 0
-                                                          : 1),
+                                                  height: 53 * (!conversation["displayname"].toString().contains(searchText) ? 0 : 1),
                                                   child: TextButton(
                                                     onLongPress: () {
                                                       bottomSheetData = {
@@ -284,6 +311,46 @@ class _ConversationsViewState extends State<ConversationsView> {
                                                             ],
                                                           ),
                                                         ),
+                                                        Builder(builder: (context) {
+                                                          if (!widget.isForwarding) {
+                                                            return const SizedBox();
+                                                          }
+                                                          return GestureDetector(
+                                                            onTap: (() async {
+                                                              if (forwardedTo.containsKey(conversation["email"])) {
+                                                                try {
+                                                                  deleteMessage(forwardedTo[conversation["email"]]);
+                                                                  forwardedTo.remove(conversation["email"]);
+                                                                  // ignore: empty_catches
+                                                                } catch (e) {}
+                                                              } else {
+                                                                forwardedTo[conversation["email"]] = await forwardMessage(
+                                                                  widget.forwardedMessage!,
+                                                                  conversation["email"],
+                                                                );
+                                                              }
+                                                            }),
+                                                            child: Padding(
+                                                              padding: const EdgeInsets.only(left: 8.0),
+                                                              child: Builder(builder: (context) {
+                                                                return ClipRRect(
+                                                                  borderRadius: BorderRadius.circular(10),
+                                                                  child: Container(
+                                                                    color: getColor("background"),
+                                                                    child: Padding(
+                                                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                                                      child: Text(
+                                                                        translation[currentLanguage]
+                                                                            [forwardedTo.containsKey(conversation["email"]) ? "undo" : "send"],
+                                                                        style: getFont("mainfont")(color: getColor("maintext")),
+                                                                      ),
+                                                                    ),
+                                                                  ),
+                                                                );
+                                                              }),
+                                                            ),
+                                                          );
+                                                        })
                                                       ],
                                                     ),
                                                   ),

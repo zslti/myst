@@ -33,9 +33,7 @@ Future<List> getAllMessages() async {
 }
 
 Future<void> sendMessage(String message, String to, {String? type}) async {
-  CollectionReference messages = FirebaseFirestore.instance.collection(
-    'messages',
-  );
+  CollectionReference messages = FirebaseFirestore.instance.collection('messages');
   Map<String, dynamic> data = {
     'message': encryptText(message.trimRight()),
     'users': "{{${FirebaseAuth.instance.currentUser?.email}}, {$to}}",
@@ -837,6 +835,9 @@ Future<void> addReaction(Map? message, String emoji) async {
 }
 
 Future<void> deleteMessage(Map message) async {
+  if (message.isEmpty) {
+    return;
+  }
   QuerySnapshot querySnapshot = await FirebaseFirestore.instance
       .collection('messages')
       .where("sender", isEqualTo: message["sender"])
@@ -850,4 +851,24 @@ Future<void> deleteMessage(Map message) async {
   if (message["type"] == "image" || message["type"] == "video" || message["type"] == "audio" || message["type"] == "file") {
     FirebaseStorage.instance.refFromURL(sentMedia[message["message"]]).delete();
   }
+}
+
+Map forwardTimestamps = {};
+
+Future<Map> forwardMessage(Map message, String to) async {
+  if (forwardTimestamps[to] != null && DateTime.now().millisecondsSinceEpoch - forwardTimestamps[to] < 1000) {
+    return {};
+  }
+  forwardTimestamps[to] = DateTime.now().millisecondsSinceEpoch;
+  message["users"] = "{{${FirebaseAuth.instance.currentUser?.email}}, {$to}}";
+  message["timestamp"] = DateTime.now().millisecondsSinceEpoch;
+  message["sender"] = FirebaseAuth.instance.currentUser?.email;
+  message["reactions"] = [];
+  message["read"] = false;
+  message["edited"] = false;
+  message["forwarded"] = true;
+  message["message"] = encryptText(message["message"]);
+  CollectionReference messages = FirebaseFirestore.instance.collection('messages');
+  await messages.add(message);
+  return message;
 }
