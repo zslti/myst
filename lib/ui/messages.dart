@@ -64,6 +64,9 @@ bool isTyping = false;
 double typingIndicatorProgress = 0;
 double typingIndicatorAnimation = 0;
 List recentEmojis = [];
+Map replyTo = {};
+double replyBarProgress = 0;
+String replyingTo = "";
 
 void updateMessageFieldHeight(BuildContext context) {
   Timer.periodic(const Duration(milliseconds: 10), (timer) {
@@ -595,6 +598,55 @@ class _MessageState extends State<Message> with AutomaticKeepAliveClientMixin {
                 );
               }),
               Builder(builder: (context) {
+                if (widget.message["replyto"] == null) {
+                  return const SizedBox();
+                }
+                return Opacity(
+                  opacity: 0.5,
+                  child: GestureDetector(
+                    onTap: () {
+                      int messageIndex = currentMessages.indexWhere((element) => element["timestamp"] == widget.message["replyto"]["timestamp"]);
+                      if (messageIndex == -1) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            backgroundColor: getColor("background"),
+                            content: Text(
+                              translation[currentLanguage]["originalmessagedeleted"],
+                              style: getFont("mainfont")(
+                                color: getColor("maintext"),
+                              ),
+                            ),
+                          ),
+                        );
+                        return;
+                      }
+                      _scrollController.scrollTo(
+                        index: messageIndex,
+                        duration: const Duration(milliseconds: 1000),
+                        curve: Curves.easeInOut,
+                      );
+                    },
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.reply_outlined,
+                          size: 14,
+                          color: getColor("secondarytext"),
+                        ),
+                        const SizedBox(width: 3),
+                        Text(
+                          '${translation[currentLanguage]["replyingto"]}${displayNames[widget.message["replyto"]["sender"]]}',
+                          style: getFont("mainfont")(
+                            color: getColor("secondarytext"),
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }),
+              Builder(builder: (context) {
                 if (!widget.message.containsKey("reactions") || widget.message["reactions"].length == 0) return const SizedBox();
                 List reactions = widget.message["reactions"];
                 Map reactionMap = {};
@@ -886,6 +938,27 @@ class _MessageActionSelectorState extends State<MessageActionSelector> {
                         );
                       },
                     ),
+                    MessageActionButton(
+                      //showCondition: widget.message["type"] == null,
+                      widgets: [
+                        Padding(
+                          padding: const EdgeInsets.only(left: 8.0),
+                          child: Icon(Icons.reply_outlined, color: getColor("secondarytext")),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 8, top: 2, bottom: 2),
+                          child: Text(
+                            translation[currentLanguage]["reply"],
+                            style: getFont("mainfont")(color: getColor("secondarytext"), fontSize: 14),
+                          ),
+                        ),
+                      ],
+                      onPressed: () async {
+                        replyTo = widget.message;
+                        replyingTo = displayNames[replyTo["sender"]];
+                        Navigator.pop(context);
+                      },
+                    ),
                   ],
                 ),
               ),
@@ -1065,6 +1138,31 @@ class _MessagesViewState extends State<MessagesView> {
     } else {
       typingIndicatorProgress += typingIndicatorModifier;
     }
+
+    bool isReplyInCurrentConversation = false;
+    if (replyTo.isNotEmpty) {
+      if (replyTo["users"].contains(currentConversation["email"]) &&
+          replyTo["users"].contains(FirebaseAuth.instance.currentUser?.email) &&
+          replyTo["users"]
+              .toString()
+              .replaceAll(currentConversation["email"], "")
+              .replaceAll(FirebaseAuth.instance.currentUser?.email ?? "", "")
+              .replaceAll(",", "")
+              .replaceAll(" ", "")
+              .replaceAll("{", "")
+              .replaceAll("}", "")
+              .isEmpty) {
+        isReplyInCurrentConversation = true;
+      }
+    }
+    double replyModifier = 0.05 * (replyTo.isNotEmpty && isReplyInCurrentConversation ? 1 : -1);
+    if (replyBarProgress + replyModifier > 1) {
+      replyBarProgress = 1;
+    } else if (replyBarProgress + replyModifier < 0) {
+      replyBarProgress = 0;
+    } else {
+      replyBarProgress += replyModifier;
+    }
     try {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!built) {
@@ -1085,7 +1183,11 @@ class _MessagesViewState extends State<MessagesView> {
                   Stack(
                     children: [
                       Padding(
-                        padding: EdgeInsets.only(top: 50, bottom: currentBarHeight + 48 * Curves.easeInOut.transform(typingIndicatorProgress)),
+                        padding: EdgeInsets.only(
+                            top: 50,
+                            bottom: currentBarHeight +
+                                48 * Curves.easeInOut.transform(typingIndicatorProgress) +
+                                20 * Curves.easeInOut.transform(replyBarProgress)),
                         child: AnimatedOpacity(
                           opacity: built ? 1 : 0,
                           duration: Duration(milliseconds: 300 * (built ? 1 : 0)),
@@ -1190,6 +1292,70 @@ class _MessagesViewState extends State<MessagesView> {
                           padding: EdgeInsets.only(bottom: currentBarHeight, left: 12),
                           // ignore: prefer_const_constructors
                           child: TypingIndicator(),
+                        ),
+                      ),
+                      Align(
+                        alignment: Alignment.bottomLeft,
+                        child: Padding(
+                          padding: EdgeInsets.only(bottom: currentBarHeight),
+                          // ignore: prefer_const_constructors
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: getColor("background"),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.25),
+                                  spreadRadius: 5,
+                                  blurRadius: 7,
+                                  offset: const Offset(0, -3),
+                                ),
+                              ],
+                            ),
+                            height: 20 * Curves.easeInOut.transform(replyBarProgress),
+                            width: double.infinity,
+                            child: Opacity(
+                              opacity: Curves.easeInOut.transform(replyBarProgress),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Align(
+                                        alignment: Alignment.centerLeft,
+                                        child: Text(
+                                          "${translation[currentLanguage]["replyingto"]}$replyingTo",
+                                          overflow: TextOverflow.ellipsis,
+                                          style: getFont("mainfont")(
+                                            color: getColor("secondarytext"),
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    GestureDetector(
+                                      onTap: () {
+                                        setState(() {
+                                          replyTo = {};
+                                        });
+                                      },
+                                      child: SizedBox(
+                                        height: 20 * Curves.easeInOut.transform(replyBarProgress),
+                                        width: MediaQuery.of(context).size.width * 0.2,
+                                        child: Align(
+                                          alignment: Alignment.centerRight,
+                                          child: Icon(
+                                            Icons.close,
+                                            color: getColor("secondarytext"),
+                                            size: 20,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                     ],
@@ -1345,7 +1511,6 @@ class _MessagesViewState extends State<MessagesView> {
                                                 type: "location",
                                               );
                                             } else {
-                                              // ignore: use_build_context_synchronously
                                               ScaffoldMessenger.of(context).showSnackBar(
                                                 SnackBar(
                                                   backgroundColor: getColor("background"),
@@ -1599,10 +1764,28 @@ class _MessagesViewState extends State<MessagesView> {
                                             if (messageController.text.isEmpty) {
                                               return;
                                             }
+                                            bool isReplyInCurrentConversation = false;
+                                            if (replyTo.isNotEmpty) {
+                                              if (replyTo["users"].contains(currentConversation["email"]) &&
+                                                  replyTo["users"].contains(FirebaseAuth.instance.currentUser?.email) &&
+                                                  replyTo["users"]
+                                                      .toString()
+                                                      .replaceAll(currentConversation["email"], "")
+                                                      .replaceAll(FirebaseAuth.instance.currentUser?.email ?? "", "")
+                                                      .replaceAll(",", "")
+                                                      .replaceAll(" ", "")
+                                                      .replaceAll("{", "")
+                                                      .replaceAll("}", "")
+                                                      .isEmpty) {
+                                                isReplyInCurrentConversation = true;
+                                              }
+                                            }
                                             sendMessage(
                                               messageController.text,
                                               currentConversation["email"],
+                                              replyTo: isReplyInCurrentConversation ? replyTo : null,
                                             );
+                                            replyTo = {};
                                             messageController.clear();
                                             Timer.periodic(const Duration(milliseconds: 10), (timer) {
                                               if (messageController.text.isEmpty) {
@@ -1709,67 +1892,70 @@ class TypingIndicator extends StatelessWidget {
       double typingIndicatorDisplayValue = Curves.easeInOut.transform(typingIndicatorProgress);
       return Opacity(
         opacity: typingIndicatorDisplayValue,
-        child: SizedBox(
-          height: 48 * typingIndicatorDisplayValue,
-          child: Padding(
-            padding: EdgeInsets.only(
-              bottom: 8.0 * typingIndicatorDisplayValue,
-              top: 4.0 * typingIndicatorDisplayValue,
-            ),
-            child: Row(
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(50),
-                  child: SizedBox(
-                    width: 32,
-                    height: 32,
-                    child: ProfileImage(
-                      url: profilePictures[currentConversation['email']] ?? "",
+        child: Padding(
+          padding: EdgeInsets.only(bottom: 20 * replyBarProgress),
+          child: SizedBox(
+            height: 48 * typingIndicatorDisplayValue,
+            child: Padding(
+              padding: EdgeInsets.only(
+                bottom: 8.0 * typingIndicatorDisplayValue,
+                top: 4.0 * typingIndicatorDisplayValue,
+              ),
+              child: Row(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(50),
+                    child: SizedBox(
+                      width: 32,
+                      height: 32,
+                      child: ProfileImage(
+                        url: profilePictures[currentConversation['email']] ?? "",
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(15),
-                  child: Container(
-                    color: getColor("background"),
-                    width: 50,
-                    height: 40,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        for (int i = 0; i < 3; i++)
-                          Padding(
-                            padding: const EdgeInsets.all(3.0),
-                            child: Builder(builder: (context) {
-                              double animationValue = typingIndicatorAnimation - typingIndicatorAnimation.floor() + 0.12 * (3 - i);
-                              return SizedBox(
-                                height: double.infinity,
-                                child: AnimatedOpacity(
-                                  opacity: animationValue > 0.5 && animationValue < 1 - 0.12 * (3 - i) ? 1 : 0.5,
-                                  duration: const Duration(milliseconds: 150),
-                                  child: AnimatedAlign(
-                                    alignment:
-                                        animationValue > 0.5 && animationValue < 1 - 0.12 * (3 - i) ? const Alignment(0, -0.6) : Alignment.center,
+                  const SizedBox(width: 8),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(15),
+                    child: Container(
+                      color: getColor("background"),
+                      width: 50,
+                      height: 40,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          for (int i = 0; i < 3; i++)
+                            Padding(
+                              padding: const EdgeInsets.all(3.0),
+                              child: Builder(builder: (context) {
+                                double animationValue = typingIndicatorAnimation - typingIndicatorAnimation.floor() + 0.12 * (3 - i);
+                                return SizedBox(
+                                  height: double.infinity,
+                                  child: AnimatedOpacity(
+                                    opacity: animationValue > 0.5 && animationValue < 1 - 0.12 * (3 - i) ? 1 : 0.5,
                                     duration: const Duration(milliseconds: 150),
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(15),
-                                      child: Container(
-                                        width: 5,
-                                        height: 5,
-                                        color: getColor("logo"),
+                                    child: AnimatedAlign(
+                                      alignment:
+                                          animationValue > 0.5 && animationValue < 1 - 0.12 * (3 - i) ? const Alignment(0, -0.6) : Alignment.center,
+                                      duration: const Duration(milliseconds: 150),
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(15),
+                                        child: Container(
+                                          width: 5,
+                                          height: 5,
+                                          color: getColor("logo"),
+                                        ),
                                       ),
                                     ),
                                   ),
-                                ),
-                              );
-                            }),
-                          ),
-                      ],
+                                );
+                              }),
+                            ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

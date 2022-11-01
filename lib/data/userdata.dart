@@ -32,13 +32,14 @@ Future<List> getAllMessages() async {
   return allData;
 }
 
-Future<void> sendMessage(String message, String to, {String? type}) async {
+Future<void> sendMessage(String message, String to, {String? type, Map? replyTo}) async {
   CollectionReference messages = FirebaseFirestore.instance.collection('messages');
   Map<String, dynamic> data = {
     'message': encryptText(message.trimRight()),
     'users': "{{${FirebaseAuth.instance.currentUser?.email}}, {$to}}",
     'sender': FirebaseAuth.instance.currentUser?.email,
     'timestamp': DateTime.now().millisecondsSinceEpoch,
+    'replyto': replyTo,
   };
   if (type != null) {
     data['type'] = type;
@@ -848,9 +849,9 @@ Future<void> deleteMessage(Map message) async {
     doc.reference.delete();
   }
 
-  if (message["type"] == "image" || message["type"] == "video" || message["type"] == "audio" || message["type"] == "file") {
-    FirebaseStorage.instance.refFromURL(sentMedia[message["message"]]).delete();
-  }
+  // if (message["type"] == "image" || message["type"] == "video" || message["type"] == "audio" || message["type"] == "file") {
+  //   FirebaseStorage.instance.refFromURL(sentMedia[message["message"]]).delete();
+  // }
 }
 
 Map forwardTimestamps = {};

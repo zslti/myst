@@ -127,6 +127,9 @@ Map translation = {
     "send": "Send",
     "undo": "Undo",
     "forwardedmessage": "Forwarded message",
+    "reply": "Reply",
+    "replyingto": "Replying to ",
+    "originalmessagedeleted": "The original message got deleted.",
   },
   "hu": {
     "countrycode": "hu",
@@ -257,5 +260,8 @@ Map translation = {
     "send": "Küldés",
     "undo": "Visszavonás",
     "forwardedmessage": "Továbbított üzenet",
+    "reply": "Válaszolás",
+    "replyingto": "Válasz neki: ",
+    "originalmessagedeleted": "Az eredeti üzenet törölve lett.",
   }
 };
