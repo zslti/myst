@@ -130,9 +130,7 @@ class _MyAppState extends State<MyApp> {
 
   Future<bool> initializeApp() async {
     prefs?.setString("theme", ""); //TODO: remove line when everything is done
-    //TODO: message actions like download, share
-    //TODO: app icon
-    //TODO: search in conversation(in right card)
+    //TODO: search in conversation by message type, if not found display a message
     //TODO: delete conversation
     //TODO: when deleting account delete all conversations
     //TODO: calls

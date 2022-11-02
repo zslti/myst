@@ -27,6 +27,7 @@ import 'package:myst/data/util.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 import '../data/fileextensions.dart';
@@ -122,9 +123,10 @@ void startTransition() {
 }
 
 class Message extends StatefulWidget {
-  const Message({Key? key, required this.message, this.read}) : super(key: key);
+  const Message({Key? key, required this.message, this.read, this.hasReducedWidth = false}) : super(key: key);
   final Map message;
   final bool? read;
+  final bool hasReducedWidth;
 
   @override
   State<Message> createState() => _MessageState();
@@ -210,7 +212,7 @@ class _MessageState extends State<Message> with AutomaticKeepAliveClientMixin {
                     },
                     child: Container(
                       constraints: BoxConstraints(
-                        maxWidth: MediaQuery.of(context).size.width / 2.5,
+                        maxWidth: MediaQuery.of(context).size.width / 2.5 - (widget.hasReducedWidth ? 50 : 0),
                       ),
                       child: Text(
                         displayNames[widget.message['sender']] ?? "",
@@ -224,7 +226,7 @@ class _MessageState extends State<Message> with AutomaticKeepAliveClientMixin {
                   const SizedBox(width: 5),
                   Container(
                     constraints: BoxConstraints(
-                      maxWidth: MediaQuery.of(context).size.width / 2.5,
+                      maxWidth: MediaQuery.of(context).size.width / 2.5 - (widget.hasReducedWidth ? 50 : 0),
                     ),
                     child: Opacity(
                       opacity: 0.5,
@@ -257,7 +259,7 @@ class _MessageState extends State<Message> with AutomaticKeepAliveClientMixin {
                         borderRadius: BorderRadius.circular(10 * (heroImageUrl == sentMedia[widget.message["message"]] ? imageRoundedAmount : 1)),
                         child: ConstrainedBox(
                           constraints: BoxConstraints(
-                            maxWidth: MediaQuery.of(context).size.width / 1.5,
+                            maxWidth: MediaQuery.of(context).size.width / 1.5 - (widget.hasReducedWidth ? 100 : 0),
                             maxHeight: MediaQuery.of(context).size.height / 2,
                           ),
                           child: Hero(
@@ -292,7 +294,7 @@ class _MessageState extends State<Message> with AutomaticKeepAliveClientMixin {
                         borderRadius: BorderRadius.circular(10 * (heroImageUrl == sentMedia[widget.message["message"]] ? imageRoundedAmount : 1)),
                         child: ConstrainedBox(
                           constraints: BoxConstraints(
-                            maxWidth: MediaQuery.of(context).size.width / 1.5,
+                            maxWidth: MediaQuery.of(context).size.width / 1.5 - (widget.hasReducedWidth ? 100 : 0),
                             maxHeight: MediaQuery.of(context).size.height / 2,
                           ),
                           child: //Hero(
@@ -402,7 +404,8 @@ class _MessageState extends State<Message> with AutomaticKeepAliveClientMixin {
                                 Padding(
                                   padding: const EdgeInsets.only(right: 8, top: 8, bottom: 8),
                                   child: ConstrainedBox(
-                                    constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.65),
+                                    constraints:
+                                        BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.65 - (widget.hasReducedWidth ? 100 : 0)),
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
@@ -468,7 +471,8 @@ class _MessageState extends State<Message> with AutomaticKeepAliveClientMixin {
                                 Padding(
                                   padding: const EdgeInsets.only(right: 8, top: 8, bottom: 8),
                                   child: ConstrainedBox(
-                                    constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.65),
+                                    constraints:
+                                        BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.65 - (widget.hasReducedWidth ? 100 : 0)),
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
@@ -504,7 +508,7 @@ class _MessageState extends State<Message> with AutomaticKeepAliveClientMixin {
                   );
                 }
                 return SizedBox(
-                  width: MediaQuery.of(context).size.width - 60,
+                  width: MediaQuery.of(context).size.width - 60 - (widget.hasReducedWidth ? 100 : 0),
                   child: Builder(builder: (context) {
                     String text = widget.message['message'] ?? "";
                     List textSegments = [];
@@ -541,11 +545,11 @@ class _MessageState extends State<Message> with AutomaticKeepAliveClientMixin {
                             recognizer: TapGestureRecognizer()
                               ..onTap = () async {
                                 if (!linkRegex.hasMatch(text)) return;
-                                String link = 'https://${text.trim().replaceAll("http://", "").replaceAll("https://", "").replaceAll("www.", "")}';
+                                String url = 'https://${text.trim().replaceAll("http://", "").replaceAll("https://", "").replaceAll("www.", "")}';
                                 try {
-                                  await launchUrlString(link, mode: LaunchMode.externalApplication);
+                                  await launchUrlString(url, mode: LaunchMode.externalApplication);
                                 } catch (e) {
-                                  await launchUrlString(link);
+                                  await launchUrlString(url);
                                 }
                               },
                           ),
@@ -956,6 +960,61 @@ class _MessageActionSelectorState extends State<MessageActionSelector> {
                       onPressed: () async {
                         replyTo = widget.message;
                         replyingTo = displayNames[replyTo["sender"]];
+                        Navigator.pop(context);
+                      },
+                    ),
+                    MessageActionButton(
+                      showCondition: widget.message["type"] == "image" ||
+                          widget.message["type"] == "video" ||
+                          widget.message["type"] == "file" ||
+                          widget.message["type"] == "audio",
+                      widgets: [
+                        Padding(
+                          padding: const EdgeInsets.only(left: 8.0),
+                          child: Icon(Icons.file_download_outlined, color: getColor("secondarytext")),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 8, top: 2, bottom: 2),
+                          child: Text(
+                            translation[currentLanguage]["download"],
+                            style: getFont("mainfont")(color: getColor("secondarytext"), fontSize: 14),
+                          ),
+                        ),
+                      ],
+                      onPressed: () async {
+                        launchUrlString(sentMedia[widget.message["message"]], mode: LaunchMode.externalApplication);
+                        Navigator.pop(context);
+                      },
+                    ),
+                    MessageActionButton(
+                      widgets: [
+                        Padding(
+                          padding: const EdgeInsets.only(left: 8.0),
+                          child: Icon(Icons.ios_share, color: getColor("secondarytext")),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 8, top: 2, bottom: 2),
+                          child: Text(
+                            translation[currentLanguage]["share"],
+                            style: getFont("mainfont")(color: getColor("secondarytext"), fontSize: 14),
+                          ),
+                        ),
+                      ],
+                      onPressed: () async {
+                        String shareText = "";
+                        if (widget.message["type"] == "image" ||
+                            widget.message["type"] == "video" ||
+                            widget.message["type"] == "file" ||
+                            widget.message["type"] == "audio") {
+                          shareText = sentMedia[widget.message["message"]];
+                        } else if (widget.message["type"] == "location") {
+                          double latitude = double.parse(widget.message["message"].split(",")[0]);
+                          double longitude = double.parse(widget.message["message"].split(",")[1].toString().split("location=").first);
+                          shareText = "https://www.google.com/maps/search/?api=1&query=$latitude,$longitude";
+                        } else {
+                          shareText = widget.message["message"];
+                        }
+                        await Share.share(shareText);
                         Navigator.pop(context);
                       },
                     ),

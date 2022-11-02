@@ -15,6 +15,7 @@ import 'package:myst/ui/loading.dart';
 import 'package:myst/ui/login.dart';
 import 'package:myst/ui/messages.dart';
 import 'package:myst/ui/passwordreset.dart';
+import 'package:myst/ui/searchinconversation.dart';
 
 import '../data/translation.dart';
 import '../main.dart';
@@ -193,13 +194,13 @@ class _MainViewState extends State<MainView> {
               ],
             ),
             left: ConversationsView(),
-            right: Scaffold(backgroundColor: getColor("background")),
+            right: SearchInConversationView(),
           ),
         ),
         AnimatedAlign(
           duration: const Duration(milliseconds: 500),
           curve: Curves.easeInOut,
-          alignment: actualSide == RevealSide.left && isSliding
+          alignment: (actualSide == RevealSide.left || actualSide == RevealSide.right) && isSliding
               ? Alignment.bottomCenter
               : Alignment(
                   0,

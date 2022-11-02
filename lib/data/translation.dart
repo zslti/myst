@@ -130,6 +130,10 @@ Map translation = {
     "reply": "Reply",
     "replyingto": "Replying to ",
     "originalmessagedeleted": "The original message got deleted.",
+    "download": "Download",
+    "share": "Share",
+    "searchinconversation": "Search in conversation",
+    "search": "Search",
   },
   "hu": {
     "countrycode": "hu",
@@ -263,5 +267,9 @@ Map translation = {
     "reply": "Válaszolás",
     "replyingto": "Válasz neki: ",
     "originalmessagedeleted": "Az eredeti üzenet törölve lett.",
+    "download": "Letöltés",
+    "share": "Megosztás",
+    "searchinconversation": "Keresés a beszélgetésben",
+    "search": "Keresés",
   }
 };
