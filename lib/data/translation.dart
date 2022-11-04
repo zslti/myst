@@ -134,6 +134,8 @@ Map translation = {
     "share": "Share",
     "searchinconversation": "Search in conversation",
     "search": "Search",
+    "nomessagesfound": "There are no messages matching your criteria.",
+    "searchbytype": "Search by message type",
   },
   "hu": {
     "countrycode": "hu",
@@ -271,5 +273,7 @@ Map translation = {
     "share": "Megosztás",
     "searchinconversation": "Keresés a beszélgetésben",
     "search": "Keresés",
+    "nomessagesfound": "Nincs egy ilyen üzenet sem.",
+    "searchbytype": "Keresés üzenettípus szerint",
   }
 };

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -10,6 +11,8 @@ import '../data/translation.dart';
 import '../main.dart';
 
 TextEditingController searchController = TextEditingController();
+List selectedFileTypes = [];
+List selectableFileTypes = ["location", "file", "image", "video", "audio", null];
 
 class SearchInConversationView extends StatefulWidget {
   const SearchInConversationView({super.key});
@@ -85,6 +88,52 @@ class _SearchInConversationViewState extends State<SearchInConversationView> {
                       ),
                     ),
                   ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4.0),
+                    child: ClipRRect(
+                      borderRadius: const BorderRadius.all(Radius.circular(5)),
+                      child: KeyboardVisibilityBuilder(builder: (context, isKeyboardVisible) {
+                        if (MediaQuery.of(context).orientation == Orientation.landscape && isKeyboardVisible) {
+                          return const SizedBox();
+                        }
+                        return Container(
+                          height: 70,
+                          width: double.infinity,
+                          alignment: Alignment.center,
+                          color: getColor("background"),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(left: 12.0, top: 8.0),
+                                child: Text(
+                                  translation[currentLanguage]["searchbytype"],
+                                  style: getFont("mainfont")(
+                                    color: getColor("secondarytext"),
+                                    fontSize: 14,
+                                    height: 1.3,
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                child: Row(
+                                  children: const [
+                                    FileTypeButton(icon: Icons.location_on_outlined, index: 0),
+                                    FileTypeButton(icon: Icons.insert_drive_file_outlined, index: 1),
+                                    FileTypeButton(icon: Icons.image_outlined, index: 2),
+                                    FileTypeButton(icon: Icons.video_collection_outlined, index: 3),
+                                    FileTypeButton(icon: Icons.mic_none_sharp, index: 4),
+                                    FileTypeButton(icon: Icons.short_text_rounded, index: 5),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 6)
+                            ],
+                          ),
+                        );
+                      }),
+                    ),
+                  ),
                   ShaderMask(
                     shaderCallback: (Rect rect) {
                       return LinearGradient(
@@ -102,36 +151,69 @@ class _SearchInConversationViewState extends State<SearchInConversationView> {
                     blendMode: BlendMode.dstOut,
                     child: KeyboardVisibilityBuilder(builder: (context, isKeyboardVisible) {
                       return SizedBox(
-                        height: max(0, MediaQuery.of(context).size.height - (isKeyboardVisible ? 410 : 122)),
+                        height: max(0, MediaQuery.of(context).size.height - (isKeyboardVisible ? 490 : 200)),
                         //width: MediaQuery.of(context).size.width - 131,
                         child: ScrollConfiguration(
                           behavior: MyBehavior(),
                           child: SingleChildScrollView(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              // padding: const EdgeInsets.only(top: 10),
-                              // shrinkWrap: true,
-                              children: [
-                                const SizedBox(
-                                  height: 10,
-                                ),
-                                for (final message in currentMessages)
+                            child: Builder(builder: (context) {
+                              int messages = 0;
+                              List fileTypes = selectedFileTypes;
+                              if (fileTypes.isEmpty) {
+                                fileTypes = [0, 1, 2, 3, 4, 5];
+                              }
+                              List fileTypeNames = [];
+                              for (int i = 0; i < fileTypes.length; i++) {
+                                fileTypeNames.add(selectableFileTypes[fileTypes[i]]);
+                              }
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                // padding: const EdgeInsets.only(top: 10),
+                                // shrinkWrap: true,
+                                children: [
+                                  const SizedBox(
+                                    height: 10,
+                                  ),
+                                  for (final message in currentMessages)
+                                    Builder(builder: (context) {
+                                      if (!message["message"].contains(searchController.text) && message["type"] == null) return const SizedBox();
+                                      if (message["type"] != null && searchController.text.isNotEmpty) return const SizedBox();
+                                      if (!fileTypeNames.contains(message["type"])) return const SizedBox();
+                                      messages++;
+                                      return Padding(
+                                        padding: const EdgeInsets.symmetric(vertical: 4.0),
+                                        child: Message(
+                                          message: message,
+                                          hasReducedWidth: true,
+                                        ),
+                                      );
+                                    }),
                                   Builder(builder: (context) {
-                                    if (!message["message"].contains(searchController.text) && message["type"] == null) return const SizedBox();
-                                    if (message["type"] != null && searchController.text.isNotEmpty) return const SizedBox();
-                                    return Padding(
-                                      padding: const EdgeInsets.symmetric(vertical: 4.0),
-                                      child: Message(
-                                        message: message,
-                                        hasReducedWidth: true,
+                                    if (messages != 0) {
+                                      return const SizedBox();
+                                    }
+                                    return Opacity(
+                                      opacity: 0.5,
+                                      child: SizedBox(
+                                        height: MediaQuery.of(context).size.height / 2,
+                                        child: Align(
+                                          child: Text(
+                                            translation[currentLanguage]["nomessagesfound"],
+                                            style: getFont("mainfont")(
+                                              color: getColor("secondarytext"),
+                                              fontSize: 14,
+                                            ),
+                                          ),
+                                        ),
                                       ),
                                     );
                                   }),
-                                const SizedBox(
-                                  height: 100,
-                                ),
-                              ],
-                            ),
+                                  const SizedBox(
+                                    height: 100,
+                                  ),
+                                ],
+                              );
+                            }),
                           ),
                         ),
                       );
@@ -142,6 +224,63 @@ class _SearchInConversationViewState extends State<SearchInConversationView> {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class FileTypeButton extends StatefulWidget {
+  const FileTypeButton({
+    Key? key,
+    required this.icon,
+    required this.index,
+  }) : super(key: key);
+
+  final IconData icon;
+  final int index;
+  @override
+  State<FileTypeButton> createState() => _FileTypeButtonState();
+}
+
+class _FileTypeButtonState extends State<FileTypeButton> {
+  @override
+  Widget build(BuildContext context) {
+    Timer(const Duration(milliseconds: 50), () {
+      if (mounted) {
+        setState(() {});
+      }
+    });
+    return Expanded(
+      child: IconButton(
+        splashColor: Colors.transparent,
+        splashRadius: 0.0001,
+        icon: Stack(
+          children: [
+            Opacity(
+              opacity: 0.5,
+              child: Icon(
+                widget.icon,
+                color: getColor("secondarytext"),
+              ),
+            ),
+            AnimatedOpacity(
+              opacity: selectedFileTypes.contains(widget.index) ? 1 : 0,
+              duration: const Duration(milliseconds: 200),
+              child: Icon(
+                widget.icon,
+                color: getColor("maintext"),
+              ),
+            ),
+          ],
+        ),
+        onPressed: () {
+          if (selectedFileTypes.contains(widget.index)) {
+            selectedFileTypes.remove(widget.index);
+            return;
+          }
+          selectedFileTypes.add(widget.index);
+          setState(() {});
+        },
       ),
     );
   }
