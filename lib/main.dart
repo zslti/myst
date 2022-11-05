@@ -130,7 +130,6 @@ class _MyAppState extends State<MyApp> {
 
   Future<bool> initializeApp() async {
     prefs?.setString("theme", ""); //TODO: remove line when everything is done
-    //TODO: edit message
     //TODO: delete conversation
     //TODO: calls
     //TODO: compress videos, images, audio
@@ -138,6 +137,7 @@ class _MyAppState extends State<MyApp> {
     //TODO: youtube embed
     //TODO: watch together
     //TODO: vanish mode
+    //TODO: show if someone took a screenshot
     //TODO: group chats
     //TODO: polls
     //TODO: mention people

@@ -9,6 +9,7 @@ import 'package:myst/ui/messages.dart';
 import '../data/theme.dart';
 import '../data/translation.dart';
 import '../main.dart';
+import 'mainscreen.dart';
 
 TextEditingController searchController = TextEditingController();
 List selectedFileTypes = [];
@@ -96,40 +97,59 @@ class _SearchInConversationViewState extends State<SearchInConversationView> {
                         if (MediaQuery.of(context).orientation == Orientation.landscape && isKeyboardVisible) {
                           return const SizedBox();
                         }
-                        return Container(
-                          height: 70,
-                          width: double.infinity,
-                          alignment: Alignment.center,
-                          color: getColor("background"),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(left: 12.0, top: 8.0),
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              height: 70,
+                              width: double.infinity,
+                              alignment: Alignment.center,
+                              color: getColor("background"),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 12.0, top: 8.0),
+                                    child: Text(
+                                      translation[currentLanguage]["searchbytype"],
+                                      style: getFont("mainfont")(
+                                        color: getColor("secondarytext"),
+                                        fontSize: 14,
+                                        height: 1.3,
+                                      ),
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: Row(
+                                      children: const [
+                                        FileTypeButton(icon: Icons.location_on_outlined, index: 0),
+                                        FileTypeButton(icon: Icons.insert_drive_file_outlined, index: 1),
+                                        FileTypeButton(icon: Icons.image_outlined, index: 2),
+                                        FileTypeButton(icon: Icons.video_collection_outlined, index: 3),
+                                        FileTypeButton(icon: Icons.mic_none_sharp, index: 4),
+                                        FileTypeButton(icon: Icons.short_text_rounded, index: 5),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6)
+                                ],
+                              ),
+                            ),
+                            Opacity(
+                              opacity: 0.5,
+                              child: Padding(
+                                padding: const EdgeInsets.only(left: 4.0, top: 8.0),
                                 child: Text(
-                                  translation[currentLanguage]["searchbytype"],
+                                  translation[currentLanguage]["doubleclicktojump"],
                                   style: getFont("mainfont")(
                                     color: getColor("secondarytext"),
-                                    fontSize: 14,
+                                    fontSize: 12,
                                     height: 1.3,
                                   ),
                                 ),
                               ),
-                              Expanded(
-                                child: Row(
-                                  children: const [
-                                    FileTypeButton(icon: Icons.location_on_outlined, index: 0),
-                                    FileTypeButton(icon: Icons.insert_drive_file_outlined, index: 1),
-                                    FileTypeButton(icon: Icons.image_outlined, index: 2),
-                                    FileTypeButton(icon: Icons.video_collection_outlined, index: 3),
-                                    FileTypeButton(icon: Icons.mic_none_sharp, index: 4),
-                                    FileTypeButton(icon: Icons.short_text_rounded, index: 5),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 6)
-                            ],
-                          ),
+                            ),
+                          ],
                         );
                       }),
                     ),
@@ -151,7 +171,7 @@ class _SearchInConversationViewState extends State<SearchInConversationView> {
                     blendMode: BlendMode.dstOut,
                     child: KeyboardVisibilityBuilder(builder: (context, isKeyboardVisible) {
                       return SizedBox(
-                        height: max(0, MediaQuery.of(context).size.height - (isKeyboardVisible ? 490 : 200)),
+                        height: max(0, MediaQuery.of(context).size.height - (isKeyboardVisible ? 514 : 224)),
                         //width: MediaQuery.of(context).size.width - 131,
                         child: ScrollConfiguration(
                           behavior: MyBehavior(),
@@ -180,11 +200,21 @@ class _SearchInConversationViewState extends State<SearchInConversationView> {
                                       if (message["type"] != null && searchController.text.isNotEmpty) return const SizedBox();
                                       if (!fileTypeNames.contains(message["type"])) return const SizedBox();
                                       messages++;
-                                      return Padding(
-                                        padding: const EdgeInsets.symmetric(vertical: 4.0),
-                                        child: Message(
-                                          message: message,
-                                          hasReducedWidth: true,
+                                      return GestureDetector(
+                                        onDoubleTap: () {
+                                          scrollToMessage(message, context, type: "search");
+                                          swipeDirection = RevealSide.left;
+                                          gkey.currentState?.onTranslate(
+                                            50 * MediaQuery.of(context).size.width / 400,
+                                            shouldApplyTransition: true,
+                                          );
+                                        },
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(vertical: 4.0),
+                                          child: Message(
+                                            message: message,
+                                            hasReducedWidth: true,
+                                          ),
                                         ),
                                       );
                                     }),
@@ -199,6 +229,7 @@ class _SearchInConversationViewState extends State<SearchInConversationView> {
                                         child: Align(
                                           child: Text(
                                             translation[currentLanguage]["nomessagesfound"],
+                                            textAlign: TextAlign.center,
                                             style: getFont("mainfont")(
                                               color: getColor("secondarytext"),
                                               fontSize: 14,

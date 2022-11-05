@@ -136,6 +136,10 @@ Map translation = {
     "search": "Search",
     "nomessagesfound": "There are no messages matching your criteria.",
     "searchbytype": "Search by message type",
+    "edit": "Edit",
+    "editingmessage": "Editing message",
+    "edited": "Edited",
+    "doubleclicktojump": "Double click a message to jump to it.",
   },
   "hu": {
     "countrycode": "hu",
@@ -275,5 +279,9 @@ Map translation = {
     "search": "Keresés",
     "nomessagesfound": "Nincs egy ilyen üzenet sem.",
     "searchbytype": "Keresés üzenettípus szerint",
+    "edit": "Szerkesztés",
+    "editingmessage": "Üzenet szerkesztése",
+    "edited": "Szerkesztve",
+    "doubleclicktojump": "Kattints duplán egy üzenetre, hogy ugorj hozzá.",
   }
 };

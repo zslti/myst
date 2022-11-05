@@ -68,6 +68,35 @@ List recentEmojis = [];
 Map replyTo = {};
 double replyBarProgress = 0;
 String replyingTo = "";
+bool editingMessage = false;
+
+void scrollToMessage(Map message, BuildContext context, {String type = "reply"}) {
+  int messageIndex = -1;
+  if (type == "reply") {
+    messageIndex = currentMessages.indexWhere((element) => element["timestamp"] == message["replyto"]["timestamp"]);
+  } else if (type == "search") {
+    messageIndex = currentMessages.indexWhere((element) => (element["timestamp"] == message["timestamp"] && element["sender"] == message["sender"]));
+  }
+  if (messageIndex == -1) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: getColor("background"),
+        content: Text(
+          translation[currentLanguage]["originalmessagedeleted"],
+          style: getFont("mainfont")(
+            color: getColor("maintext"),
+          ),
+        ),
+      ),
+    );
+    return;
+  }
+  _scrollController.scrollTo(
+    index: messageIndex,
+    duration: const Duration(milliseconds: 1000),
+    curve: Curves.easeInOut,
+  );
+}
 
 void updateMessageFieldHeight(BuildContext context) {
   Timer.periodic(const Duration(milliseconds: 10), (timer) {
@@ -247,23 +276,27 @@ class _MessageState extends State<Message> with AutomaticKeepAliveClientMixin {
                   return GestureDetector(
                     onTap: () {
                       FocusScope.of(context).unfocus();
-                      context.pushTransparentRoute(ImageView(url: sentMedia[widget.message["message"]] ?? ""));
+                      context.pushTransparentRoute(
+                          ImageView(url: '${sentMedia[widget.message["message"]]}${widget.hasReducedWidth ? "fromsearchview" : ""}'));
                       Timer(const Duration(milliseconds: 200), () {
                         imageRoundedAmount = 0;
-                        heroImageUrl = sentMedia[widget.message["message"]] ?? "";
+                        heroImageUrl = '${sentMedia[widget.message["message"]]}${widget.hasReducedWidth ? "fromsearchview" : ""}';
                       });
                     },
                     child: Padding(
                       padding: const EdgeInsets.only(top: 4.0, bottom: 4.0),
                       child: ClipRRect(
-                        borderRadius: BorderRadius.circular(10 * (heroImageUrl == sentMedia[widget.message["message"]] ? imageRoundedAmount : 1)),
+                        borderRadius: BorderRadius.circular(10 *
+                            (heroImageUrl == '${sentMedia[widget.message["message"]]}${widget.hasReducedWidth ? "fromsearchview" : ""}'
+                                ? imageRoundedAmount
+                                : 1)),
                         child: ConstrainedBox(
                           constraints: BoxConstraints(
                             maxWidth: MediaQuery.of(context).size.width / 1.5 - (widget.hasReducedWidth ? 100 : 0),
                             maxHeight: MediaQuery.of(context).size.height / 2,
                           ),
                           child: Hero(
-                            tag: sentMedia[widget.message["message"]] ?? "",
+                            tag: '${sentMedia[widget.message["message"]]}${widget.hasReducedWidth ? "fromsearchview" : ""}',
                             child: ProfileImage(
                               url: sentMedia[widget.message["message"]] ?? "",
                               type: "banner",
@@ -609,26 +642,7 @@ class _MessageState extends State<Message> with AutomaticKeepAliveClientMixin {
                   opacity: 0.5,
                   child: GestureDetector(
                     onTap: () {
-                      int messageIndex = currentMessages.indexWhere((element) => element["timestamp"] == widget.message["replyto"]["timestamp"]);
-                      if (messageIndex == -1) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            backgroundColor: getColor("background"),
-                            content: Text(
-                              translation[currentLanguage]["originalmessagedeleted"],
-                              style: getFont("mainfont")(
-                                color: getColor("maintext"),
-                              ),
-                            ),
-                          ),
-                        );
-                        return;
-                      }
-                      _scrollController.scrollTo(
-                        index: messageIndex,
-                        duration: const Duration(milliseconds: 1000),
-                        curve: Curves.easeInOut,
-                      );
+                      scrollToMessage(widget.message, context);
                     },
                     child: Row(
                       children: [
@@ -640,6 +654,33 @@ class _MessageState extends State<Message> with AutomaticKeepAliveClientMixin {
                         const SizedBox(width: 3),
                         Text(
                           '${translation[currentLanguage]["replyingto"]}${displayNames[widget.message["replyto"]["sender"]]}',
+                          style: getFont("mainfont")(
+                            color: getColor("secondarytext"),
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }),
+              Builder(builder: (context) {
+                if (widget.message["edited"] == null || !widget.message["edited"]) {
+                  return const SizedBox();
+                }
+                return Opacity(
+                  opacity: 0.5,
+                  child: GestureDetector(
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.edit_outlined,
+                          size: 14,
+                          color: getColor("secondarytext"),
+                        ),
+                        const SizedBox(width: 3),
+                        Text(
+                          translation[currentLanguage]["edited"],
                           style: getFont("mainfont")(
                             color: getColor("secondarytext"),
                             fontSize: 12,
@@ -960,6 +1001,7 @@ class _MessageActionSelectorState extends State<MessageActionSelector> {
                       onPressed: () async {
                         replyTo = widget.message;
                         replyingTo = displayNames[replyTo["sender"]];
+                        editingMessage = false;
                         Navigator.pop(context);
                       },
                     ),
@@ -1015,6 +1057,31 @@ class _MessageActionSelectorState extends State<MessageActionSelector> {
                           shareText = widget.message["message"];
                         }
                         await Share.share(shareText);
+                        Navigator.pop(context);
+                      },
+                    ),
+                    MessageActionButton(
+                      showCondition: widget.message["type"] == null && isMyMessage,
+                      widgets: [
+                        Padding(
+                          padding: const EdgeInsets.only(left: 8.0),
+                          child: Icon(Icons.edit_outlined, color: getColor("secondarytext")),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 8, top: 2, bottom: 2),
+                          child: Text(
+                            translation[currentLanguage]["edit"],
+                            style: getFont("mainfont")(color: getColor("secondarytext"), fontSize: 14),
+                          ),
+                        ),
+                      ],
+                      onPressed: () async {
+                        replyTo = widget.message;
+                        replyingTo = displayNames[replyTo["sender"]];
+                        editingMessage = true;
+                        messageController.text = widget.message["message"];
+                        updateMessageFieldHeight(context);
+                        updateTypingStatus(currentConversation["email"]);
                         Navigator.pop(context);
                       },
                     ),
@@ -1382,7 +1449,9 @@ class _MessagesViewState extends State<MessagesView> {
                                       child: Align(
                                         alignment: Alignment.centerLeft,
                                         child: Text(
-                                          "${translation[currentLanguage]["replyingto"]}$replyingTo",
+                                          editingMessage
+                                              ? translation[currentLanguage]["editingmessage"]
+                                              : "${translation[currentLanguage]["replyingto"]}$replyingTo",
                                           overflow: TextOverflow.ellipsis,
                                           style: getFont("mainfont")(
                                             color: getColor("secondarytext"),
@@ -1395,6 +1464,16 @@ class _MessagesViewState extends State<MessagesView> {
                                       onTap: () {
                                         setState(() {
                                           replyTo = {};
+                                          if (editingMessage) {
+                                            messageController.clear();
+                                            updateMessageFieldHeight(context);
+                                            updateTypingStatus(currentConversation["email"]);
+                                            Timer(const Duration(milliseconds: 100), () {
+                                              setState(() {
+                                                editingMessage = false;
+                                              });
+                                            });
+                                          }
                                         });
                                       },
                                       child: SizedBox(
@@ -1839,11 +1918,16 @@ class _MessagesViewState extends State<MessagesView> {
                                                 isReplyInCurrentConversation = true;
                                               }
                                             }
-                                            sendMessage(
-                                              messageController.text,
-                                              currentConversation["email"],
-                                              replyTo: isReplyInCurrentConversation ? replyTo : null,
-                                            );
+                                            if (editingMessage && isReplyInCurrentConversation) {
+                                              editMessage(replyTo, messageController.text);
+                                            } else {
+                                              sendMessage(
+                                                messageController.text,
+                                                currentConversation["email"],
+                                                replyTo: isReplyInCurrentConversation ? replyTo : null,
+                                              );
+                                            }
+
                                             replyTo = {};
                                             messageController.clear();
                                             Timer.periodic(const Duration(milliseconds: 10), (timer) {

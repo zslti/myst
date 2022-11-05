@@ -873,3 +873,25 @@ Future<Map> forwardMessage(Map message, String to) async {
   await messages.add(message);
   return message;
 }
+
+Future<void> editMessage(Map message, String newMessage) async {
+  if (message.isEmpty) {
+    return;
+  }
+  if (newMessage.isEmpty) {
+    deleteMessage(message);
+    return;
+  }
+  QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+      .collection('messages')
+      .where("sender", isEqualTo: message["sender"])
+      .where("users", isEqualTo: message["users"])
+      .where("timestamp", isEqualTo: message["timestamp"])
+      .get();
+  for (var doc in querySnapshot.docs) {
+    doc.reference.update({
+      'message': encryptText(newMessage),
+      'edited': true,
+    });
+  }
+}

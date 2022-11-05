@@ -676,7 +676,7 @@ class _ImageViewState extends State<ImageView> {
             maxScale: 4,
             minScale: 1,
             child: ProfileImage(
-              url: widget.url,
+              url: widget.url.replaceAll("fromsearchview", ""),
               type: "banner",
               username: "sentimage",
             ),
