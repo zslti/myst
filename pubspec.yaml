@@ -73,6 +73,7 @@ dependencies:
   flutter_emoji: ^2.4.0
   flutter_launcher_icons: ^0.10.0
   share_plus: ^6.2.0
+  agora_uikit: ^1.0.4
 
 dev_dependencies:
   flutter_test:

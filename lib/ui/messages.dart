@@ -24,6 +24,7 @@ import 'package:myst/data/theme.dart';
 import 'package:myst/data/translation.dart';
 import 'package:myst/data/userdata.dart';
 import 'package:myst/data/util.dart';
+import 'package:myst/ui/videocall.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
@@ -1568,6 +1569,17 @@ class _MessagesViewState extends State<MessagesView> {
                                 ],
                               ),
                             ),
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            push(context, const VideoCallView());
+                          },
+                          child: Image.asset(
+                            "assets/more.png",
+                            width: 35,
+                            height: 35,
+                            color: getColor("secondarytext"),
                           ),
                         ),
                         Align(
