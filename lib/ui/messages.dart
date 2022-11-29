@@ -278,7 +278,8 @@ class _MessageState extends State<Message> with AutomaticKeepAliveClientMixin {
                     onTap: () {
                       FocusScope.of(context).unfocus();
                       context.pushTransparentRoute(
-                          ImageView(url: '${sentMedia[widget.message["message"]]}${widget.hasReducedWidth ? "fromsearchview" : ""}'));
+                        ImageView(url: '${sentMedia[widget.message["message"]]}${widget.hasReducedWidth ? "fromsearchview" : ""}'),
+                      );
                       Timer(const Duration(milliseconds: 200), () {
                         imageRoundedAmount = 0;
                         heroImageUrl = '${sentMedia[widget.message["message"]]}${widget.hasReducedWidth ? "fromsearchview" : ""}';
@@ -530,6 +531,54 @@ class _MessageState extends State<Message> with AutomaticKeepAliveClientMixin {
                                           ),
                                         ),
                                       ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                }
+                if (widget.message["type"] == "calljoined" || widget.message["type"] == "callleft") {
+                  return Row(
+                    children: [
+                      GestureDetector(
+                        onTap: () async {
+                          if (widget.message["type"] == "calljoined") {
+                            sendMessage("", currentConversation["email"], type: "calljoined");
+                            push(context, const VideoCallView());
+                          }
+                        },
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: Container(
+                            color: getColor("background"),
+                            child: Row(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.all(7),
+                                  child: Icon(
+                                    widget.message["type"] == "calljoined" ? Icons.call_outlined : Icons.call_end_outlined,
+                                    color: getColor("secondarytext"),
+                                    size: 23,
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 8, top: 8, bottom: 8),
+                                  child: ConstrainedBox(
+                                    constraints: BoxConstraints(
+                                      maxWidth: MediaQuery.of(context).size.width * 0.65 - (widget.hasReducedWidth ? 100 : 0),
+                                    ),
+                                    child: Text(
+                                      translation[currentLanguage][widget.message["type"]],
+                                      style: getFont("mainfont")(
+                                        fontWeight: FontWeight.w500,
+                                        fontSize: 12,
+                                        color: getColor("secondarytext"),
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -1573,13 +1622,16 @@ class _MessagesViewState extends State<MessagesView> {
                         ),
                         GestureDetector(
                           onTap: () {
+                            sendMessage("", currentConversation["email"], type: "calljoined");
                             push(context, const VideoCallView());
                           },
-                          child: Image.asset(
-                            "assets/more.png",
-                            width: 35,
-                            height: 35,
-                            color: getColor("secondarytext"),
+                          child: Padding(
+                            padding: const EdgeInsets.only(right: 2.0),
+                            child: Icon(
+                              Icons.call_outlined,
+                              color: getColor("secondarytext"),
+                              size: 22,
+                            ),
                           ),
                         ),
                         Align(

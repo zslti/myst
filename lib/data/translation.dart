@@ -141,6 +141,8 @@ Map translation = {
     "edited": "Edited",
     "doubleclicktojump": "Double click a message to jump to it.",
     "nocamera": "Camera disabled",
+    "calljoined": "Joined the call",
+    "callleft": "Left the call",
   },
   "hu": {
     "countrycode": "hu",
@@ -286,5 +288,7 @@ Map translation = {
     "doubleclicktojump": "Kattints duplán egy üzenetre, hogy ugorj hozzá.",
     "incall": "Hívásban vele:",
     "nocamera": "Kamera kikapcsolva",
+    "calljoined": "Csatlakozott a híváshoz",
+    "callleft": "Elhagyta a hívást",
   }
 };

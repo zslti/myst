@@ -130,10 +130,9 @@ class _MyAppState extends State<MyApp> {
 
   Future<bool> initializeApp() async {
     prefs?.setString("theme", ""); //TODO: remove line when everything is done
-    //TODO: send a message when call was started
-    //TODO: change icon of video chat
-    //TODO: change icon of end call button
-    //TODO: floating window for video chat
+    //TODO: round floating window corners
+    //TODO: make window draggable from anywhere
+    //TODO: only show window when in call
     //TODO: compress videos, images, audio
     //TODO: custom themes
     //TODO: youtube embed

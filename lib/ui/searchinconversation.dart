@@ -91,16 +91,16 @@ class _SearchInConversationViewState extends State<SearchInConversationView> {
                   ),
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 4.0),
-                    child: ClipRRect(
-                      borderRadius: const BorderRadius.all(Radius.circular(5)),
-                      child: KeyboardVisibilityBuilder(builder: (context, isKeyboardVisible) {
-                        if (MediaQuery.of(context).orientation == Orientation.landscape && isKeyboardVisible) {
-                          return const SizedBox();
-                        }
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
+                    child: KeyboardVisibilityBuilder(builder: (context, isKeyboardVisible) {
+                      if (MediaQuery.of(context).orientation == Orientation.landscape && isKeyboardVisible) {
+                        return const SizedBox();
+                      }
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          ClipRRect(
+                            borderRadius: const BorderRadius.all(Radius.circular(5)),
+                            child: Container(
                               height: 70,
                               width: double.infinity,
                               alignment: Alignment.center,
@@ -135,24 +135,24 @@ class _SearchInConversationViewState extends State<SearchInConversationView> {
                                 ],
                               ),
                             ),
-                            Opacity(
-                              opacity: 0.5,
-                              child: Padding(
-                                padding: const EdgeInsets.only(left: 4.0, top: 8.0),
-                                child: Text(
-                                  translation[currentLanguage]["doubleclicktojump"],
-                                  style: getFont("mainfont")(
-                                    color: getColor("secondarytext"),
-                                    fontSize: 12,
-                                    height: 1.3,
-                                  ),
+                          ),
+                          Opacity(
+                            opacity: 0.5,
+                            child: Padding(
+                              padding: const EdgeInsets.only(left: 4.0, top: 8.0),
+                              child: Text(
+                                translation[currentLanguage]["doubleclicktojump"],
+                                style: getFont("mainfont")(
+                                  color: getColor("secondarytext"),
+                                  fontSize: 12,
+                                  height: 1.3,
                                 ),
                               ),
                             ),
-                          ],
-                        );
-                      }),
-                    ),
+                          ),
+                        ],
+                      );
+                    }),
                   ),
                   ShaderMask(
                     shaderCallback: (Rect rect) {
