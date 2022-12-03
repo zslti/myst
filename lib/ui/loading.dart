@@ -1,11 +1,12 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:myst/data/theme.dart';
 
+import '../main.dart';
+
 List<double> opacity = [0, 0, 0, 0, 0];
-double sizeMul = 1;
-bool stopAfterFirstCycle = false;
 
 class AnimatedLogo extends StatefulWidget {
   const AnimatedLogo({
@@ -25,9 +26,7 @@ class AnimatedLogoState extends State<AnimatedLogo> {
   void initState() {
     super.initState();
     opacity = [0, 0, 0, 0, 0];
-    sizeMul = widget.sizeMul ?? 1;
-    stopAfterFirstCycle = widget.stopAfterFirstCycle ?? false;
-    if (stopAfterFirstCycle) {
+    if (widget.stopAfterFirstCycle ?? false) {
       for (int i = 0; i < 5; i++) {
         Timer(Duration(milliseconds: 300 * (i + 1)), () {
           if (mounted) {
@@ -101,14 +100,14 @@ class AnimatedLogoState extends State<AnimatedLogo> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        SizedBox(width: 10 * sizeMul),
+        SizedBox(width: 10 * (widget.sizeMul ?? 1)),
         Stack(
           children: [
             Padding(
-              padding: EdgeInsets.only(left: 40 * sizeMul, top: 45 * sizeMul),
+              padding: EdgeInsets.only(left: 40 * (widget.sizeMul ?? 1), top: 45 * (widget.sizeMul ?? 1)),
               child: SizedBox(
-                width: 60 * sizeMul,
-                height: 60 * sizeMul,
+                width: 60 * (widget.sizeMul ?? 1),
+                height: 60 * (widget.sizeMul ?? 1),
                 child: AnimatedOpacity(
                   duration: const Duration(milliseconds: 500),
                   opacity: opacity[4],
@@ -120,10 +119,10 @@ class AnimatedLogoState extends State<AnimatedLogo> {
               ),
             ),
             Padding(
-              padding: EdgeInsets.only(left: 51.8 * sizeMul, top: 6 * sizeMul),
+              padding: EdgeInsets.only(left: 51.8 * (widget.sizeMul ?? 1), top: 6 * (widget.sizeMul ?? 1)),
               child: SizedBox(
-                width: 60 * sizeMul,
-                height: 60 * sizeMul,
+                width: 60 * (widget.sizeMul ?? 1),
+                height: 60 * (widget.sizeMul ?? 1),
                 child: RotationTransition(
                   turns: const AlwaysStoppedAnimation(284 / 360),
                   child: AnimatedOpacity(
@@ -138,11 +137,11 @@ class AnimatedLogoState extends State<AnimatedLogo> {
               ),
             ),
             Positioned(
-              top: -17 * sizeMul,
-              left: 19 * sizeMul,
+              top: -17 * (widget.sizeMul ?? 1),
+              left: 19 * (widget.sizeMul ?? 1),
               child: SizedBox(
-                width: 60 * sizeMul,
-                height: 60 * sizeMul,
+                width: 60 * (widget.sizeMul ?? 1),
+                height: 60 * (widget.sizeMul ?? 1),
                 child: RotationTransition(
                   turns: const AlwaysStoppedAnimation(212 / 360),
                   child: AnimatedOpacity(
@@ -157,11 +156,11 @@ class AnimatedLogoState extends State<AnimatedLogo> {
               ),
             ),
             Positioned(
-              left: -13 * sizeMul,
-              top: 7 * sizeMul,
+              left: -13 * (widget.sizeMul ?? 1),
+              top: 7 * (widget.sizeMul ?? 1),
               child: SizedBox(
-                width: 60 * sizeMul,
-                height: 60 * sizeMul,
+                width: 60 * (widget.sizeMul ?? 1),
+                height: 60 * (widget.sizeMul ?? 1),
                 child: RotationTransition(
                   turns: const AlwaysStoppedAnimation(142.5 / 360),
                   child: AnimatedOpacity(
@@ -176,11 +175,11 @@ class AnimatedLogoState extends State<AnimatedLogo> {
               ),
             ),
             Positioned(
-              left: -1 * sizeMul,
-              top: 44 * sizeMul,
+              left: -1 * (widget.sizeMul ?? 1),
+              top: 44 * (widget.sizeMul ?? 1),
               child: SizedBox(
-                width: 60 * sizeMul,
-                height: 60 * sizeMul,
+                width: 60 * (widget.sizeMul ?? 1),
+                height: 60 * (widget.sizeMul ?? 1),
                 child: RotationTransition(
                   turns: const AlwaysStoppedAnimation(71 / 360),
                   child: AnimatedOpacity(
@@ -211,6 +210,12 @@ class LoadingView extends StatefulWidget {
 class _LoadingViewState extends State<LoadingView> {
   @override
   Widget build(BuildContext context) {
+    final themeData = prefs?.getString("theme") ?? "";
+    if (themeData.isNotEmpty && jsonDecode(themeData) != null) {
+      currentTheme = jsonDecode(themeData);
+    } else {
+      currentTheme = dark;
+    }
     return Scaffold(
       backgroundColor: getColor("background"),
       body: const Center(

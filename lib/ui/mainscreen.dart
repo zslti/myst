@@ -16,7 +16,6 @@ import 'package:myst/ui/login.dart';
 import 'package:myst/ui/messages.dart';
 import 'package:myst/ui/passwordreset.dart';
 import 'package:myst/ui/searchinconversation.dart';
-import 'package:myst/ui/videocall.dart';
 
 import '../data/translation.dart';
 import '../main.dart';
@@ -133,215 +132,213 @@ class _MainViewState extends State<MainView> {
     }
     getData();
 
-    return VideoCallPnpOverlay(
-      child: Stack(
-        children: [
-          GestureDetector(
-            onTap: () {
-              scrollController.animateTo(
-                0,
-                duration: const Duration(milliseconds: 275),
-                curve: Curves.ease,
-              );
+    return Stack(
+      children: [
+        GestureDetector(
+          onTap: () {
+            scrollController.animateTo(
+              0,
+              duration: const Duration(milliseconds: 275),
+              curve: Curves.ease,
+            );
+          },
+          child: OverlappingPanels(
+            onSideChange: (value) {
+              actualSide = value;
             },
-            child: OverlappingPanels(
-              onSideChange: (value) {
-                actualSide = value;
-              },
-              key: _myKey,
-              main: Stack(
-                children: [
-                  AnimatedOpacity(
-                    duration: const Duration(milliseconds: 500),
-                    opacity: t ? 1 : 0,
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 35),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(15),
-                        child: Stack(
-                          children: [
-                            MessagesView(),
-                            IgnorePointer(
-                              ignoring: actualSide == RevealSide.main,
-                              child: AnimatedOpacity(
-                                opacity: isSliding ? 0.05 : 0,
-                                duration: const Duration(milliseconds: 200),
-                                child: GestureDetector(
-                                  onTap: () {
-                                    if (actualSide == RevealSide.left) {
-                                      swipeDirection = RevealSide.right;
-                                      gkey.currentState?.onTranslate(
-                                        -50 * MediaQuery.of(context).size.width / 400,
-                                        shouldApplyTransition: true,
-                                      );
-                                    } else {
-                                      swipeDirection = RevealSide.left;
-                                      gkey.currentState?.onTranslate(
-                                        50 * MediaQuery.of(context).size.width / 400,
-                                        shouldApplyTransition: true,
-                                      );
-                                    }
-                                  },
-                                  child: const Scaffold(
-                                    backgroundColor: Color.fromARGB(255, 78, 78, 78),
-                                  ),
+            key: _myKey,
+            main: Stack(
+              children: [
+                AnimatedOpacity(
+                  duration: const Duration(milliseconds: 500),
+                  opacity: t ? 1 : 0,
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 35),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(15),
+                      child: Stack(
+                        children: [
+                          MessagesView(),
+                          IgnorePointer(
+                            ignoring: actualSide == RevealSide.main,
+                            child: AnimatedOpacity(
+                              opacity: isSliding ? 0.05 : 0,
+                              duration: const Duration(milliseconds: 200),
+                              child: GestureDetector(
+                                onTap: () {
+                                  if (actualSide == RevealSide.left) {
+                                    swipeDirection = RevealSide.right;
+                                    gkey.currentState?.onTranslate(
+                                      -50 * MediaQuery.of(context).size.width / 400,
+                                      shouldApplyTransition: true,
+                                    );
+                                  } else {
+                                    swipeDirection = RevealSide.left;
+                                    gkey.currentState?.onTranslate(
+                                      50 * MediaQuery.of(context).size.width / 400,
+                                      shouldApplyTransition: true,
+                                    );
+                                  }
+                                },
+                                child: const Scaffold(
+                                  backgroundColor: Color.fromARGB(255, 78, 78, 78),
                                 ),
                               ),
-                            )
+                            ),
+                          )
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            left: ConversationsView(),
+            right: SearchInConversationView(),
+          ),
+        ),
+        AnimatedAlign(
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeInOut,
+          alignment: (actualSide == RevealSide.left || actualSide == RevealSide.right) && isSliding
+              ? Alignment.bottomCenter
+              : Alignment(
+                  0,
+                  1.1 * MediaQuery.of(context).size.width / 300,
+                ),
+          child: Container(
+            decoration: BoxDecoration(
+              color: getColor("background"),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.25),
+                  spreadRadius: 5,
+                  blurRadius: 7,
+                  offset: const Offset(0, -3),
+                ),
+              ],
+            ),
+            height: 50,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Expanded(
+                  child: TextButton(
+                    style: const ButtonStyle(
+                      splashFactory: NoSplash.splashFactory,
+                    ),
+                    onPressed: () {
+                      if (selectedIndex == 0) return;
+                      selectedIndex = 0;
+                      //push(context, const MainView());
+                    },
+                    child: AnimatedOpacity(
+                      duration: const Duration(milliseconds: 250),
+                      opacity: selectedIndex == 0 ? 1 : 0.5,
+                      child: Builder(builder: (context) {
+                        Timer(const Duration(milliseconds: 10), () {
+                          setState(() {});
+                        });
+                        return const AnimatedLogo(
+                          sizeMul: 0.3,
+                          stopAfterFirstCycle: true,
+                        );
+                      }),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: TextButton(
+                    style: const ButtonStyle(
+                      splashFactory: NoSplash.splashFactory,
+                    ),
+                    onPressed: () {
+                      if (selectedIndex == 1) return;
+                      selectedIndex = 1;
+                      pushReplacement(context, const FriendsView());
+                      // Navigator.of(context).pop();
+                      // push(context, const FriendsView());
+                    },
+                    child: Stack(
+                      children: [
+                        Center(
+                          child: AnimatedOpacity(
+                            duration: const Duration(milliseconds: 250),
+                            opacity: selectedIndex == 1 ? 1 : 0.5,
+                            child: Image.asset(
+                              "assets/friends.png",
+                              color: getColor("logo"),
+                              height: 37,
+                              width: 37,
+                            ),
+                          ),
+                        ),
+                        Align(
+                          alignment: const Alignment(0.2, 1),
+                          child: NotificationBubble(
+                            amount: friendRequestAmount,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: TextButton(
+                    style: const ButtonStyle(
+                      splashFactory: NoSplash.splashFactory,
+                    ),
+                    onPressed: () {
+                      bottomSheetData = {};
+                      scrollController.animateTo(
+                        0.5,
+                        duration: const Duration(milliseconds: 275),
+                        curve: Curves.ease,
+                      );
+                      isScrolling = true;
+                      Timer(const Duration(milliseconds: 275), () {
+                        isScrolling = false;
+                      });
+                    },
+                    child: AnimatedOpacity(
+                      duration: const Duration(milliseconds: 250),
+                      opacity: selectedIndex == 2 ? 1 : 0.5,
+                      child: SizedBox(
+                        width: 30,
+                        height: 30,
+                        child: Stack(
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(50),
+                              child: ProfileImage(
+                                url: myProfilePicture,
+                              ),
+                            ),
+                            Align(
+                              alignment: Alignment.bottomRight,
+                              child: StatusIndicator(status: myStatus),
+                            ),
                           ],
                         ),
                       ),
                     ),
                   ),
-                ],
-              ),
-              left: ConversationsView(),
-              right: SearchInConversationView(),
+                ),
+              ],
             ),
           ),
-          AnimatedAlign(
-            duration: const Duration(milliseconds: 500),
-            curve: Curves.easeInOut,
-            alignment: (actualSide == RevealSide.left || actualSide == RevealSide.right) && isSliding
-                ? Alignment.bottomCenter
-                : Alignment(
-                    0,
-                    1.1 * MediaQuery.of(context).size.width / 300,
-                  ),
-            child: Container(
-              decoration: BoxDecoration(
-                color: getColor("background"),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.25),
-                    spreadRadius: 5,
-                    blurRadius: 7,
-                    offset: const Offset(0, -3),
-                  ),
-                ],
-              ),
-              height: 50,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  Expanded(
-                    child: TextButton(
-                      style: const ButtonStyle(
-                        splashFactory: NoSplash.splashFactory,
-                      ),
-                      onPressed: () {
-                        if (selectedIndex == 0) return;
-                        selectedIndex = 0;
-                        //push(context, const MainView());
-                      },
-                      child: AnimatedOpacity(
-                        duration: const Duration(milliseconds: 250),
-                        opacity: selectedIndex == 0 ? 1 : 0.5,
-                        child: Builder(builder: (context) {
-                          Timer(const Duration(milliseconds: 10), () {
-                            setState(() {});
-                          });
-                          return const AnimatedLogo(
-                            sizeMul: 0.3,
-                            stopAfterFirstCycle: true,
-                          );
-                        }),
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: TextButton(
-                      style: const ButtonStyle(
-                        splashFactory: NoSplash.splashFactory,
-                      ),
-                      onPressed: () {
-                        if (selectedIndex == 1) return;
-                        selectedIndex = 1;
-                        pushReplacement(context, const FriendsView());
-                        // Navigator.of(context).pop();
-                        // push(context, const FriendsView());
-                      },
-                      child: Stack(
-                        children: [
-                          Center(
-                            child: AnimatedOpacity(
-                              duration: const Duration(milliseconds: 250),
-                              opacity: selectedIndex == 1 ? 1 : 0.5,
-                              child: Image.asset(
-                                "assets/friends.png",
-                                color: getColor("logo"),
-                                height: 37,
-                                width: 37,
-                              ),
-                            ),
-                          ),
-                          Align(
-                            alignment: const Alignment(0.2, 1),
-                            child: NotificationBubble(
-                              amount: friendRequestAmount,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: TextButton(
-                      style: const ButtonStyle(
-                        splashFactory: NoSplash.splashFactory,
-                      ),
-                      onPressed: () {
-                        bottomSheetData = {};
-                        scrollController.animateTo(
-                          0.5,
-                          duration: const Duration(milliseconds: 275),
-                          curve: Curves.ease,
-                        );
-                        isScrolling = true;
-                        Timer(const Duration(milliseconds: 275), () {
-                          isScrolling = false;
-                        });
-                      },
-                      child: AnimatedOpacity(
-                        duration: const Duration(milliseconds: 250),
-                        opacity: selectedIndex == 2 ? 1 : 0.5,
-                        child: SizedBox(
-                          width: 30,
-                          height: 30,
-                          child: Stack(
-                            children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(50),
-                                child: ProfileImage(
-                                  url: myProfilePicture,
-                                ),
-                              ),
-                              Align(
-                                alignment: Alignment.bottomRight,
-                                child: StatusIndicator(status: myStatus),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          DraggableScrollableSheet(
-            minChildSize: 0,
-            initialChildSize: scrollSize,
-            controller: scrollController,
-            builder: (context, scrollController) {
-              return SettingsView(
-                scrollController: scrollController,
-              );
-            },
-          )
-        ],
-      ),
+        ),
+        DraggableScrollableSheet(
+          minChildSize: 0,
+          initialChildSize: scrollSize,
+          controller: scrollController,
+          builder: (context, scrollController) {
+            return SettingsView(
+              scrollController: scrollController,
+            );
+          },
+        )
+      ],
     );
   }
 }
@@ -1373,6 +1370,8 @@ class SettingButton extends StatefulWidget {
     this.openableWidgetId = -1,
     this.showArrow = true,
     this.padding = const EdgeInsets.only(left: 8, right: 8),
+    this.hasShaderMask = true,
+    this.openSpeed = 0.05,
   }) : super(key: key);
   final Widget icon;
   final String text;
@@ -1384,6 +1383,8 @@ class SettingButton extends StatefulWidget {
   final int openableWidgetId;
   final bool showArrow;
   final EdgeInsets padding;
+  final bool hasShaderMask;
+  final double openSpeed;
   @override
   State<SettingButton> createState() => _SettingButtonState();
 }
@@ -1399,7 +1400,7 @@ class _SettingButtonState extends State<SettingButton> {
       });
     }
     openableWidgetStates[widget.openableWidgetId] ??= {"state": false, "progress": 0};
-    double progressModifier = 0.05 * (openableWidgetStates[widget.openableWidgetId]?["state"] ?? false ? 1 : -1);
+    double progressModifier = widget.openSpeed * (openableWidgetStates[widget.openableWidgetId]?["state"] ?? false ? 1 : -1);
     openableWidgetStates[widget.openableWidgetId]["progress"] = (openableWidgetStates[widget.openableWidgetId]["progress"] ?? 0) + progressModifier;
     if (openableWidgetStates[widget.openableWidgetId]["progress"] >= 1) {
       openableWidgetStates[widget.openableWidgetId]["progress"] = 1;
@@ -1506,6 +1507,17 @@ class _SettingButtonState extends State<SettingButton> {
         ),
         ShaderMask(
           shaderCallback: (Rect rect) {
+            if (!widget.hasShaderMask) {
+              return LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: const [
+                  Colors.transparent,
+                  Colors.transparent,
+                ],
+                stops: const [0.0, 1.0],
+              ).createShader(rect);
+            }
             return LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,

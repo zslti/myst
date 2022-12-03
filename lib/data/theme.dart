@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:myst/data/util.dart';
 
+import '../ui/selecttheme.dart';
+
 Map dark = {
   "name": "Dark",
   "colors": {
@@ -76,6 +78,7 @@ Color getColor(String name, {Map? theme}) {
   currentTheme ??= dark;
   nextTheme ??= light;
   //currentTheme = light;
+
   List<double> colors = interpolateBetween(
     currentTheme!["colors"][name]?[0] ?? 255,
     currentTheme!["colors"][name]?[1] ?? 255,
@@ -115,7 +118,10 @@ TextStyle Function({
   double? wordSpacing,
 }) getFont(String name) {
   currentTheme ??= dark;
-  //int num = currentTheme!["fonts"][name] ?? 0;
+  dynamic font = currentTheme!["fonts"][name] ?? 0;
+  if (font == 0) {
+    return GoogleFonts.poppins;
+  }
 
-  return GoogleFonts.poppins;
+  return fonts[font];
 }

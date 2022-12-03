@@ -171,7 +171,7 @@ class _SearchInConversationViewState extends State<SearchInConversationView> {
                     blendMode: BlendMode.dstOut,
                     child: KeyboardVisibilityBuilder(builder: (context, isKeyboardVisible) {
                       return SizedBox(
-                        height: max(0, MediaQuery.of(context).size.height - (isKeyboardVisible ? 514 : 224)),
+                        height: max(0, MediaQuery.of(context).size.height - (isKeyboardVisible ? 520 : 230)),
                         //width: MediaQuery.of(context).size.width - 131,
                         child: ScrollConfiguration(
                           behavior: MyBehavior(),

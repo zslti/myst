@@ -303,7 +303,7 @@ class _ConversationsViewState extends State<ConversationsView> {
                                                                       color: getColor(
                                                                         "secondarytext",
                                                                       ),
-                                                                      fontSize: 11,
+                                                                      fontSize: 10,
                                                                     ),
                                                                   ),
                                                                 );

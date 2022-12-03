@@ -26,7 +26,7 @@ class _VideoCallViewState extends State<VideoCallView> {
       appId: '44fe75aa0bce4141bcfe093b6f9a6da2',
       channelName: 'temp',
       tempToken:
-          '007eJxTYPBXDPHqn5jMH1J+4xKn5ek7NRdsTd8kLXdJ22vM21kh6qTAYGKSlmpumphokJScamJoYpiUnJZqYGmcZJZmmWiWkmj0374tuSGQkaEqT5iZkQECQXwWhpLU3AIGBgDLbB3u',
+          '007eJxTYDifG50+bUKq6N/mzSwtxibzOhQsFxUvVE082Siikqq2r1GBwcQkLdXcNDHRICk51cTQxDApOS3VwNI4ySzNMtEsJdHIdFp7ckMgI0P2VgFGRgYIBPFZGEpScwsYGADTSR3G',
     ),
   );
   @override
@@ -52,6 +52,7 @@ class _VideoCallViewState extends State<VideoCallView> {
       child: Scaffold(
         backgroundColor: getColor("background"),
         body: SafeArea(
+          top: !widget.isCollapsed,
           child: Stack(
             children: [
               Hero(
@@ -245,7 +246,7 @@ class _VideoCallPnpOverlayState extends State<VideoCallPnpOverlay> {
                   height: windowHeight,
                   child: Stack(
                     children: [
-                      const VideoCallView(isCollapsed: true),
+                      const AbsorbPointer(child: VideoCallView(isCollapsed: true)),
                       SizedBox(
                         width: windowWidth,
                         height: windowHeight,
@@ -270,7 +271,7 @@ class _VideoCallPnpOverlayState extends State<VideoCallPnpOverlay> {
                       height: windowHeight,
                       child: Stack(
                         children: [
-                          const VideoCallView(isCollapsed: true),
+                          const AbsorbPointer(child: VideoCallView(isCollapsed: true)),
                           SizedBox(
                             width: windowWidth,
                             height: windowHeight,

@@ -129,19 +129,18 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<bool> initializeApp() async {
-    prefs?.setString("theme", ""); //TODO: remove line when everything is done
-    //TODO: round floating window corners
-    //TODO: make window draggable from anywhere
-    //TODO: only show window when in call
-    //TODO: compress videos, images, audio
-    //TODO: custom themes
+    //prefs?.setString("theme", "");
+    //TODO: discard custom theme
+    //TODO: upload custom theme to firebase and put in themes view
+    //TODO: different font doesnt show in theme preview
+    //TODO: search for themes in themes view
     //TODO: youtube embed
     //TODO: watch together
     //TODO: vanish mode
     //TODO: show if someone took a screenshot
     //TODO: games
-    //TODO: optimize downloading videos
     //TODO: change push animation
+    //TODO: if update is available show option to update with changelog
     final themeData = prefs?.getString("theme") ?? "";
     emList.removeAt(40);
     emList.removeAt(102);
@@ -157,9 +156,10 @@ class _MyAppState extends State<MyApp> {
     //   downloaderInitialized = true;
     // }
 
-    currentTheme = dark;
     if (themeData.isNotEmpty && jsonDecode(themeData) != null) {
       currentTheme = jsonDecode(themeData);
+    } else {
+      currentTheme = dark;
     }
     FirebaseAuth.instance.signOut();
 
