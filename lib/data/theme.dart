@@ -116,9 +116,16 @@ TextStyle Function({
   TextBaseline? textBaseline,
   TextStyle? textStyle,
   double? wordSpacing,
-}) getFont(String name) {
+}) getFont(String name, {Map? theme}) {
   currentTheme ??= dark;
-  dynamic font = currentTheme!["fonts"][name] ?? 0;
+  dynamic font;
+  // if(theme == null){
+  // font = currentTheme!["fonts"][name] ?? 0;
+
+  // }else{
+  //   font = theme["fonts"][name] ?? 0;
+  // }
+  font = (theme == null ? currentTheme!["fonts"][name] : theme["fonts"][name]) ?? 0;
   if (font == 0) {
     return GoogleFonts.poppins;
   }

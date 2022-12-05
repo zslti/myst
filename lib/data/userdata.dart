@@ -895,3 +895,14 @@ Future<void> editMessage(Map message, String newMessage) async {
     });
   }
 }
+
+Future<void> uploadTheme(Map theme) async {
+  CollectionReference themes = FirebaseFirestore.instance.collection('themes');
+  themes.add(theme);
+}
+
+Future<List> getThemes() async {
+  QuerySnapshot querySnapshot = await FirebaseFirestore.instance.collection('themes').get();
+  List allData = querySnapshot.docs.map((doc) => doc.data()).toSet().toList();
+  return allData;
+}

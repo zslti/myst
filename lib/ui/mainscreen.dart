@@ -162,7 +162,7 @@ class _MainViewState extends State<MainView> {
                           IgnorePointer(
                             ignoring: actualSide == RevealSide.main,
                             child: AnimatedOpacity(
-                              opacity: isSliding ? 0.05 : 0,
+                              opacity: isSliding ? 0.015 : 0,
                               duration: const Duration(milliseconds: 200),
                               child: GestureDetector(
                                 onTap: () {
@@ -181,7 +181,7 @@ class _MainViewState extends State<MainView> {
                                   }
                                 },
                                 child: const Scaffold(
-                                  backgroundColor: Color.fromARGB(255, 78, 78, 78),
+                                  backgroundColor: Color.fromARGB(255, 139, 139, 139),
                                 ),
                               ),
                             ),

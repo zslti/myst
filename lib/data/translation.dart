@@ -170,6 +170,7 @@ Map translation = {
     "notificationcolor": "Notification bubble color",
     "positivecolor": "Positive action color",
     "negativecolor": "Negative action color",
+    "curvescolor": "Color of waves (at login screen)",
     "font": "Font",
     "fontname": "Font name",
     "fontnametext": "You can use any ",
@@ -181,6 +182,10 @@ Map translation = {
     "unsavedchangestext": "Do you want to save your changes?",
     "save": "Save",
     "discard": "Discard",
+    "sharetheme": "Share theme",
+    "sharethemetext": "Do you want to upload this theme to the theme gallery?",
+    "upload": "Upload",
+    "themeuploaded": "The theme was uploaded successfully.",
   },
   "hu": {
     "countrycode": "hu",
@@ -355,6 +360,7 @@ Map translation = {
     "notificationcolor": "Értesítés színe",
     "positivecolor": "Pozitív akció színe",
     "negativecolor": "Negatív akció színe",
+    "curvescolor": "Hullámok színe (bejelentkezéskor)",
     "font": "Betűtípus",
     "fontname": "Betűtípus neve",
     "fontnametext": "Használhatsz bármilyen ",
@@ -366,5 +372,9 @@ Map translation = {
     "unsavedchangestext": "El akarod menteni a módosításaid?",
     "save": "Mentés",
     "discard": "Elvetés",
+    "sharetheme": "Téma megosztása",
+    "sharethemetext": "Fel akarod tölteni a témát, hogy mások is használhassák?",
+    "upload": "Feltöltés",
+    "themeuploaded": "A témát sikeresen feltöltötted.",
   }
 };

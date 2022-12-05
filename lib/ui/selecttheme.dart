@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:myst/data/theme.dart';
+import 'package:myst/data/userdata.dart';
 import 'package:myst/main.dart';
 import 'package:myst/ui/mainscreen.dart';
 import 'package:myst/ui/register.dart';
@@ -18,6 +19,8 @@ import '../data/util.dart';
 import 'loading.dart';
 
 bool t = false;
+List themes = [dark, light];
+int lastCustomThemeRequestTime = 0;
 
 class SelectThemeView extends StatefulWidget {
   const SelectThemeView({Key? key, this.shouldPop = false}) : super(key: key);
@@ -27,6 +30,14 @@ class SelectThemeView extends StatefulWidget {
 }
 
 class _SelectThemeViewState extends State<SelectThemeView> {
+  void getCustomThemes() async {
+    if (lastCustomThemeRequestTime + 15000 > DateTime.now().millisecondsSinceEpoch) return;
+    List customThemes = await getThemes();
+    List defaultThemes = [dark, light];
+    themes = defaultThemes + customThemes;
+    lastCustomThemeRequestTime = DateTime.now().millisecondsSinceEpoch;
+  }
+
   @override
   Widget build(BuildContext context) {
     if (!t) {
@@ -39,7 +50,7 @@ class _SelectThemeViewState extends State<SelectThemeView> {
     Timer(const Duration(milliseconds: 15), () {
       setState(() {});
     });
-    List themes = [dark, light];
+    getCustomThemes();
     return Scaffold(
       backgroundColor: getColor("background"),
       body: AnimatedOpacity(
@@ -104,7 +115,7 @@ class _SelectThemeViewState extends State<SelectThemeView> {
                         }),
                         Builder(builder: (context) {
                           if (i + 1 >= themes.length) {
-                            return Container();
+                            return Expanded(child: Container());
                           }
                           return Expanded(
                             child: Stack(
@@ -178,9 +189,8 @@ class _SelectThemeViewState extends State<SelectThemeView> {
                           child: TextButton(
                             onPressed: () {
                               nameController.text = currentTheme?["name"];
-                              oldTheme = currentTheme ?? {};
-                              newTheme = currentTheme ?? {};
                               loadedFontPages = 1;
+                              newTheme = currentTheme ?? {};
                               push(context, const CustomThemeView());
                             },
                             style: TextButton.styleFrom(
@@ -207,6 +217,42 @@ class _SelectThemeViewState extends State<SelectThemeView> {
       ),
     );
   }
+}
+
+void showUploadDialog(BuildContext context) {
+  showCustomDialog(
+    context,
+    translation[currentLanguage]["sharetheme"],
+    translation[currentLanguage]["sharethemetext"],
+    [
+      TextButton(
+        child: Text(
+          translation[currentLanguage]["upload"],
+          style: getFont("mainfont")(
+            fontSize: 14,
+            color: getColor("secondarytext"),
+          ),
+        ),
+        onPressed: () {
+          uploadTheme(newTheme);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              backgroundColor: getColor("background"),
+              content: Text(
+                translation[currentLanguage]["themeuploaded"],
+                style: getFont("mainfont")(
+                  color: getColor("maintext"),
+                ),
+              ),
+            ),
+          );
+          Navigator.pop(context);
+          Navigator.pop(context);
+        },
+      ),
+    ],
+    shouldDoublePop: true,
+  );
 }
 
 class ThemeCard extends StatefulWidget {
@@ -281,7 +327,7 @@ class _ThemeCardState extends State<ThemeCard> {
                               children: [
                                 Text(
                                   "Lorem Ipsum",
-                                  style: getFont("mainfont")(
+                                  style: getFont("mainfont", theme: widget.theme)(
                                     color: getColor(
                                       "secondarytext",
                                       theme: widget.theme,
@@ -291,7 +337,7 @@ class _ThemeCardState extends State<ThemeCard> {
                                 ),
                                 Text(
                                   "Lorem Ipsum",
-                                  style: getFont("mainfont")(
+                                  style: getFont("mainfont", theme: widget.theme)(
                                     color: getColor(
                                       "maintext",
                                       theme: widget.theme,
@@ -326,7 +372,7 @@ class _ThemeCardState extends State<ThemeCard> {
                               children: [
                                 Text(
                                   "Lorem Ipsum",
-                                  style: getFont("mainfont")(
+                                  style: getFont("mainfont", theme: widget.theme)(
                                     color: getColor(
                                       "secondarytext",
                                       theme: widget.theme,
@@ -340,7 +386,7 @@ class _ThemeCardState extends State<ThemeCard> {
                                   child: Text(
                                     "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
                                     overflow: TextOverflow.fade,
-                                    style: getFont("mainfont")(
+                                    style: getFont("mainfont", theme: widget.theme)(
                                       color: getColor(
                                         "maintext",
                                         theme: widget.theme,
@@ -370,7 +416,7 @@ class _ThemeCardState extends State<ThemeCard> {
                                     padding: const EdgeInsets.only(left: 8.0),
                                     child: Text(
                                       translation[currentLanguage]["message"],
-                                      style: getFont("mainfont")(
+                                      style: getFont("mainfont", theme: widget.theme)(
                                         color: getColor(
                                           "secondarytext",
                                           theme: widget.theme,
@@ -429,7 +475,6 @@ class _ThemeCardState extends State<ThemeCard> {
 
 TextEditingController nameController = TextEditingController();
 TextEditingController fontSearchController = TextEditingController();
-Map oldTheme = {};
 Map newTheme = {};
 Map fonts = GoogleFonts.asMap();
 int loadedFontPages = 1;
@@ -441,6 +486,7 @@ List changeableColors = [
   "background3",
   "inputbackground",
   "cursor",
+  "curves",
   "button",
   "button2",
   "passwordstrength",
@@ -506,9 +552,11 @@ class _CustomThemeViewState extends State<CustomThemeView> {
                 ),
               ),
               onPressed: () {
+                newTheme["name"] = nameController.text;
                 prefs?.setString("theme", jsonEncode(newTheme));
                 Navigator.pop(context);
-                Navigator.pop(context);
+
+                showUploadDialog(context);
               },
             ),
             TextButton(
@@ -520,11 +568,11 @@ class _CustomThemeViewState extends State<CustomThemeView> {
                 ),
               ),
               onPressed: () {
-                newTheme = oldTheme;
+                newTheme = jsonDecode(prefs?.getString("theme") ?? "{}");
                 updateTheme();
                 setState(() {});
-                // Navigator.pop(context);
-                // Navigator.pop(context);
+                Navigator.pop(context);
+                Navigator.pop(context);
               },
             ),
           ],
@@ -543,6 +591,7 @@ class _CustomThemeViewState extends State<CustomThemeView> {
                 ListView(
                   children: [
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         GestureDetector(
                           onTap: () {
@@ -560,9 +609,11 @@ class _CustomThemeViewState extends State<CustomThemeView> {
                                     ),
                                   ),
                                   onPressed: () {
+                                    newTheme["name"] = nameController.text;
                                     prefs?.setString("theme", jsonEncode(newTheme));
                                     Navigator.pop(context);
-                                    Navigator.pop(context);
+
+                                    showUploadDialog(context);
                                   },
                                 ),
                                 TextButton(
@@ -574,11 +625,11 @@ class _CustomThemeViewState extends State<CustomThemeView> {
                                     ),
                                   ),
                                   onPressed: () {
-                                    newTheme = oldTheme;
+                                    newTheme = jsonDecode(prefs?.getString("theme") ?? "{}");
                                     updateTheme();
                                     setState(() {});
-                                    // Navigator.pop(context);
-                                    // Navigator.pop(context);
+                                    Navigator.pop(context);
+                                    Navigator.pop(context);
                                   },
                                 ),
                               ],
@@ -592,6 +643,24 @@ class _CustomThemeViewState extends State<CustomThemeView> {
                                 Icons.arrow_back_ios_new,
                                 color: getColor("secondarytext"),
                                 size: 20,
+                              ),
+                            ),
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            newTheme["name"] = nameController.text;
+                            prefs?.setString("theme", jsonEncode(newTheme));
+                            showUploadDialog(context);
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 15),
+                            child: Align(
+                              alignment: const Alignment(0, 0.5),
+                              child: Icon(
+                                Icons.check_rounded,
+                                color: getColor("secondarytext"),
+                                size: 24,
                               ),
                             ),
                           ),

@@ -520,12 +520,7 @@ extension StringCasingExtension on String {
   String toTitleCase() => replaceAll(RegExp(' +'), ' ').split(' ').map((str) => str.toCapitalized()).join(' ');
 }
 
-void showCustomDialog(
-  BuildContext context,
-  String title,
-  String content,
-  List<Widget> actions,
-) {
+void showCustomDialog(BuildContext context, String title, String content, List<Widget> actions, {bool shouldDoublePop = false}) {
   showDialog(
     context: context,
     builder: (BuildContext context) {
@@ -540,6 +535,9 @@ void showCustomDialog(
           ),
           onPressed: () {
             Navigator.of(context).pop();
+            if (shouldDoublePop) {
+              Navigator.of(context).pop();
+            }
           },
         ),
       );

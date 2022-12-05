@@ -130,9 +130,6 @@ class _MyAppState extends State<MyApp> {
 
   Future<bool> initializeApp() async {
     //prefs?.setString("theme", "");
-    //TODO: discard custom theme
-    //TODO: upload custom theme to firebase and put in themes view
-    //TODO: different font doesnt show in theme preview
     //TODO: search for themes in themes view
     //TODO: youtube embed
     //TODO: watch together
