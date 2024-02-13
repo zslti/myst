@@ -1,16 +1,30 @@
-# myst
+# ⚡What is myst?
 
-A new Flutter project.
+myst is an instant messenger built using Flutter and Firebase. You can download the android version <a href="https://drive.google.com/file/d/1xTjSP7OwDAHke1jZEB4QyXftd_PhbQ6v/view?usp=sharing"><kbd>here</kbd></a>.
 
-## Getting Started
+# 🔥Features
 
-This project is a starting point for a Flutter application.
+📫 Send all kinds of messages, files and images
 
-A few resources to get you started if this is your first Flutter project:
+🎙️ Voice messages
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+📍 Location sharing
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+🉑️ Multiple languages
+
+😲 Reactions and replies
+
+🔒 Encryption
+
+🔎 Search in conversations
+
+✏️ Profile customization
+
+🟢 Status indicators
+
+🎨 Custom themes
+
+📱 Intuitive UI
+
+# 🚀Demo
+tbd
