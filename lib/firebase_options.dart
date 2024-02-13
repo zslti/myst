@@ -40,22 +40,22 @@ class DefaultFirebaseOptions {
     );
   }
 
-  static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyC4rs4qPk9SaGKPAtgUt130FTYEX_wvyJY',
-    appId: '1:79250125102:android:4a6a815945d471953dcabf',
-    messagingSenderId: '79250125102',
-    projectId: 'myst-a7305',
-    storageBucket: 'myst-a7305.appspot.com',
+  static const FirebaseOptions android = FirebaseOptions( // add your own firebase options
+    apiKey: '',
+    appId: '',
+    messagingSenderId: '',
+    projectId: '',
+    storageBucket: '',
   );
 
-  static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyD8uJYHpVucJWqdBT7HtjRNg-82SqJlw1Q',
-    appId: '1:79250125102:ios:1d180121f0bf761b3dcabf',
-    messagingSenderId: '79250125102',
-    projectId: 'myst-a7305',
-    storageBucket: 'myst-a7305.appspot.com',
+  static const FirebaseOptions ios = FirebaseOptions( // add your own firebase options
+    apiKey: '',
+    appId: '',
+    messagingSenderId: '',
+    projectId: '',
+    storageBucket: '',
     iosClientId:
-        '79250125102-gc75numl6u84rfqgagirvkcids4eqid5.apps.googleusercontent.com',
-    iosBundleId: 'com.example.myst',
+        '',
+    iosBundleId: '',
   );
 }
