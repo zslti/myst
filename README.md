@@ -27,4 +27,7 @@ myst is an instant messenger built using Flutter and Firebase. You can download 
 📱 Intuitive UI
 
 # 🚀Demo
-tbd
+
+<p align="center">
+  <img src="https://github.com/zslti/myst/assets/82903515/1b24348b-c9ad-4ac7-ae9a-44ec5008713a" alt="" width="300" />
+</p>
