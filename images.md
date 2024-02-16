@@ -39,10 +39,11 @@
   <img src="https://github.com/zslti/myst/assets/82903515/c5c950ca-e108-4baf-a5da-329d56399891" alt="" width="300" />
   <span>⠀</span>
   <img src="https://github.com/zslti/myst/assets/82903515/03ffe26a-875b-4334-bad6-fd930503ca14" alt="" width="300" />
-
+  <span>⠀</span>
   <img src="https://github.com/zslti/myst/assets/82903515/3c9e4cad-c6f6-4778-97d9-35834cfb6ded" alt="" width="300" />
   <span>⠀</span>
   <img src="https://github.com/zslti/myst/assets/82903515/825e7458-5652-48dc-bf44-4d92f82ecb53" alt="" width="300" />
+  <span>⠀</span>
 </p>
 
 ## 🔧 Registration and login
